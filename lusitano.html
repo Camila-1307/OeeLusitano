@@ -1444,7 +1444,7 @@
 
     verificarUsuario();
 
-    // 🚪 Função de Logout
+    // 🚪 Função de Logout (CORRIGIDA - usa supabase, não supabaseClient)
     async function fazerLogout() {
         const { error } = await supabase.auth.signOut();
         if (!error) {

@@ -1,0 +1,3478 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lusitano - OEE Extrusoras</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+        
+        :root {
+            --lusitano-green: #005a2b; 
+            --lusitano-red: #c4121a;
+            --lusitano-yellow: #FFD700; 
+        }
+
+        body { 
+            background-color: #f8fafc; 
+            font-family: 'Inter', sans-serif; 
+            position: relative;
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        .header-brand {
+            padding: 2.5rem 1rem;
+            text-align: center;
+            background: linear-gradient(to right, var(--lusitano-green) 50%, var(--lusitano-red) 50%);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .logo-main {
+            font-style: italic; 
+            font-weight: 900; 
+            color: var(--lusitano-yellow);
+            font-size: 4rem; 
+            line-height: 0.9;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+        }
+
+        .sub-logo {
+            color: var(--lusitano-yellow);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: -30px auto 20px;
+            z-index: 50;
+            position: relative;
+            padding: 0 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            color: white;
+            background-color: var(--lusitano-green);
+            border: 2px solid #10b981;
+            cursor: pointer;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-image {
+            background-color: #7c3aed;
+            border-color: #8b5cf6;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab-item {
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 14px;
+            color: #94a3b8;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .nav-tab-item.active { color: var(--lusitano-green); }
+        .nav-tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: var(--lusitano-green);
+            border-radius: 2px;
+        }
+
+        .period-selector-container {
+            background: #ffffff;
+            border-radius: 50px;
+            padding: 12px 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .period-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .date-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .date-input-group input {
+            border: none;
+            background: transparent;
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 15px;
+            width: 135px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .date-separator {
+            color: #cbd5e1;
+            font-weight: 400;
+        }
+
+        .period-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #0f172a;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .period-btn:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+
+        .period-btn.active {
+            border-color: #0f172a;
+            background: white;
+        }
+
+        .card-machine {
+            background: white;
+            border-radius: 1.5rem;
+            border-bottom: 6px solid var(--lusitano-green);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+            padding: 2rem;
+        }
+
+        .card-machine .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-machine .title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .card-machine .oee-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0.25rem 0 0.5rem 0;
+        }
+
+        .card-machine .oee-number {
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .card-machine .meta-indicator {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .card-machine .meta-indicator.atingida {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .card-machine .meta-indicator.nao-atingida {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .card-machine .space-y-3 {
+            margin-top: 1.25rem;
+        }
+
+        .footer-credit {
+            position: fixed;
+            bottom: 8px;
+            right: 12px;
+            font-size: 10px;
+            color: #cbd5e1;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            z-index: 40;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            font-style: italic;
+        }
+        
+        .footer-credit:hover {
+            opacity: 1;
+            color: #94a3b8;
+        }
+
+        #modal, #clientModal, #editModal, #turnosModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        #toast {
+            visibility: hidden;
+            min-width: 280px;
+            background-color: #059669;
+            color: white;
+            text-align: center;
+            border-radius: 12px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 2px solid #10b981;
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        .view-content { display: none; }
+        .view-content.active { display: block; }
+
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            height: 350px;
+        }
+
+        .error-toast {
+            background-color: #dc2626 !important;
+            border-color: #b91c1c !important;
+        }
+
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0.5cm;
+            }
+            
+            .toolbar, .nav-tabs, .period-selector-container, .btn-action, footer, .delete-btn, .edit-btn, .footer-credit {
+                display: none !important;
+            }
+            
+            #view-dashboard {
+                display: block !important;
+            }
+            
+            #view-efficiency, #view-op, #view-history, #view-clients, #view-perdas {
+                display: none !important;
+            }
+            
+            .print-footer {
+                display: none !important;
+            }
+            
+            header {
+                display: block !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                padding: 0.3rem !important;
+            }
+            
+            .logo-main {
+                font-size: 2rem !important;
+            }
+            
+            .sub-logo {
+                font-size: 0.5rem !important;
+            }
+            
+            body {
+                background-color: #f8fafc !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .print-period-info {
+                font-size: 11px !important;
+                margin-bottom: 8px !important;
+                display: block !important;
+                color: #005a2b !important;
+                font-weight: bold !important;
+            }
+            
+            #machine-grid {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 8px !important;
+                margin-bottom: 10px !important;
+            }
+            
+            .card-machine {
+                padding: 10px !important;
+                border-radius: 8px !important;
+                border-bottom: 3px solid #005a2b !important;
+            }
+            
+            .card-machine .title {
+                font-size: 9px !important;
+            }
+            
+            .card-machine .oee-container {
+                gap: 6px !important;
+                margin: 2px 0 4px 0 !important;
+            }
+            
+            .card-machine .oee-number {
+                font-size: 32px !important;
+            }
+            
+            .card-machine .meta-indicator {
+                font-size: 8px !important;
+                padding: 2px 6px !important;
+            }
+            
+            .card-machine .text-\[9px\] {
+                font-size: 8px !important;
+            }
+            
+            .card-machine .h-1 {
+                height: 3px !important;
+            }
+            
+            #view-dashboard .lg\:grid-cols-2 {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important;
+                margin-bottom: 0 !important;
+            }
+            
+            .chart-container {
+                padding: 8px !important;
+                height: 150px !important;
+            }
+            
+            .chart-container h3 {
+                font-size: 9px !important;
+                margin-bottom: 4px !important;
+            }
+            
+            #view-dashboard .chart-container.mb-8,
+            #view-dashboard .lg\:grid-cols-3 {
+                page-break-before: always !important;
+                margin-top: 10px !important;
+            }
+            
+            #view-dashboard .chart-container.mb-8 {
+                height: 150px !important;
+                margin-bottom: 10px !important;
+            }
+            
+            #view-dashboard .lg\:grid-cols-3 {
+                display: grid !important;
+                grid-template-columns: 1fr 2fr !important;
+                gap: 8px !important;
+            }
+            
+            .lg\:col-span-1 .chart-container {
+                height: 140px !important;
+            }
+            
+            .lg\:col-span-2 .grid-cols-2 {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important;
+            }
+            
+            .bg-slate-800, .bg-white.border {
+                padding: 10px !important;
+            }
+            
+            .bg-slate-800 p, .bg-white.border p {
+                font-size: 8px !important;
+            }
+            
+            .bg-slate-800 h4, .bg-white.border h4 {
+                font-size: 18px !important;
+            }
+            
+            #perdasMaquinaChart {
+                height: 140px !important;
+            }
+        }
+
+        .print-period-info, .print-footer {
+            display: none;
+        }
+
+        .print-period-info.print-visible {
+            display: block;
+            color: #005a2b;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .performance-high {
+            color: #059669;
+            font-weight: 800;
+        }
+        
+        .performance-optimal {
+            color: #2563eb;
+            font-weight: 800;
+        }
+        
+        .performance-low {
+            color: #dc2626;
+            font-weight: 800;
+        }
+
+        .edit-btn {
+            color: #f59e0b;
+            transition: all 0.2s;
+        }
+
+        .edit-btn:hover {
+            color: #d97706;
+            transform: scale(1.1);
+        }
+
+        .product-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .product-badge.product-1 { background-color: #005a2b; color: white; }
+        .product-badge.product-2 { background-color: #c4121a; color: white; }
+        .product-badge.product-3 { background-color: #FFD700; color: black; }
+        .product-badge.product-4 { background-color: #2563eb; color: white; }
+        .product-badge.product-5 { background-color: #8b5cf6; color: white; }
+        .product-badge.product-6 { background-color: #ec4899; color: white; }
+        .product-badge.product-7 { background-color: #14b8a6; color: white; }
+        .product-badge.product-8 { background-color: #f97316; color: white; }
+
+        .perda-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        
+        .perda-setup { background-color: #fef3c7; color: #92400e; }
+        .perda-avaria { background-color: #fee2e2; color: #991b1b; }
+        .perda-ajuste { background-color: #dbeafe; color: #1e40af; }
+        .perda-material { background-color: #f1f5f9; color: #334155; }
+        .perda-qualidade { background-color: #fce7f3; color: #9d174d; }
+        .perda-outros { background-color: #e0e7ff; color: #3730a3; }
+
+        .client-search-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: white;
+            padding: 5px;
+            border-radius: 50px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .client-search-input {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            min-width: 250px;
+            outline: none;
+        }
+
+        .client-search-btn {
+            background-color: var(--lusitano-green);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .client-search-btn:hover {
+            background-color: #00401e;
+        }
+
+        .opportunity-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .opportunity-high {
+            background-color: #dcfce7;
+            color: #059669;
+        }
+
+        .opportunity-medium {
+            background-color: #fef9c3;
+            color: #ca8a04;
+        }
+
+        .opportunity-low {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .disp-high {
+            color: #9333ea;
+            font-weight: 800;
+        }
+
+        .perda-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--lusitano-red);
+        }
+
+        .perda-stat {
+            font-size: 2rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .perda-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.05em;
+        }
+
+        .turno-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .turno-card:hover {
+            border-color: var(--lusitano-green);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .turno-card.selected {
+            border: 2px solid var(--lusitano-green);
+            background-color: #f0fdf4;
+        }
+
+        .add-turno-btn {
+            border: 2px dashed #cbd5e1;
+            border-radius: 1rem;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #64748b;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-turno-btn:hover {
+            border-color: var(--lusitano-green);
+            color: var(--lusitano-green);
+            background-color: #f0fdf4;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-brand">
+        <div class="logo-main">Lusitano</div>
+        <div class="sub-logo">Embalagens Plásticas</div>
+    </header>
+
+    <div class="toolbar">
+        <button onclick="capturarDashboard()" class="btn-action btn-image">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            Relatório Diário
+        </button>
+        <button onclick="openModal()" class="btn-action">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+            </svg>
+            Inserir Dados
+        </button>
+        <button onclick="openClientModal()" class="btn-action">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            Gestão Clientes/Produtos
+        </button>
+        <!-- Botão "Salvar Dados" removido -->
+    </div>
+
+    <div id="toast">✅ Dados salvos com sucesso!</div>
+
+    <main class="max-w-7xl mx-auto px-4 pb-20" id="dashboard-content">
+        <div class="print-period-info" id="printPeriodInfo"></div>
+        
+        <nav class="nav-tabs">
+            <div id="tab-dashboard" onclick="showView('dashboard')" class="nav-tab-item active">Dashboard</div>
+            <div id="tab-perdas" onclick="showView('perdas')" class="nav-tab-item">Análise de Perdas</div>
+            <div id="tab-efficiency" onclick="showView('efficiency')" class="nav-tab-item">Eficiência Detalhada</div>
+            <div id="tab-op" onclick="showView('op')" class="nav-tab-item">Análise por OP</div>
+            <div id="tab-history" onclick="showView('history')" class="nav-tab-item">Histórico</div>
+            <div id="tab-clients" onclick="showView('clients')" class="nav-tab-item">Análise por Cliente</div>
+        </nav>
+
+        <div class="flex justify-center mb-10">
+            <div class="period-selector-container">
+                <span class="period-label">PERÍODO:</span>
+                <div class="date-input-group">
+                    <input type="date" id="startDate" onchange="filterByRange()">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2"/></svg>
+                </div>
+                <span class="date-separator">até</span>
+                <div class="date-input-group">
+                    <input type="date" id="endDate" onchange="filterByRange()">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2"/></svg>
+                </div>
+                <div class="flex gap-2 ml-4">
+                    <button id="btnToday" onclick="filterToday()" class="period-btn">HOJE</button>
+                    <button id="btnWeek" onclick="filterWeek()" class="period-btn">ESTA SEMANA</button>
+                    <button id="btnMonth" onclick="filterMonth()" class="period-btn">ESTE MÊS</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-dashboard" class="view-content active">
+            <!-- Cards das máquinas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12" id="machine-grid"></div>
+            
+            <!-- Gráficos superiores (primeira folha) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="chart-container">
+                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Tendência de OEE Diária (Meta 85%)</h3>
+                    <div class="h-[250px]"><canvas id="weeklyChart"></canvas></div>
+                </div>
+                <div class="chart-container">
+                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Pilha de Eficiência por Máquina</h3>
+                    <div class="h-[250px]"><canvas id="pillarChart"></canvas></div>
+                </div>
+            </div>
+            
+            <!-- Gráfico de Perdas por Máquina (segunda folha na impressão) -->
+            <div class="chart-container mb-8">
+                <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Perdas por Máquina (minutos) - Comparativo</h3>
+                <div class="h-[300px]"><canvas id="perdasMaquinaChart"></canvas></div>
+            </div>
+            
+            <!-- Cards inferiores (segunda folha na impressão) -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="chart-container lg:col-span-1">
+                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">OEE por Turno</h3>
+                    <div class="h-[250px]"><canvas id="shiftChart"></canvas></div>
+                </div>
+                <div class="lg:col-span-2 grid grid-cols-2 gap-4">
+                    <div class="bg-slate-800 text-white p-8 rounded-2xl flex flex-col justify-center">
+                        <p class="text-[10px] font-bold uppercase opacity-60 tracking-[0.2em] mb-2">Melhor Máquina</p>
+                        <h4 id="topMachineName" class="text-3xl font-black">--</h4>
+                        <p id="topMachineValue" class="text-green-400 font-bold mt-1 text-xl">--%</p>
+                    </div>
+                    <div class="bg-white border p-8 rounded-2xl flex flex-col justify-center">
+                        <p class="text-[10px] font-bold uppercase text-slate-400 tracking-[0.2em] mb-2">Média Geral OEE</p>
+                        <h4 id="avgGlobalOee" class="text-3xl font-black">--%</h4>
+                        <p class="text-slate-400 text-xs mt-1">Total de registros: <span id="totalReg" class="font-bold">0</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOVA VIEW: ANÁLISE DE PERDAS -->
+        <div id="view-perdas" class="view-content">
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 mb-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">🔍 Análise Detalhada de Perdas</h3>
+                        <p class="text-slate-400 text-sm font-medium">Visão consolidada por máquina, motivo e período</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cards de Destaque - Top Perdas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="perda-card" id="topMaquinaPerda">
+                    <div class="perda-label mb-1">MÁQUINA COM MAIS PERDAS</div>
+                    <div class="perda-stat" id="topMaquinaNome">--</div>
+                    <div class="text-sm font-bold text-red-600 mt-1" id="topMaquinaMinutos">0 min</div>
+                </div>
+                <div class="perda-card" id="topMotivoPerda">
+                    <div class="perda-label mb-1">PRINCIPAL MOTIVO</div>
+                    <div class="perda-stat" id="topMotivoNome">--</div>
+                    <div class="text-sm font-bold text-red-600 mt-1" id="topMotivoMinutos">0 min</div>
+                </div>
+                <div class="perda-card" id="topDiaPerda">
+                    <div class="perda-label mb-1">DIA COM MAIOR PERDA</div>
+                    <div class="perda-stat" id="topDiaData">--</div>
+                    <div class="text-sm font-bold text-red-600 mt-1" id="topDiaMinutos">0 min</div>
+                </div>
+            </div>
+            
+            <!-- Gráficos de Perdas -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="chart-container">
+                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Perdas por Máquina (min)</h3>
+                    <div class="h-[250px]"><canvas id="perdasMaquinaDetalheChart"></canvas></div>
+                </div>
+                <div class="chart-container">
+                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Perdas por Motivo (min)</h3>
+                    <div class="h-[250px]"><canvas id="perdasMotivoChart"></canvas></div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-8 mb-8">
+                <div class="chart-container">
+                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Evolução Diária das Perdas</h3>
+                    <div class="h-[250px]"><canvas id="perdasEvolucaoChart"></canvas></div>
+                </div>
+            </div>
+            
+            <!-- Tabela Detalhada de Perdas - MODIFICADO: Só mostra registros com perda -->
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Detalhamento de Perdas por Registro</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="text-[10px] uppercase text-slate-400 border-b">
+                                <th class="pb-4">Data</th>
+                                <th class="pb-4">Máq</th>
+                                <th class="pb-4">Turno</th>
+                                <th class="pb-4">OP</th>
+                                <th class="pb-4">Cliente/Produto</th>
+                                <th class="pb-4 text-center">Setup (min)</th>
+                                <th class="pb-4 text-center">Paradas (min)</th>
+                                <th class="pb-4 text-center">Total Perda</th>
+                                <th class="pb-4">Motivo Principal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="perdas-detail-rows" class="divide-y divide-slate-50"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-efficiency" class="view-content">
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 mb-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Análise de Eficiência por Turno</h3>
+                        <p class="text-slate-400 text-sm font-medium">Selecione a máquina ou "Todas" para consolidação dos pilares</p>
+                    </div>
+                    <select id="machineSelect" onchange="filterByRange()" class="bg-slate-100 border-2 border-slate-200 p-4 rounded-2xl font-black text-slate-700 outline-none focus:border-green-600 transition-all min-w-[200px]">
+                        <option value="ALL">TODAS AS MÁQUINAS</option>
+                        <option value="M1">M1</option>
+                        <option value="M2">M2</option>
+                        <option value="M3">M3</option>
+                    </select>
+                </div>
+            </div>
+            <div id="efficiency-cards-container" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10"></div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Dados do Período Selecionado</h4>
+                <div class="max-h-[400px] overflow-y-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="sticky top-0 bg-white border-b">
+                            <tr class="text-slate-400 font-bold uppercase">
+                                <th class="py-2">Data</th>
+                                <th class="py-2">Máq</th>
+                                <th class="py-2">Turno</th>
+                                <th class="py-2">OP</th>
+                                <th class="py-2">Cliente/Produto</th>
+                                <th class="py-2 text-right">Est.</th>
+                                <th class="py-2 text-right">Real</th>
+                                <th class="py-2 text-right">Disp.OP</th>
+                                <th class="py-2 text-right">Disp.Turno</th>
+                                <th class="py-2 text-right">Perf.</th>
+                                <th class="py-2 text-right">Qual.</th>
+                                <th class="py-2 text-right">OEE</th>
+                                <th class="py-2 text-center">Status</th>
+                                <th class="py-2 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="efficiency-selection-rows" class="divide-y divide-slate-50 text-slate-600 font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-op" class="view-content">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mb-8">
+                <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Timeline de Produção por Turno</h3>
+                <div id="opTimelineContainer" class="space-y-6"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-4">Disponibilidade por OP</h3>
+                    <div id="opDispList" class="space-y-3"></div>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-4">Performance por OP</h3>
+                    <div id="opPerfList" class="space-y-3"></div>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-4">Qualidade por OP</h3>
+                    <div id="opQualList" class="space-y-3"></div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Detalhamento por OP</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="text-[10px] uppercase text-slate-400 border-b">
+                                <th class="pb-4">Data</th>
+                                <th class="pb-4">Turno</th>
+                                <th class="pb-4">OP</th>
+                                <th class="pb-4">Cliente/Produto</th>
+                                <th class="pb-4 text-center">Início</th>
+                                <th class="pb-4 text-center">Fim</th>
+                                <th class="pb-4 text-center">Duração</th>
+                                <th class="pb-4 text-center">Setup</th>
+                                <th class="pb-4 text-center">Paradas</th>
+                                <th class="pb-4 text-center">Disp.OP</th>
+                                <th class="pb-4 text-center">Disp.Turno</th>
+                                <th class="pb-4 text-center">Perda</th>
+                                <th class="pb-4 text-center">Est.</th>
+                                <th class="pb-4 text-center">Real</th>
+                                <th class="pb-4 text-center">Perf.</th>
+                                <th class="pb-4 text-center">Qual.</th>
+                                <th class="pb-4 text-center">Motivo Perda</th>
+                            </tr>
+                        </thead>
+                        <tbody id="op-detail-rows" class="divide-y divide-slate-50"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-history" class="view-content">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-8">Histórico Detalhado</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="text-[10px] uppercase text-slate-400 border-b">
+                                <th class="pb-4">Data</th>
+                                <th class="pb-4">Máq</th>
+                                <th class="pb-4">Turno</th>
+                                <th class="pb-4">OP</th>
+                                <th class="pb-4">Cliente/Produto</th>
+                                <th class="pb-4 text-center">Est.</th>
+                                <th class="pb-4 text-center">Real</th>
+                                <th class="pb-4 text-center">Disp.OP</th>
+                                <th class="pb-4 text-center">Disp.Turno</th>
+                                <th class="pb-4 text-center">Perf.</th>
+                                <th class="pb-4 text-center">Qual.</th>
+                                <th class="pb-4 text-right">OEE</th>
+                                <th class="pb-4 text-center">Status</th>
+                                <th class="pb-4 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-rows" class="divide-y divide-slate-50"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-clients" class="view-content">
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 mb-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Análise por Cliente</h3>
+                        <p class="text-slate-400 text-sm font-medium">Digite o nome do cliente ou selecione abaixo</p>
+                    </div>
+                    <div class="client-search-container">
+                        <input type="text" id="clientSearchInput" placeholder="Digite o nome do cliente..." class="client-search-input">
+                        <button onclick="searchClient()" class="client-search-btn">Buscar</button>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <select id="clientSelect" onchange="filterByRange()" class="bg-slate-100 border-2 border-slate-200 p-4 rounded-2xl font-black text-slate-700 outline-none focus:border-green-600 transition-all w-full md:w-auto">
+                        <option value="ALL">TODOS OS CLIENTES</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Performance por Cliente</h3>
+                    <div id="client-performance-list" class="space-y-4"></div>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Oportunidades de Aumento</h3>
+                    <div id="opportunities-list" class="space-y-4"></div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Detalhamento por Cliente</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="text-[10px] uppercase text-slate-400 border-b">
+                                <th class="pb-4">Data</th>
+                                <th class="pb-4">Cliente</th>
+                                <th class="pb-4">Produto</th>
+                                <th class="pb-4">Máq</th>
+                                <th class="pb-4">Turno</th>
+                                <th class="pb-4">OP</th>
+                                <th class="pb-4 text-center">Est.</th>
+                                <th class="pb-4 text-center">Real</th>
+                                <th class="pb-4 text-center">Disp. + Var.</th>
+                                <th class="pb-4 text-center">Perf.</th>
+                                <th class="pb-4 text-center">Qual.</th>
+                                <th class="pb-4 text-center">Variação</th>
+                                <th class="pb-4 text-center">OEE</th>
+                                <th class="pb-4 text-center">Oportunidade</th>
+                            </tr>
+                        </thead>
+                        <tbody id="client-history-rows" class="divide-y divide-slate-50"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Rodapé discreto -->
+    <div class="footer-credit">by Camila Carvalho</div>
+
+    <!-- Modal de Inserção de Dados -->
+    <div id="modal">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="font-black uppercase text-slate-800 text-xl">Novo Registo - OEE</h2>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
+            </div>
+            
+            <form id="regForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="col-span-1">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">DATA</label>
+                        <input type="date" id="regDate" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">MÁQUINA</label>
+                        <select id="regMachine" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                            <option value="" disabled selected>Selecionar...</option>
+                            <option value="M1">M1</option>
+                            <option value="M2">M2</option>
+                            <option value="M3">M3</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">TURNO</label>
+                        <select id="regTurno" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                            <option value="" disabled selected>Selecionar...</option>
+                            <option value="A">TURNO A (06:00-14:00)</option>
+                            <option value="B">TURNO B (14:00-22:00)</option>
+                            <option value="C">TURNO C (22:00-06:00)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">OP</label>
+                        <input type="text" id="regOP" placeholder="00000" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">PEDIDO (KG)</label>
+                        <input type="number" id="regPedido" placeholder="0" min="0" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+                    <label class="block text-[10px] font-bold uppercase text-green-700 mb-1 tracking-widest">👥 CLIENTE / PRODUTO</label>
+                    <select id="regProduto" class="w-full border-2 border-green-200 bg-white p-4 rounded-xl text-sm font-medium focus:border-green-600 focus:ring-0" required>
+                        <option value="" selected>Selecionar cliente/produto...</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">INÍCIO</label>
+                        <input type="time" id="regInicio" value="06:00" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">FIM</label>
+                        <input type="time" id="regFim" value="14:00" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">SETUP (min)</label>
+                        <input type="number" id="regSetup" value="0" min="0" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">PARADAS (min)</label>
+                        <input type="number" id="regAvaria" value="0" min="0" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
+                    </div>
+                </div>
+
+                <div class="bg-orange-50 p-4 rounded-xl border border-orange-200">
+                    <label class="block text-[10px] font-bold uppercase text-orange-700 mb-2 tracking-widest">⚠️ MOTIVO DA PERDA (se houver)</label>
+                    <select id="regMotivoPerda" class="w-full border-2 border-orange-200 bg-white p-3 rounded-xl text-sm focus:border-orange-600 focus:ring-0">
+                        <option value="">Sem perda / Não se aplica</option>
+                        <option value="Setup">Setup / Troca de produto</option>
+                        <option value="Parada Corretiva">Parada Corretiva</option>
+                        <option value="Avaria Mecânica">Avaria Mecânica</option>
+                        <option value="Avaria Elétrica">Avaria Elétrica</option>
+                        <option value="Ajuste de Parâmetros">Ajuste de Parâmetros</option>
+                        <option value="Falta de Material">Falta de Material</option>
+                        <option value="Qualidade / Rejeição">Qualidade / Rejeição</option>
+                        <option value="Parada Programada">Parada Programada</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">EST. (KG/H)</label>
+                        <input type="number" id="regEst" value="90" min="0" step="0.1" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">PRODUZIDO (KG)</label>
+                        <input type="number" id="regProduzido" value="0" min="0" step="0.1" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">REJEIÇÃO (KG)</label>
+                        <input type="number" id="regRejeicao" value="0" min="0" step="0.1" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">APARAS (KG)</label>
+                        <input type="number" id="regAparas" value="0" min="0" step="0.1" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
+                    </div>
+                </div>
+
+                <!-- Seção para múltiplos turnos -->
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-[10px] font-bold uppercase text-blue-700 tracking-widest">🔄 MÚLTIPLOS TURNOS PARA ESTA OP</label>
+                        <button type="button" onclick="adicionarTurnoModal()" class="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg font-bold hover:bg-blue-700">
+                            + Adicionar Turno
+                        </button>
+                    </div>
+                    <div id="turnos-lista" class="space-y-2 max-h-40 overflow-y-auto"></div>
+                </div>
+
+                <div class="bg-slate-800 text-white p-6 rounded-2xl">
+                    <h3 class="text-xs font-black uppercase opacity-60 tracking-widest mb-3">PRÉ-VISUALIZAÇÃO DO OEE</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div>
+                            <p class="text-[9px] uppercase opacity-50">Disp. OP</p>
+                            <p id="previewDispOP" class="text-2xl font-black">0%</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] uppercase opacity-50">Performance</p>
+                            <p id="previewPerf" class="text-2xl font-black">0%</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] uppercase opacity-50">Qualidade</p>
+                            <p id="previewQual" class="text-2xl font-black">0%</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] uppercase opacity-50">Real (Kg/h)</p>
+                            <p id="previewReal" class="text-2xl font-black">0</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] uppercase opacity-50">OEE Final</p>
+                            <p id="previewOEE" class="text-3xl font-black">0%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="calcularESalvar()" class="flex-1 bg-green-600 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                        </svg>
+                        SALVAR DADOS
+                    </button>
+                    <button type="button" onclick="closeModal()" class="px-8 bg-slate-200 text-slate-800 font-black py-4 rounded-2xl uppercase text-xs tracking-widest hover:bg-slate-300 transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Edição de Dados -->
+    <div id="editModal">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="font-black uppercase text-slate-800 text-xl">Editar Registo - OEE</h2>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
+            </div>
+            
+            <form id="editForm" class="space-y-6">
+                <input type="hidden" id="editId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="col-span-1">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">DATA</label>
+                        <input type="date" id="editDate" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">MÁQUINA</label>
+                        <select id="editMachine" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                            <option value="" disabled selected>Selecionar...</option>
+                            <option value="M1">M1</option>
+                            <option value="M2">M2</option>
+                            <option value="M3">M3</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">TURNO</label>
+                        <select id="editTurno" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                            <option value="" disabled selected>Selecionar...</option>
+                            <option value="A">TURNO A (06:00-14:00)</option>
+                            <option value="B">TURNO B (14:00-22:00)</option>
+                            <option value="C">TURNO C (22:00-06:00)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">OP</label>
+                        <input type="text" id="editOP" placeholder="00000" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">PEDIDO (KG)</label>
+                        <input type="number" id="editPedido" placeholder="0" min="0" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+                    <label class="block text-[10px] font-bold uppercase text-green-700 mb-1 tracking-widest">👥 CLIENTE / PRODUTO</label>
+                    <select id="editProduto" class="w-full border-2 border-green-200 bg-white p-4 rounded-xl text-sm font-medium focus:border-green-600 focus:ring-0" required>
+                        <option value="" selected>Selecionar cliente/produto...</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">INÍCIO</label>
+                        <input type="time" id="editInicio" value="00:00" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">FIM</label>
+                        <input type="time" id="editFim" value="00:00" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">SETUP (min)</label>
+                        <input type="number" id="editSetup" value="0" min="0" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">PARADAS (min)</label>
+                        <input type="number" id="editAvaria" value="0" min="0" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
+                    </div>
+                </div>
+
+                <div class="bg-orange-50 p-4 rounded-xl border border-orange-200">
+                    <label class="block text-[10px] font-bold uppercase text-orange-700 mb-2 tracking-widest">⚠️ MOTIVO DA PERDA (se houver)</label>
+                    <select id="editMotivoPerda" class="w-full border-2 border-orange-200 bg-white p-3 rounded-xl text-sm focus:border-orange-600 focus:ring-0">
+                        <option value="">Sem perda / Não se aplica</option>
+                        <option value="Setup">Setup / Troca de produto</option>
+                        <option value="Parada Corretiva">Parada Corretiva</option>
+                        <option value="Avaria Mecânica">Avaria Mecânica</option>
+                        <option value="Avaria Elétrica">Avaria Elétrica</option>
+                        <option value="Ajuste de Parâmetros">Ajuste de Parâmetros</option>
+                        <option value="Falta de Material">Falta de Material</option>
+                        <option value="Qualidade / Rejeição">Qualidade / Rejeição</option>
+                        <option value="Parada Programada">Parada Programada</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">EST. (KG/H)</label>
+                        <input type="number" id="editEst" value="90" min="0" step="0.1" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">PRODUZIDO (KG)</label>
+                        <input type="number" id="editProduzido" value="0" min="0" step="0.1" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">REJEIÇÃO (KG)</label>
+                        <input type="number" id="editRejeicao" value="0" min="0" step="0.1" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">APARAS (KG)</label>
+                        <input type="number" id="editAparas" value="0" min="0" step="0.1" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="salvarEdicao()" class="flex-1 bg-blue-600 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        ATUALIZAR DADOS
+                    </button>
+                    <button type="button" onclick="closeEditModal()" class="px-8 bg-slate-200 text-slate-800 font-black py-4 rounded-2xl uppercase text-xs tracking-widest hover:bg-slate-300 transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Gestão de Clientes/Produtos -->
+    <div id="clientModal">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="font-black uppercase text-slate-800 text-xl">Gestão de Clientes e Produtos</h2>
+                <button onclick="closeClientModal()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
+            </div>
+            
+            <div class="space-y-8">
+                <div class="bg-slate-50 p-6 rounded-xl">
+                    <h3 class="font-bold text-sm mb-4">➕ Adicionar Novo Cliente</h3>
+                    <div class="flex gap-3">
+                        <input type="text" id="novoCliente" placeholder="Nome do cliente" class="flex-1 border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
+                        <button onclick="adicionarCliente()" class="bg-green-600 text-white font-black px-6 py-4 rounded-xl uppercase text-xs tracking-widest hover:bg-green-700">
+                            Adicionar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 p-6 rounded-xl">
+                    <h3 class="font-bold text-sm mb-4">📦 Adicionar Produto a Cliente</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <select id="produtoCliente" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
+                            <option value="">Selecionar cliente...</option>
+                        </select>
+                        <input type="text" id="novoProduto" placeholder="Ex: 440x70x10" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
+                        <input type="number" id="produtoEst" placeholder="Kg/h estimado" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
+                        <button onclick="adicionarProduto()" class="bg-blue-600 text-white font-black px-6 py-4 rounded-xl uppercase text-xs tracking-widest hover:bg-blue-700">
+                            Adicionar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="border rounded-xl overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-slate-100">
+                            <tr class="text-[10px] uppercase text-slate-600">
+                                <th class="p-4 text-left">Cliente</th>
+                                <th class="p-4 text-left">Produtos</th>
+                                <th class="p-4 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientes-produtos-list" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+   <script>
+    // Configuração do Supabase
+    const SUPABASE_URL = "https://qyozqutvlppmgrmxcjit.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5b3pxdXR2bHBwbWdybXhjaml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MjE1ODIsImV4cCI6MjA4NzQ5NzU4Mn0.n2TmDlJQ5EkLyRXQHcrHZ6FP5SR8ja3NxSzP-oZjpo0";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true
+        }
+    });
+
+   async function verificarUsuario() {
+    console.log("🔍 Verificando usuário...");
+    
+    const { data: { user }, error } = await supabase.auth.getUser();
+    
+    console.log("Usuário:", user);
+    console.log("Erro:", error);
+    
+    if (error) {
+        console.error("❌ Erro na verificação:", error);
+    }
+    
+    if (!user) {
+        console.log("❌ Sem usuário - redirecionando para login.html");
+        window.location.href = "login.html";
+    } else {
+        console.log("✅ Usuário logado:", user.email);
+    }
+}
+
+    verificarUsuario();
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                window.location.href = "login.html";
+            }
+        }
+
+        verificarUsuario();
+
+        // Função para listar registros do banco
+        async function listarRegistros() {
+            try {
+                const { data, error } = await supabase
+                    .from("oee_registros")
+                    .select("*")
+                    .order('date', { ascending: false });
+
+                if (error) {
+                    console.error("Erro ao listar do banco:", error.message);
+                    return [];
+                } else {
+                    console.log("Registros carregados do banco:", data.length);
+                    return data || [];
+                }
+            } catch (error) {
+                console.error("Erro ao listar registros:", error);
+                return [];
+            }
+        }
+
+        // Função para inserir registro no banco
+        async function inserirRegistro(novo) {
+            try {
+                const { data, error } = await supabase
+                    .from("oee_registros")
+                    .insert([novo]);
+
+                if (error) {
+                    console.error("Erro ao inserir no banco:", error.message);
+                    showErrorToast("Erro ao inserir no banco: " + error.message);
+                    return null;
+                } else {
+                    console.log("Registro inserido no banco:", data);
+                    return data;
+                }
+            } catch (error) {
+                console.error("Erro ao inserir registro:", error);
+                showErrorToast("Erro ao conectar com banco de dados");
+                return null;
+            }
+        }
+
+        // Função para atualizar registro no banco
+        async function atualizarRegistro(id, dados) {
+            try {
+                const { data, error } = await supabase
+                    .from("oee_registros")
+                    .update(dados)
+                    .eq('id', id);
+
+                if (error) {
+                    console.error("Erro ao atualizar no banco:", error.message);
+                    showErrorToast("Erro ao atualizar no banco: " + error.message);
+                    return null;
+                } else {
+                    console.log("Registro atualizado no banco:", data);
+                    return data;
+                }
+            } catch (error) {
+                console.error("Erro ao atualizar registro:", error);
+                showErrorToast("Erro ao conectar com banco de dados");
+                return null;
+            }
+        }
+
+        // Função para apagar registro no banco
+        async function apagarRegistroBanco(id) {
+            try {
+                const { error } = await supabase
+                    .from("oee_registros")
+                    .delete()
+                    .eq('id', id);
+
+                if (error) {
+                    console.error("Erro ao apagar no banco:", error.message);
+                    showErrorToast("Erro ao apagar no banco: " + error.message);
+                    return false;
+                } else {
+                    console.log("Registro apagado do banco:", id);
+                    return true;
+                }
+            } catch (error) {
+                console.error("Erro ao apagar registro:", error);
+                showErrorToast("Erro ao conectar com banco de dados");
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        Chart.register(ChartDataLabels);
+
+        // Array dadosReais REMOVIDO - sem dados de teste
+
+        let historico = [];
+        let clientes = ['Cliente Teste', 'Cliente A', 'Cliente B'];
+        let produtos = [
+            {
+                cliente: 'Cliente Teste',
+                nome: 'Produto',
+                est: 90,
+                displayName: 'Cliente Teste - Produto (90 kg/h)'
+            },
+            {
+                cliente: 'Cliente A',
+                nome: 'Filme 50µ',
+                est: 85,
+                displayName: 'Cliente A - Filme 50µ (85 kg/h)'
+            },
+            {
+                cliente: 'Cliente B',
+                nome: 'Sacola 40x60',
+                est: 95,
+                displayName: 'Cliente B - Sacola 40x60 (95 kg/h)'
+            }
+        ];
+
+        let trendChart, pillarChart, shiftChart, perdasMaquinaChart;
+        let perdasMaquinaDetalheChart, perdasMotivoChart, perdasEvolucaoChart;
+        const META = 85;
+        const TURNOS = {
+            'A': { inicio: '06:00', fim: '14:00' },
+            'B': { inicio: '14:00', fim: '22:00' },
+            'C': { inicio: '22:00', fim: '06:00' }
+        };
+
+        // Variável para armazenar múltiplos turnos temporariamente
+        let turnosTemp = [];
+
+        // Função para mostrar toast de erro
+        function showErrorToast(mensagem) {
+            const toast = document.getElementById("toast");
+            toast.innerHTML = "❌ " + mensagem;
+            toast.className = "show error-toast";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
+        }
+
+        // Função para calcular duração considerando meia-noite
+        function calcularDuracaoHoras(inicio, fim) {
+            if (!inicio || !fim) return 0;
+            
+            const minutosInicio = horaParaMinutos(inicio);
+            let minutosFim = horaParaMinutos(fim);
+            
+            // Ajustar para virada de dia
+            if (minutosFim < minutosInicio) {
+                minutosFim += 24 * 60;
+            }
+            
+            const minutosTotais = minutosFim - minutosInicio;
+            return minutosTotais / 60; // Retorna em horas decimais
+        }
+
+        // Função para verificar sobreposição de horários
+        function verificarSobreposicao(data, maquina, inicio, fim, idIgnorar = null) {
+            const novoInicio = horaParaMinutos(inicio);
+            let novoFim = horaParaMinutos(fim);
+            
+            // Ajustar para virada de dia
+            if (novoFim < novoInicio) {
+                novoFim += 24 * 60;
+            }
+            
+            // Filtrar registros da mesma máquina e data
+            const registrosConflitantes = historico.filter(reg => {
+                if (reg.id === idIgnorar) return false; // Ignorar o próprio registro na edição
+                if (reg.date !== data) return false;
+                if (reg.machine !== maquina) return false;
+                
+                const regInicio = horaParaMinutos(reg.inicio);
+                let regFim = horaParaMinutos(reg.fim);
+                
+                if (regFim < regInicio) {
+                    regFim += 24 * 60;
+                }
+                
+                // Verificar sobreposição
+                return (novoInicio < regFim && novoFim > regInicio);
+            });
+            
+            return registrosConflitantes;
+        }
+
+        // Função segura para números
+        function safeNumber(value, defaultValue = 0) {
+            if (value === null || value === undefined || value === '') return defaultValue;
+            const num = Number(value);
+            return !isNaN(num) && isFinite(num) ? num : defaultValue;
+        }
+
+        function horaParaMinutos(hora) {
+            if (!hora) return 0;
+            const [h, m] = hora.split(':').map(Number);
+            return (h || 0) * 60 + (m || 0);
+        }
+
+        function calcularDisponibilidadeOP(inicio, fim, setup, avaria, turno, opsDoTurno) {
+            if (!inicio || !fim) return 0;
+            
+            const minutosInicio = horaParaMinutos(inicio);
+            let minutosFim = horaParaMinutos(fim);
+            
+            if (minutosFim < minutosInicio) {
+                minutosFim += 24 * 60;
+            }
+            
+            const duracaoOP = minutosFim - minutosInicio;
+            if (duracaoOP <= 0) return 0;
+            
+            const tempoSetup = safeNumber(setup);
+            const tempoAvaria = safeNumber(avaria);
+            
+            const tempoProdutivoOP = duracaoOP - tempoSetup - tempoAvaria;
+            
+            if (!opsDoTurno || opsDoTurno.length === 1) {
+                const disponibilidade = (tempoProdutivoOP / duracaoOP) * 100;
+                return Math.min(100, Math.max(0, Math.round(disponibilidade))) || 0;
+            }
+            
+            const turnoInfo = TURNOS[turno];
+            if (!turnoInfo) return 0;
+            
+            let minutosInicioTurno = horaParaMinutos(turnoInfo.inicio);
+            let minutosFimTurno = horaParaMinutos(turnoInfo.fim);
+            
+            if (turno === 'C' && minutosFimTurno < minutosInicioTurno) {
+                minutosFimTurno += 24 * 60;
+            }
+            
+            const duracaoTurno = minutosFimTurno - minutosInicioTurno;
+            if (duracaoTurno <= 0) return 0;
+            
+            const disponibilidade = (tempoProdutivoOP / duracaoTurno) * 100;
+            return Math.min(100, Math.max(0, Math.round(disponibilidade))) || 0;
+        }
+
+        function calcularDisponibilidadeTurno(opsDoTurno) {
+            if (!opsDoTurno || opsDoTurno.length === 0) return 0;
+            
+            const turno = opsDoTurno[0].turno;
+            const turnoInfo = TURNOS[turno];
+            if (!turnoInfo) return 0;
+            
+            let minutosInicioTurno = horaParaMinutos(turnoInfo.inicio);
+            let minutosFimTurno = horaParaMinutos(turnoInfo.fim);
+            
+            if (turno === 'C' && minutosFimTurno < minutosInicioTurno) {
+                minutosFimTurno += 24 * 60;
+            }
+            
+            const duracaoTurno = minutosFimTurno - minutosInicioTurno;
+            if (duracaoTurno <= 0) return 0;
+            
+            let tempoTotalSetup = 0;
+            let tempoTotalAvaria = 0;
+            
+            opsDoTurno.forEach(op => {
+                tempoTotalSetup += safeNumber(op.setup);
+                tempoTotalAvaria += safeNumber(op.avaria);
+            });
+            
+            const tempoPerdas = tempoTotalSetup + tempoTotalAvaria;
+            const disponibilidade = ((duracaoTurno - tempoPerdas) / duracaoTurno) * 100;
+            
+            return Math.min(100, Math.max(0, Math.round(disponibilidade))) || 0;
+        }
+
+        function calcularRealKgH(produzido, inicio, fim) {
+            const prodVal = safeNumber(produzido);
+            if (!inicio || !fim || prodVal <= 0) return 0;
+            
+            const horas = calcularDuracaoHoras(inicio, fim);
+            if (horas <= 0) return 0;
+            
+            return Math.round((prodVal / horas) * 10) / 10;
+        }
+
+        function calcularPerformance(est, realKgH) {
+            const estVal = safeNumber(est);
+            const realVal = safeNumber(realKgH);
+            
+            if (estVal <= 0 || realVal <= 0) return 0;
+            const performance = (realVal / estVal) * 100;
+            return Math.min(100, Math.max(0, Math.round(performance))) || 0;
+        }
+
+        function calcularQualidade(produzido, rejeicao, aparas) {
+            const prodVal = safeNumber(produzido);
+            if (prodVal <= 0) return 0;
+            
+            const rejVal = safeNumber(rejeicao);
+            const apaVal = safeNumber(aparas);
+            
+            const totalBom = prodVal - rejVal - apaVal;
+            if (totalBom < 0) return 0;
+            
+            const qualidade = (totalBom / prodVal) * 100;
+            return Math.min(100, Math.max(0, Math.round(qualidade))) || 0;
+        }
+
+        function calcularOEE(disp, perf, qual) {
+            const d = safeNumber(disp) / 100;
+            const p = safeNumber(perf) / 100;
+            const q = safeNumber(qual) / 100;
+            
+            const oee = d * p * q * 100;
+            return Math.round(oee) || 0;
+        }
+
+        // Função para distribuir proporcionalmente rejeição e aparas
+        function distribuirPerdasProporcionalmente(turnos, rejeicaoTotal, aparasTotal) {
+            if (!turnos || turnos.length === 0) return;
+            
+            // Calcular produção total
+            const producaoTotal = turnos.reduce((sum, t) => sum + (t.produzido || 0), 0);
+            
+            if (producaoTotal <= 0) {
+                // Se não houver produção, distribuir igualmente
+                const rejPorTurno = rejeicaoTotal / turnos.length;
+                const apaPorTurno = aparasTotal / turnos.length;
+                
+                turnos.forEach(t => {
+                    t.rejeicao = rejPorTurno;
+                    t.aparas = apaPorTurno;
+                });
+            } else {
+                // Distribuir proporcionalmente
+                turnos.forEach(t => {
+                    const proporcao = (t.produzido || 0) / producaoTotal;
+                    t.rejeicao = rejeicaoTotal * proporcao;
+                    t.aparas = aparasTotal * proporcao;
+                });
+            }
+        }
+
+        function atualizarPreview() {
+            const inicio = document.getElementById('regInicio')?.value;
+            const fim = document.getElementById('regFim')?.value;
+            const setup = document.getElementById('regSetup')?.value;
+            const avaria = document.getElementById('regAvaria')?.value;
+            const est = document.getElementById('regEst')?.value;
+            const produzido = document.getElementById('regProduzido')?.value;
+            const rejeicao = document.getElementById('regRejeicao')?.value;
+            const aparas = document.getElementById('regAparas')?.value;
+            
+            const dispOP = calcularDisponibilidadeOP(inicio, fim, setup, avaria, document.getElementById('regTurno')?.value, [{}]);
+            const realKgH = calcularRealKgH(produzido, inicio, fim);
+            const perf = calcularPerformance(est, realKgH);
+            const qual = calcularQualidade(produzido, rejeicao, aparas);
+            const oee = calcularOEE(dispOP, perf, qual);
+            
+            document.getElementById('previewDispOP').innerText = dispOP + '%';
+            document.getElementById('previewPerf').innerText = perf + '%';
+            document.getElementById('previewQual').innerText = qual + '%';
+            document.getElementById('previewReal').innerText = realKgH;
+            document.getElementById('previewOEE').innerText = oee + '%';
+            
+            const previewOEE = document.getElementById('previewOEE');
+            if (oee >= 85) previewOEE.className = 'text-3xl font-black text-green-400';
+            else if (oee >= 60) previewOEE.className = 'text-3xl font-black text-yellow-400';
+            else previewOEE.className = 'text-3xl font-black text-red-400';
+        }
+
+        function adicionarPreviewListeners() {
+            const campos = ['regInicio', 'regFim', 'regSetup', 'regAvaria', 'regEst', 'regProduzido', 'regRejeicao', 'regAparas', 'regTurno'];
+            campos.forEach(campoId => {
+                const campo = document.getElementById(campoId);
+                if (campo) {
+                    campo.removeEventListener('input', atualizarPreview);
+                    campo.removeEventListener('change', atualizarPreview);
+                    campo.addEventListener('input', atualizarPreview);
+                    campo.addEventListener('change', atualizarPreview);
+                }
+            });
+        }
+
+        // Função para adicionar turno ao modal
+        function adicionarTurnoModal() {
+            const turno = document.getElementById('regTurno').value;
+            const inicio = document.getElementById('regInicio').value;
+            const fim = document.getElementById('regFim').value;
+            const setup = document.getElementById('regSetup').value;
+            const avaria = document.getElementById('regAvaria').value;
+            const produzido = document.getElementById('regProduzido').value;
+            
+            if (!turno || !inicio || !fim) {
+                showErrorToast('Preencha os dados do turno antes de adicionar!');
+                return;
+            }
+            
+            // Verificar se já existe este turno na lista
+            const turnoExistente = turnosTemp.find(t => t.turno === turno);
+            if (turnoExistente) {
+                showErrorToast('Este turno já foi adicionado!');
+                return;
+            }
+            
+            turnosTemp.push({
+                turno,
+                inicio,
+                fim,
+                setup: safeNumber(setup),
+                avaria: safeNumber(avaria),
+                produzido: safeNumber(produzido)
+            });
+            
+            atualizarListaTurnos();
+            
+            // Limpar campos para o próximo turno
+            document.getElementById('regTurno').value = '';
+            document.getElementById('regInicio').value = '';
+            document.getElementById('regFim').value = '';
+            document.getElementById('regSetup').value = '0';
+            document.getElementById('regAvaria').value = '0';
+            document.getElementById('regProduzido').value = '0';
+        }
+
+        function atualizarListaTurnos() {
+            const container = document.getElementById('turnos-lista');
+            container.innerHTML = '';
+            
+            turnosTemp.forEach((turno, index) => {
+                const duracao = calcularDuracaoHoras(turno.inicio, turno.fim).toFixed(1);
+                container.innerHTML += `
+                    <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-blue-200">
+                        <div>
+                            <span class="font-bold text-sm">Turno ${turno.turno}</span>
+                            <span class="text-xs ml-2 text-slate-500">${turno.inicio} - ${turno.fim} (${duracao}h)</span>
+                            <span class="text-xs ml-2 font-medium">Prod: ${turno.produzido} kg</span>
+                        </div>
+                        <button type="button" onclick="removerTurno(${index})" class="text-red-500 hover:text-red-700">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function removerTurno(index) {
+            turnosTemp.splice(index, 1);
+            atualizarListaTurnos();
+        }
+
+        function capturarDashboard() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const periodInfo = document.getElementById('printPeriodInfo');
+            
+            periodInfo.innerHTML = `PERÍODO: ${startDate ? startDate.split('-').reverse().join('/') : '---'} até ${endDate ? endDate.split('-').reverse().join('/') : '---'}`;
+            periodInfo.style.display = 'block';
+            periodInfo.classList.add('print-visible');
+            
+            const element = document.getElementById('dashboard-content');
+            html2canvas(element, {
+                scale: 2,
+                backgroundColor: '#ffffff',
+                logging: false,
+                allowTaint: true,
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `relatorio-oee-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                periodInfo.style.display = 'none';
+                periodInfo.classList.remove('print-visible');
+                showToast('📸 Relatório capturado com sucesso!');
+            }).catch(error => {
+                console.error('Erro ao capturar:', error);
+                alert('Erro ao capturar relatório. Tente novamente.');
+                periodInfo.style.display = 'none';
+                periodInfo.classList.remove('print-visible');
+            });
+        }
+
+        function showToast(mensagem) {
+            const toast = document.getElementById("toast");
+            toast.innerHTML = "✅ " + mensagem;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        function openEditModal(id) {
+            const registro = historico.find(h => h.id === id);
+            if (!registro) return;
+            
+            document.getElementById('editId').value = registro.id;
+            document.getElementById('editDate').value = registro.date;
+            document.getElementById('editMachine').value = registro.machine;
+            document.getElementById('editTurno').value = registro.turno;
+            document.getElementById('editOP').value = registro.op || '';
+            document.getElementById('editPedido').value = registro.pedido || 0;
+            document.getElementById('editProduto').value = registro.produto || '';
+            document.getElementById('editInicio').value = registro.inicio || '06:00';
+            document.getElementById('editFim').value = registro.fim || '14:00';
+            document.getElementById('editSetup').value = registro.setup || 0;
+            document.getElementById('editAvaria').value = registro.avaria || 0;
+            document.getElementById('editMotivoPerda').value = registro.motivoPerda || '';
+            document.getElementById('editEst').value = registro.est || 90;
+            document.getElementById('editProduzido').value = registro.produzido || 0;
+            document.getElementById('editRejeicao').value = registro.rejeicao || 0;
+            document.getElementById('editAparas').value = registro.aparas || 0;
+            
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        async function salvarEdicao() {
+            const id = parseInt(document.getElementById('editId').value);
+            const index = historico.findIndex(h => h.id === id);
+            
+            if (index === -1) return;
+            
+            const date = document.getElementById('editDate').value;
+            const machine = document.getElementById('editMachine').value;
+            const turno = document.getElementById('editTurno').value;
+            const op = document.getElementById('editOP').value;
+            const produto = document.getElementById('editProduto').value;
+            const pedido = safeNumber(document.getElementById('editPedido').value);
+            const inicio = document.getElementById('editInicio').value;
+            const fim = document.getElementById('editFim').value;
+            const setup = safeNumber(document.getElementById('editSetup').value);
+            const avaria = safeNumber(document.getElementById('editAvaria').value);
+            const motivoPerda = document.getElementById('editMotivoPerda').value;
+            const est = safeNumber(document.getElementById('editEst').value);
+            const produzido = safeNumber(document.getElementById('editProduzido').value);
+            const rejeicao = safeNumber(document.getElementById('editRejeicao').value);
+            const aparas = safeNumber(document.getElementById('editAparas').value);
+            
+            // Verificar sobreposição de horários
+            const conflitos = verificarSobreposicao(date, machine, inicio, fim, id);
+            if (conflitos.length > 0) {
+                const conflito = conflitos[0];
+                showErrorToast(`Conflito de horário! Já existe um pedido (${conflito.op}) das ${conflito.inicio} às ${conflito.fim} na máquina ${machine}.`);
+                return;
+            }
+            
+            const realKgH = calcularRealKgH(produzido, inicio, fim);
+            const perf = calcularPerformance(est, realKgH);
+            const qual = calcularQualidade(produzido, rejeicao, aparas);
+            
+            const produtoInfo = produtos.find(p => p.displayName === produto) || { cliente: '' };
+            
+            const registroAtualizado = {
+                ...historico[index],
+                date, machine, turno, op, produto, pedido,
+                cliente: produtoInfo.cliente,
+                inicio, fim, setup, avaria, motivoPerda,
+                est, realKgH, produzido, rejeicao, aparas,
+                perf, qual,
+                disp: 0
+            };
+            
+            historico[index] = registroAtualizado;
+            
+            // Atualizar no Supabase
+            await atualizarRegistro(id, registroAtualizado);
+            
+            recalcularDisponibilidadesTurno(date, machine, turno);
+            
+            closeEditModal();
+            filterByRange();
+            showToast('Registro atualizado com sucesso!');
+        }
+
+        function openClientModal() {
+            atualizarSelectClientesProduto();
+            atualizarListaClientesProdutos();
+            document.getElementById('clientModal').style.display = 'flex';
+        }
+
+        function closeClientModal() {
+            document.getElementById('clientModal').style.display = 'none';
+        }
+
+        function adicionarCliente() {
+            const novoCliente = document.getElementById('novoCliente').value.trim();
+            if (novoCliente) {
+                if (clientes.includes(novoCliente)) {
+                    showErrorToast('Cliente já existe!');
+                    return;
+                }
+                clientes.push(novoCliente);
+                atualizarSelectClientesProduto();
+                atualizarListaClientesProdutos();
+                document.getElementById('novoCliente').value = '';
+                showToast('Cliente adicionado com sucesso!');
+            } else {
+                alert('Digite o nome do cliente!');
+            }
+        }
+
+        function adicionarProduto() {
+            const cliente = document.getElementById('produtoCliente').value;
+            const produto = document.getElementById('novoProduto').value.trim();
+            const est = safeNumber(document.getElementById('produtoEst').value);
+            
+            if (!cliente) {
+                alert('Selecione um cliente!');
+                return;
+            }
+            if (!produto) {
+                alert('Digite o nome do produto!');
+                return;
+            }
+            if (est <= 0) {
+                alert('Digite um valor válido para kg/h estimado!');
+                return;
+            }
+            
+            const produtoCompleto = `${cliente} - ${produto} (${est} kg/h)`;
+            
+            // Verificar se o produto já existe para este cliente
+            const produtoExistente = produtos.find(p => 
+                p.cliente === cliente && p.nome.toLowerCase() === produto.toLowerCase()
+            );
+            
+            if (produtoExistente) {
+                showErrorToast('Este produto já existe para este cliente!');
+                return;
+            }
+            
+            produtos.push({
+                cliente: cliente,
+                nome: produto,
+                est: est,
+                displayName: produtoCompleto
+            });
+            
+            atualizarSelectClientesProduto();
+            atualizarListaClientesProdutos();
+            document.getElementById('novoProduto').value = '';
+            document.getElementById('produtoEst').value = '';
+            showToast('Produto adicionado com sucesso!');
+        }
+
+        function removerCliente(cliente) {
+            if (confirm(`Deseja remover o cliente "${cliente}" e todos os seus produtos?`)) {
+                clientes = clientes.filter(c => c !== cliente);
+                produtos = produtos.filter(p => p.cliente !== cliente);
+                atualizarSelectClientesProduto();
+                atualizarListaClientesProdutos();
+                showToast('Cliente removido com sucesso!');
+            }
+        }
+
+        function removerProduto(produtoNome) {
+            if (confirm(`Deseja remover o produto "${produtoNome}"?`)) {
+                produtos = produtos.filter(p => p.nome !== produtoNome);
+                atualizarSelectClientesProduto();
+                atualizarListaClientesProdutos();
+                showToast('Produto removido com sucesso!');
+            }
+        }
+
+        function atualizarSelectClientesProduto() {
+            const selectCliente = document.getElementById('produtoCliente');
+            const selectReg = document.getElementById('regProduto');
+            const selectEdit = document.getElementById('editProduto');
+            const selectClientFilter = document.getElementById('clientSelect');
+            
+            if (selectCliente) {
+                selectCliente.innerHTML = '<option value="">Selecionar cliente...</option>';
+                clientes.forEach(cliente => {
+                    selectCliente.innerHTML += `<option value="${cliente}">${cliente}</option>`;
+                });
+            }
+            
+            if (selectReg) {
+                selectReg.innerHTML = '<option value="">Selecionar cliente/produto...</option>';
+                produtos.forEach((p, index) => {
+                    const produtoNum = (index % 8) + 1;
+                    selectReg.innerHTML += `<option value="${p.displayName}" data-cliente="${p.cliente}" data-est="${p.est}" class="product-option product-${produtoNum}">${p.displayName}</option>`;
+                });
+            }
+            
+            if (selectEdit) {
+                selectEdit.innerHTML = '<option value="">Selecionar cliente/produto...</option>';
+                produtos.forEach(p => {
+                    selectEdit.innerHTML += `<option value="${p.displayName}">${p.displayName}</option>`;
+                });
+            }
+            
+            if (selectClientFilter) {
+                selectClientFilter.innerHTML = '<option value="ALL">TODOS OS CLIENTES</option>';
+                clientes.forEach(cliente => {
+                    selectClientFilter.innerHTML += `<option value="${cliente}">${cliente}</option>`;
+                });
+            }
+        }
+
+        function atualizarListaClientesProdutos() {
+            const tbody = document.getElementById('clientes-produtos-list');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            clientes.forEach(cliente => {
+                const produtosCliente = produtos.filter(p => p.cliente === cliente);
+                let produtosHTML = '<div class="flex flex-col gap-1">';
+                
+                produtosCliente.forEach((p, idx) => {
+                    const produtoNum = (produtos.indexOf(p) % 8) + 1;
+                    produtosHTML += `
+                        <div class="flex items-center justify-between bg-slate-50 p-2 rounded">
+                            <span class="product-badge product-${produtoNum}">${p.nome}</span>
+                            <span class="text-sm font-bold">${p.est} kg/h</span>
+                            <button onclick="removerProduto('${p.nome}')" class="text-red-500 hover:text-red-700 ml-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                produtosHTML += '</div>';
+                
+                tbody.innerHTML += `
+                    <tr class="border-t">
+                        <td class="p-4 font-bold align-top">${cliente}</td>
+                        <td class="p-4">${produtosHTML}</td>
+                        <td class="p-4 text-center align-top">
+                            <button onclick="removerCliente('${cliente}')" class="text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.addEventListener('change', function(e) {
+            if (e.target.id === 'regProduto') {
+                const selectedOption = e.target.options[e.target.selectedIndex];
+                const est = selectedOption.getAttribute('data-est');
+                if (est) {
+                    document.getElementById('regEst').value = est;
+                }
+            }
+        });
+
+        async function calcularESalvar() {
+            const date = document.getElementById('regDate').value;
+            const machine = document.getElementById('regMachine').value;
+            const op = document.getElementById('regOP').value;
+            const produtoDisplay = document.getElementById('regProduto').value;
+            const pedido = safeNumber(document.getElementById('regPedido').value);
+            const rejeicaoTotal = safeNumber(document.getElementById('regRejeicao').value);
+            const aparasTotal = safeNumber(document.getElementById('regAparas').value);
+            
+            if (!date || !machine || !op || !produtoDisplay) {
+                alert('Por favor, preencha todos os campos obrigatórios!');
+                return;
+            }
+            
+            const produtoInfo = produtos.find(p => p.displayName === produtoDisplay);
+            if (!produtoInfo) return;
+            
+            const est = safeNumber(document.getElementById('regEst').value) || produtoInfo.est;
+            
+            // Se não houver múltiplos turnos, usar o turno único
+            if (turnosTemp.length === 0) {
+                const turno = document.getElementById('regTurno').value;
+                const inicio = document.getElementById('regInicio').value;
+                const fim = document.getElementById('regFim').value;
+                
+                if (!turno || !inicio || !fim) {
+                    alert('Por favor, preencha os dados do turno!');
+                    return;
+                }
+                
+                // Verificar sobreposição de horários
+                const conflitos = verificarSobreposicao(date, machine, inicio, fim);
+                if (conflitos.length > 0) {
+                    const conflito = conflitos[0];
+                    showErrorToast(`Conflito de horário! Já existe um pedido (${conflito.op}) das ${conflito.inicio} às ${conflito.fim} na máquina ${machine}.`);
+                    return;
+                }
+                
+                const setup = safeNumber(document.getElementById('regSetup').value);
+                const avaria = safeNumber(document.getElementById('regAvaria').value);
+                const motivoPerda = document.getElementById('regMotivoPerda').value;
+                const produzido = safeNumber(document.getElementById('regProduzido').value);
+                
+                const realKgH = calcularRealKgH(produzido, inicio, fim);
+                const perf = calcularPerformance(est, realKgH);
+                const qual = calcularQualidade(produzido, rejeicaoTotal, aparasTotal);
+                
+                const novoRegistro = {
+                    id: Date.now(),
+                    date: date,
+                    machine: machine,
+                    turno: turno,
+                    op: op,
+                    produto: produtoDisplay,
+                    cliente: produtoInfo.cliente,
+                    disp: 0,
+                    perf: perf,
+                    qual: qual,
+                    pedido: pedido,
+                    inicio: inicio,
+                    fim: fim,
+                    setup: setup,
+                    avaria: avaria,
+                    motivoPerda: motivoPerda,
+                    est: est,
+                    realKgH: realKgH,
+                    produzido: produzido,
+                    rejeicao: rejeicaoTotal,
+                    aparas: aparasTotal,
+                    timestamp: new Date().toISOString()
+                };
+                
+                historico.push(novoRegistro);
+                
+                // Inserir no Supabase automaticamente
+                await inserirRegistro(novoRegistro);
+                
+                recalcularDisponibilidadesTurno(date, machine, turno);
+            } else {
+                // Processar múltiplos turnos
+                const motivoPerda = document.getElementById('regMotivoPerda').value;
+                
+                // Verificar sobreposições para todos os turnos
+                for (const turno of turnosTemp) {
+                    const conflitos = verificarSobreposicao(date, machine, turno.inicio, turno.fim);
+                    if (conflitos.length > 0) {
+                        const conflito = conflitos[0];
+                        showErrorToast(`Conflito de horário no Turno ${turno.turno}! Já existe um pedido (${conflito.op}) das ${conflito.inicio} às ${conflito.fim} na máquina ${machine}.`);
+                        return;
+                    }
+                }
+                
+                // Distribuir rejeição e aparas proporcionalmente
+                distribuirPerdasProporcionalmente(turnosTemp, rejeicaoTotal, aparasTotal);
+                
+                // Criar registros para cada turno
+                for (let i = 0; i < turnosTemp.length; i++) {
+                    const turno = turnosTemp[i];
+                    const realKgH = calcularRealKgH(turno.produzido, turno.inicio, turno.fim);
+                    const perf = calcularPerformance(est, realKgH);
+                    const qual = calcularQualidade(turno.produzido, turno.rejeicao, turno.aparas);
+                    
+                    const novoRegistro = {
+                        id: Date.now() + i,
+                        date: date,
+                        machine: machine,
+                        turno: turno.turno,
+                        op: op,
+                        produto: produtoDisplay,
+                        cliente: produtoInfo.cliente,
+                        disp: 0,
+                        perf: perf,
+                        qual: qual,
+                        pedido: pedido,
+                        inicio: turno.inicio,
+                        fim: turno.fim,
+                        setup: turno.setup,
+                        avaria: turno.avaria,
+                        motivoPerda: motivoPerda,
+                        est: est,
+                        realKgH: realKgH,
+                        produzido: turno.produzido,
+                        rejeicao: turno.rejeicao,
+                        aparas: turno.aparas,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    historico.push(novoRegistro);
+                    
+                    // Inserir no Supabase automaticamente
+                    await inserirRegistro(novoRegistro);
+                }
+                
+                // Recalcular disponibilidades para cada turno
+                turnosTemp.forEach(turno => {
+                    recalcularDisponibilidadesTurno(date, machine, turno.turno);
+                });
+            }
+            
+            showToast('Dados salvos com sucesso!');
+            
+            // Limpar formulário
+            document.getElementById('regForm').reset();
+            turnosTemp = [];
+            atualizarListaTurnos();
+            closeModal();
+            filterByRange();
+        }
+
+        function recalcularDisponibilidadesTurno(data, maquina, turno) {
+            const opsDoTurno = historico.filter(h => 
+                h.date === data && 
+                h.machine === maquina && 
+                h.turno === turno
+            ).sort((a, b) => {
+                return horaParaMinutos(a.inicio) - horaParaMinutos(b.inicio);
+            });
+            
+            if (opsDoTurno.length === 0) return;
+            
+            const dispTurno = calcularDisponibilidadeTurno(opsDoTurno);
+            
+            opsDoTurno.forEach(op => {
+                op.disp = calcularDisponibilidadeOP(
+                    op.inicio, 
+                    op.fim, 
+                    op.setup, 
+                    op.avaria,
+                    op.turno,
+                    opsDoTurno
+                );
+                op.dispTurno = dispTurno;
+            });
+        }
+
+        // Função salvarDadosManual REMOVIDA - não é mais necessária
+
+        async function carregarDados() {
+            // Carregar clientes e produtos do localStorage (para manter personalizações)
+            const clientesSalvos = localStorage.getItem('lusitano_clientes');
+            const produtosSalvos = localStorage.getItem('lusitano_produtos');
+            
+            if (clientesSalvos) {
+                try {
+                    clientes = JSON.parse(clientesSalvos);
+                } catch (e) {
+                    console.error('Erro ao carregar clientes:', e);
+                }
+            }
+            
+            if (produtosSalvos) {
+                try {
+                    produtos = JSON.parse(produtosSalvos);
+                } catch (e) {
+                    console.error('Erro ao carregar produtos:', e);
+                }
+            }
+            
+            // Carregar registros do Supabase (SEM dados de teste)
+            const registrosBanco = await listarRegistros();
+            
+            if (registrosBanco && registrosBanco.length > 0) {
+                historico = registrosBanco;
+                console.log(`Carregados ${historico.length} registros do banco`);
+            } else {
+                // Se não houver registros no banco, começar com array vazio
+                historico = [];
+                console.log("Nenhum registro encontrado no banco");
+            }
+            
+            // Validar dados
+            historico = historico.map(reg => ({
+                ...reg,
+                disp: safeNumber(reg.disp),
+                perf: safeNumber(reg.perf),
+                qual: safeNumber(reg.qual),
+                setup: safeNumber(reg.setup),
+                avaria: safeNumber(reg.avaria),
+                produzido: safeNumber(reg.produzido),
+                est: safeNumber(reg.est),
+                realKgH: safeNumber(reg.realKgH)
+            }));
+            
+            const grupos = {};
+            historico.forEach(reg => {
+                const key = `${reg.date}-${reg.machine}-${reg.turno}`;
+                if (!grupos[key]) grupos[key] = [];
+                grupos[key].push(reg);
+            });
+            
+            Object.values(grupos).forEach(grupo => {
+                if (grupo.length > 0) {
+                    const dispTurno = calcularDisponibilidadeTurno(grupo);
+                    grupo.forEach(op => {
+                        op.disp = calcularDisponibilidadeOP(
+                            op.inicio, 
+                            op.fim, 
+                            op.setup, 
+                            op.avaria,
+                            op.turno,
+                            grupo
+                        );
+                        op.dispTurno = dispTurno;
+                    });
+                }
+            });
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            document.querySelectorAll('.nav-tab-item').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + viewId).classList.add('active');
+            
+            filterByRange();
+        }
+
+        function openModal() { 
+            document.getElementById('regForm').reset();
+            turnosTemp = [];
+            atualizarListaTurnos();
+            
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('regDate').value = hoje;
+            
+            document.getElementById('regInicio').value = '06:00';
+            document.getElementById('regFim').value = '14:00';
+            document.getElementById('regSetup').value = '0';
+            document.getElementById('regAvaria').value = '0';
+            document.getElementById('regEst').value = '90';
+            document.getElementById('regProduzido').value = '0';
+            document.getElementById('regRejeicao').value = '0';
+            document.getElementById('regAparas').value = '0';
+            document.getElementById('regPedido').value = '0';
+            
+            atualizarSelectClientesProduto();
+            adicionarPreviewListeners();
+            atualizarPreview();
+            
+            document.getElementById('modal').style.display = 'flex'; 
+        }
+        
+        function closeModal() { 
+            document.getElementById('modal').style.display = 'none'; 
+        }
+
+        async function apagarRegistro(id) {
+            if(confirm("Deseja apagar este registo permanentemente?")) {
+                // Apagar do Supabase
+                const apagado = await apagarRegistroBanco(id);
+                
+                if (apagado) {
+                    historico = historico.filter(h => h.id !== id);
+                    filterByRange();
+                    showToast('Registro apagado!');
+                }
+            }
+        }
+
+        function filterToday() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').value = today;
+            document.getElementById('endDate').value = today;
+            setActiveButton('btnToday');
+            filterByRange();
+        }
+
+        function filterWeek() {
+            const end = new Date().toISOString().split('T')[0];
+            const start = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            document.getElementById('startDate').value = start;
+            document.getElementById('endDate').value = end;
+            setActiveButton('btnWeek');
+            filterByRange();
+        }
+
+        function filterMonth() {
+            const end = new Date().toISOString().split('T')[0];
+            const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+            document.getElementById('startDate').value = start;
+            document.getElementById('endDate').value = end;
+            setActiveButton('btnMonth');
+            filterByRange();
+        }
+
+        function setActiveButton(id) {
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function searchClient() {
+            const searchTerm = document.getElementById('clientSearchInput').value.trim().toLowerCase();
+            if (searchTerm) {
+                const select = document.getElementById('clientSelect');
+                let found = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value.toLowerCase().includes(searchTerm)) {
+                        select.value = select.options[i].value;
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    filterByRange();
+                    showToast(`🔍 Cliente encontrado: ${select.value}`);
+                } else {
+                    alert('Cliente não encontrado!');
+                }
+            }
+        }
+
+        function filterByRange() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            let filtered = historico;
+            
+            if(start && end) {
+                filtered = historico.filter(h => h.date >= start && h.date <= end);
+            }
+            
+            const machineFilter = document.getElementById('machineSelect')?.value;
+            if (machineFilter && machineFilter !== 'ALL') {
+                filtered = filtered.filter(d => d.machine === machineFilter);
+            }
+            
+            const clientFilter = document.getElementById('clientSelect')?.value;
+            if (clientFilter && clientFilter !== 'ALL') {
+                filtered = filtered.filter(d => d.cliente === clientFilter);
+            }
+            
+            renderData(filtered);
+            renderPerdasChart(filtered);
+            
+            const activeView = document.querySelector('.view-content.active').id.replace('view-', '');
+            switch(activeView) {
+                case 'efficiency':
+                    renderEfficiencyView(filtered);
+                    break;
+                case 'op':
+                    renderOPView(filtered);
+                    break;
+                case 'history':
+                    renderHistoryView(filtered);
+                    break;
+                case 'clients':
+                    renderClientsView(filtered);
+                    break;
+                case 'perdas':
+                    renderPerdasView(filtered);
+                    break;
+            }
+            
+            const periodInfo = document.getElementById('printPeriodInfo');
+            if (start && end) {
+                periodInfo.innerHTML = `PERÍODO: ${start.split('-').reverse().join('/')} até ${end.split('-').reverse().join('/')}`;
+            }
+        }
+
+        function renderData(data) {
+            const grid = document.getElementById('machine-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            let machinesMetrics = [];
+            
+            ['M1', 'M2', 'M3'].forEach(mId => {
+                const machineData = data.filter(d => d.machine === mId);
+                let avg = { disp: 0, perf: 0, qual: 0, oee: 0 };
+                
+                if(machineData.length > 0) {
+                    let totalDisp = 0, totalPerf = 0, totalQual = 0;
+                    let countDisp = 0, countPerf = 0, countQual = 0;
+                    
+                    machineData.forEach(d => {
+                        if (d.disp > 0) {
+                            totalDisp += d.disp;
+                            countDisp++;
+                        }
+                        if (d.perf > 0) {
+                            totalPerf += d.perf;
+                            countPerf++;
+                        }
+                        if (d.qual > 0) {
+                            totalQual += d.qual;
+                            countQual++;
+                        }
+                    });
+                    
+                    avg.disp = countDisp > 0 ? Math.round(totalDisp / countDisp) : 0;
+                    avg.perf = countPerf > 0 ? Math.round(totalPerf / countPerf) : 0;
+                    avg.qual = countQual > 0 ? Math.round(totalQual / countQual) : 0;
+                    avg.oee = calcularOEE(avg.disp, avg.perf, avg.qual);
+                }
+                
+                machinesMetrics.push({ id: mId, ...avg });
+                
+                const oeeDisplay = avg.oee || 0;
+                const dispDisplay = avg.disp || 0;
+                const perfDisplay = avg.perf || 0;
+                const qualDisplay = avg.qual || 0;
+                
+                const atingida = oeeDisplay >= META;
+                
+                grid.innerHTML += `
+                    <div class="card-machine">
+                        <div class="header-row">
+                            <p class="title">${mId}</p>
+                        </div>
+                        <div class="oee-container">
+                            <span class="oee-number ${atingida ? 'text-green-700' : 'text-red-700'}">${oeeDisplay}%</span>
+                            <span class="meta-indicator ${atingida ? 'atingida' : 'nao-atingida'}">
+                                ${atingida ? '✓ META' : '✗ META'}
+                            </span>
+                        </div>
+                        <div class="space-y-3">
+                            ${renderBar('DISP', dispDisplay)}
+                            ${renderBar('PERF', perfDisplay)}
+                            ${renderBar('QUAL', qualDisplay)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            const validMachines = machinesMetrics.filter(m => m.oee > 0);
+            const topMachine = validMachines.length > 0 
+                ? validMachines.sort((a,b) => b.oee - a.oee)[0] 
+                : { id: '--', oee: 0 };
+            
+            let global = { disp: 0, perf: 0, qual: 0 };
+            let globalCount = 0;
+            
+            if(data.length > 0) {
+                data.forEach(d => {
+                    global.disp += d.disp || 0;
+                    global.perf += d.perf || 0;
+                    global.qual += d.qual || 0;
+                });
+                globalCount = data.length;
+                
+                global.disp = globalCount > 0 ? global.disp / globalCount : 0;
+                global.perf = globalCount > 0 ? global.perf / globalCount : 0;
+                global.qual = globalCount > 0 ? global.qual / globalCount : 0;
+            }
+            
+            const globalOee = calcularOEE(global.disp, global.perf, global.qual);
+
+            document.getElementById('topMachineName').innerText = topMachine.id;
+            document.getElementById('topMachineValue').innerText = (topMachine.oee > 0 ? topMachine.oee : 0) + '%';
+            
+            const globalLabel = document.getElementById('avgGlobalOee');
+            globalLabel.innerText = globalOee + '%';
+            globalLabel.className = `text-3xl font-black ${globalOee >= META ? 'text-green-600' : 'text-red-600'}`;
+            
+            document.getElementById('totalReg').innerText = data.length;
+            
+            updateCharts(data, machinesMetrics);
+        }
+
+        function renderBar(label, val) {
+            const safeVal = !isNaN(val) && val !== null ? Math.min(100, Math.max(0, val)) : 0;
+            
+            return `
+                <div>
+                    <div class="flex justify-between text-[9px] font-bold uppercase text-slate-400 mb-1">
+                        <span>${label}</span>
+                        <span>${safeVal}%</span>
+                    </div>
+                    <div class="h-1 bg-slate-100 rounded-full">
+                        <div class="h-full bg-slate-400 rounded-full" style="width: ${safeVal}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPerdasChart(data) {
+            const perdasPorMaquina = {
+                'M1': 0,
+                'M2': 0,
+                'M3': 0
+            };
+            
+            data.forEach(reg => {
+                if (reg.machine && perdasPorMaquina.hasOwnProperty(reg.machine)) {
+                    perdasPorMaquina[reg.machine] += (reg.setup || 0) + (reg.avaria || 0);
+                }
+            });
+            
+            const ctx = document.getElementById('perdasMaquinaChart')?.getContext('2d');
+            if (!ctx) return;
+            
+            if (perdasMaquinaChart) perdasMaquinaChart.destroy();
+            
+            perdasMaquinaChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['M1', 'M2', 'M3'],
+                    datasets: [{
+                        label: 'Perdas (minutos)',
+                        data: [perdasPorMaquina.M1, perdasPorMaquina.M2, perdasPorMaquina.M3],
+                        backgroundColor: ['#005a2b', '#c4121a', '#FFD700']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (val) => val + ' min',
+                            font: { weight: 'bold', size: 10 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Minutos'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderPerdasView(data) {
+            // Calcular totais por máquina
+            const perdasPorMaquina = {
+                'M1': 0,
+                'M2': 0,
+                'M3': 0
+            };
+            
+            // Calcular totais por motivo
+            const perdasPorMotivo = {};
+            
+            // Calcular perdas por dia
+            const perdasPorDia = {};
+            
+            data.forEach(reg => {
+                const totalPerda = (reg.setup || 0) + (reg.avaria || 0);
+                
+                // Por máquina
+                if (reg.machine && perdasPorMaquina.hasOwnProperty(reg.machine)) {
+                    perdasPorMaquina[reg.machine] += totalPerda;
+                }
+                
+                // Por motivo
+                if (reg.motivoPerda && reg.motivoPerda !== '') {
+                    if (!perdasPorMotivo[reg.motivoPerda]) {
+                        perdasPorMotivo[reg.motivoPerda] = 0;
+                    }
+                    perdasPorMotivo[reg.motivoPerda] += totalPerda;
+                }
+                
+                // Por dia
+                if (reg.date) {
+                    if (!perdasPorDia[reg.date]) {
+                        perdasPorDia[reg.date] = 0;
+                    }
+                    perdasPorDia[reg.date] += totalPerda;
+                }
+            });
+            
+            // Encontrar máquina com mais perdas
+            let topMaquina = '--';
+            let topMaquinaValor = 0;
+            Object.entries(perdasPorMaquina).forEach(([maq, val]) => {
+                if (val > topMaquinaValor) {
+                    topMaquinaValor = val;
+                    topMaquina = maq;
+                }
+            });
+            
+            document.getElementById('topMaquinaNome').innerText = topMaquina;
+            document.getElementById('topMaquinaMinutos').innerText = topMaquinaValor + ' min';
+            
+            // Encontrar principal motivo
+            let topMotivo = '--';
+            let topMotivoValor = 0;
+            Object.entries(perdasPorMotivo).forEach(([mot, val]) => {
+                if (val > topMotivoValor) {
+                    topMotivoValor = val;
+                    topMotivo = mot;
+                }
+            });
+            
+            document.getElementById('topMotivoNome').innerText = topMotivo;
+            document.getElementById('topMotivoMinutos').innerText = topMotivoValor + ' min';
+            
+            // Encontrar dia com maior perda
+            let topDia = '--';
+            let topDiaValor = 0;
+            Object.entries(perdasPorDia).forEach(([dia, val]) => {
+                if (val > topDiaValor) {
+                    topDiaValor = val;
+                    topDia = dia.split('-').reverse().join('/');
+                }
+            });
+            
+            document.getElementById('topDiaData').innerText = topDia;
+            document.getElementById('topDiaMinutos').innerText = topDiaValor + ' min';
+            
+            // Gráfico de perdas por máquina (detalhe)
+            const ctxMaq = document.getElementById('perdasMaquinaDetalheChart')?.getContext('2d');
+            if (ctxMaq) {
+                if (perdasMaquinaDetalheChart) perdasMaquinaDetalheChart.destroy();
+                
+                perdasMaquinaDetalheChart = new Chart(ctxMaq, {
+                    type: 'bar',
+                    data: {
+                        labels: ['M1', 'M2', 'M3'],
+                        datasets: [{
+                            label: 'Setup',
+                            data: [
+                                data.filter(r => r.machine === 'M1').reduce((s, r) => s + (r.setup || 0), 0),
+                                data.filter(r => r.machine === 'M2').reduce((s, r) => s + (r.setup || 0), 0),
+                                data.filter(r => r.machine === 'M3').reduce((s, r) => s + (r.setup || 0), 0)
+                            ],
+                            backgroundColor: '#f59e0b'
+                        }, {
+                            label: 'Paradas',
+                            data: [
+                                data.filter(r => r.machine === 'M1').reduce((s, r) => s + (r.avaria || 0), 0),
+                                data.filter(r => r.machine === 'M2').reduce((s, r) => s + (r.avaria || 0), 0),
+                                data.filter(r => r.machine === 'M3').reduce((s, r) => s + (r.avaria || 0), 0)
+                            ],
+                            backgroundColor: '#ef4444'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                formatter: (val) => val + ' min',
+                                font: { weight: 'bold', size: 10 }
+                            }
+                        },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+            
+            // Gráfico de perdas por motivo
+            const ctxMot = document.getElementById('perdasMotivoChart')?.getContext('2d');
+            if (ctxMot) {
+                const motivos = Object.keys(perdasPorMotivo);
+                const valores = Object.values(perdasPorMotivo);
+                
+                if (perdasMotivoChart) perdasMotivoChart.destroy();
+                
+                perdasMotivoChart = new Chart(ctxMot, {
+                    type: 'pie',
+                    data: {
+                        labels: motivos,
+                        datasets: [{
+                            data: valores,
+                            backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#10b981', '#64748b']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            datalabels: {
+                                color: '#fff',
+                                font: { weight: 'bold', size: 10 },
+                                formatter: (val, ctx) => {
+                                    return val + ' min';
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Gráfico de evolução diária
+            const ctxEvol = document.getElementById('perdasEvolucaoChart')?.getContext('2d');
+            if (ctxEvol) {
+                const datas = Object.keys(perdasPorDia).sort();
+                const valoresEvol = datas.map(d => perdasPorDia[d]);
+                
+                if (perdasEvolucaoChart) perdasEvolucaoChart.destroy();
+                
+                perdasEvolucaoChart = new Chart(ctxEvol, {
+                    type: 'line',
+                    data: {
+                        labels: datas.map(d => d.split('-').reverse().join('/')),
+                        datasets: [{
+                            label: 'Perdas Totais (min)',
+                            data: valoresEvol,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            datalabels: { display: false }
+                        }
+                    }
+                });
+            }
+            
+            // Tabela detalhada - SÓ MOSTRA REGISTROS COM PERDA
+            const tbody = document.getElementById('perdas-detail-rows');
+            tbody.innerHTML = '';
+            
+            data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(reg => {
+                const totalPerda = (reg.setup || 0) + (reg.avaria || 0);
+                
+                // SÓ MOSTRAR SE TIVER PERDA (totalPerda > 0)
+                if (totalPerda > 0) {
+                    const motivoClass = reg.motivoPerda ? `perda-${reg.motivoPerda.toLowerCase().replace(/ /g, '-')}` : '';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="py-2">${reg.date.split('-').reverse().join('/')}</td>
+                            <td class="py-2">${reg.machine}</td>
+                            <td class="py-2">${reg.turno}</td>
+                            <td class="py-2">${reg.op}</td>
+                            <td class="py-2">${reg.produto || '-'}</td>
+                            <td class="py-2 text-center">${reg.setup || 0}</td>
+                            <td class="py-2 text-center">${reg.avaria || 0}</td>
+                            <td class="py-2 text-center font-bold text-red-600">${totalPerda}</td>
+                            <td class="py-2"><span class="perda-badge ${motivoClass}">${reg.motivoPerda || '-'}</span></td>
+                        </tr>
+                    `;
+                }
+            });
+        }
+
+        function updateCharts(data, machineAvg) {
+            const trendCtx = document.getElementById('weeklyChart').getContext('2d');
+            const dates = [...new Set(data.map(d => d.date))].sort();
+            const trendValues = dates.map(d => {
+                const dayData = data.filter(h => h.date === d);
+                let dAvg = { disp: 0, perf: 0, qual: 0 };
+                dayData.forEach(h => { 
+                    dAvg.disp += h.disp || 0; 
+                    dAvg.perf += h.perf || 0; 
+                    dAvg.qual += h.qual || 0; 
+                });
+                dAvg.disp = dayData.length > 0 ? dAvg.disp / dayData.length : 0;
+                dAvg.perf = dayData.length > 0 ? dAvg.perf / dayData.length : 0;
+                dAvg.qual = dayData.length > 0 ? dAvg.qual / dayData.length : 0;
+                return calcularOEE(dAvg.disp, dAvg.perf, dAvg.qual);
+            });
+            
+            if(trendChart) trendChart.destroy();
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: dates.map(d => d.split('-').reverse().join('/')),
+                    datasets: [{
+                        label: 'OEE Médio %',
+                        data: trendValues,
+                        borderColor: '#005a2b',
+                        backgroundColor: 'rgba(0, 90, 43, 0.1)',
+                        fill: true, tension: 0.4, borderWidth: 3, pointRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false }, 
+                        datalabels: { display: false },
+                        annotation: { 
+                            annotations: { 
+                                line1: { 
+                                    type: 'line', 
+                                    yMin: 85, 
+                                    yMax: 85, 
+                                    borderColor: 'rgb(220, 38, 38)', 
+                                    borderWidth: 2, 
+                                    borderDash: [6, 6], 
+                                    label: { 
+                                        display: true, 
+                                        content: 'Meta 85%', 
+                                        position: 'end', 
+                                        backgroundColor: 'rgba(220, 38, 38, 0.8)', 
+                                        font: { size: 10, weight: 'bold' } 
+                                    } 
+                                } 
+                            } 
+                        } 
+                    } 
+                }
+            });
+
+            const pillarCtx = document.getElementById('pillarChart').getContext('2d');
+            if(pillarChart) pillarChart.destroy();
+            pillarChart = new Chart(pillarCtx, {
+                type: 'bar',
+                data: {
+                    labels: machineAvg.map(m => m.id),
+                    datasets: [
+                        { label: 'Disp', data: machineAvg.map(m => m.disp || 0), backgroundColor: '#005a2b' },
+                        { label: 'Perf', data: machineAvg.map(m => m.perf || 0), backgroundColor: '#c4121a' },
+                        { label: 'Qual', data: machineAvg.map(m => m.qual || 0), backgroundColor: '#FFD700' }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (val) => val + '%',
+                            font: { weight: 'bold', size: 10 },
+                            color: '#475569'
+                        }
+                    },
+                    scales: { y: { max: 115, ticks: { callback: v => v + '%' } } } 
+                }
+            });
+
+            const shiftCtx = document.getElementById('shiftChart').getContext('2d');
+            const shiftValues = ['A', 'B', 'C'].map(s => {
+                const sData = data.filter(d => d.turno === s);
+                if(sData.length === 0) return 0;
+                let sAvg = { disp: 0, perf: 0, qual: 0 };
+                sData.forEach(h => { 
+                    sAvg.disp += h.disp || 0; 
+                    sAvg.perf += h.perf || 0; 
+                    sAvg.qual += h.qual || 0; 
+                });
+                sAvg.disp /= sData.length; 
+                sAvg.perf /= sData.length; 
+                sAvg.qual /= sData.length;
+                return calcularOEE(sAvg.disp, sAvg.perf, sAvg.qual);
+            });
+            
+            if(shiftChart) shiftChart.destroy();
+            shiftChart = new Chart(shiftCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Turno A', 'Turno B', 'Turno C'],
+                    datasets: [{ data: shiftValues, backgroundColor: ['#FFD700', '#005a2b', '#c4121a'], borderWidth: 0, hoverOffset: 10 }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { position: 'bottom' },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold', size: 12 },
+                            formatter: (val) => val > 0 ? val + '%' : ''
+                        }
+                    } 
+                }
+            });
+        }
+
+        function renderEfficiencyView(data) {
+            const machineSelect = document.getElementById('machineSelect').value;
+            const filteredData = machineSelect === 'ALL' ? data : data.filter(d => d.machine === machineSelect);
+            
+            const cardsContainer = document.getElementById('efficiency-cards-container');
+            cardsContainer.innerHTML = '';
+            
+            const turnos = ['A', 'B', 'C'];
+            turnos.forEach(turno => {
+                const turnoData = filteredData.filter(d => d.turno === turno);
+                if (turnoData.length === 0) {
+                    cardsContainer.innerHTML += `
+                        <div class="bg-white p-6 rounded-xl border border-slate-200">
+                            <p class="text-xs font-bold uppercase text-slate-400 mb-2">Turno ${turno}</p>
+                            <p class="text-slate-400">Sem dados</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let avgDisp = 0, avgPerf = 0, avgQual = 0;
+                turnoData.forEach(d => {
+                    avgDisp += d.disp || 0;
+                    avgPerf += d.perf || 0;
+                    avgQual += d.qual || 0;
+                });
+                avgDisp = Math.round(avgDisp / turnoData.length);
+                avgPerf = Math.round(avgPerf / turnoData.length);
+                avgQual = Math.round(avgQual / turnoData.length);
+                const avgOEE = calcularOEE(avgDisp, avgPerf, avgQual);
+                
+                cardsContainer.innerHTML += `
+                    <div class="bg-white p-6 rounded-xl border border-slate-200">
+                        <p class="text-xs font-bold uppercase text-slate-400 mb-2">Turno ${turno}</p>
+                        <div class="text-3xl font-black mb-3 ${avgOEE >= META ? 'text-green-600' : 'text-red-600'}">${avgOEE}%</div>
+                        <div class="space-y-2">
+                            <div><span class="text-xs text-slate-400">Disponibilidade:</span> <span class="font-bold">${avgDisp}%</span></div>
+                            <div><span class="text-xs text-slate-400">Performance:</span> <span class="font-bold">${avgPerf}%</span></div>
+                            <div><span class="text-xs text-slate-400">Qualidade:</span> <span class="font-bold">${avgQual}%</span></div>
+                            <div><span class="text-xs text-slate-400">Registros:</span> <span class="font-bold">${turnoData.length}</span></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            const tbody = document.getElementById('efficiency-selection-rows');
+            tbody.innerHTML = '';
+            
+            data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(reg => {
+                const oee = calcularOEE(reg.disp, reg.perf, reg.qual);
+                const statusClass = oee >= META ? 'text-green-600' : 'text-red-600';
+                const statusText = oee >= META ? '✅' : '⚠️';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="py-2">${reg.date.split('-').reverse().join('/')}</td>
+                        <td class="py-2">${reg.machine}</td>
+                        <td class="py-2">${reg.turno}</td>
+                        <td class="py-2">${reg.op}</td>
+                        <td class="py-2">${reg.produto || '-'}</td>
+                        <td class="py-2 text-right">${reg.est || 0}</td>
+                        <td class="py-2 text-right">${reg.realKgH || 0}</td>
+                        <td class="py-2 text-right">${reg.disp || 0}%</td>
+                        <td class="py-2 text-right">${reg.dispTurno || 0}%</td>
+                        <td class="py-2 text-right">${reg.perf || 0}%</td>
+                        <td class="py-2 text-right">${reg.qual || 0}%</td>
+                        <td class="py-2 text-right font-bold ${statusClass}">${oee}%</td>
+                        <td class="py-2 text-center">
+                            <span class="inline-block px-2 py-1 rounded-full text-[8px] font-bold uppercase ${oee >= META ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td class="py-2 text-center">
+                            <button onclick="openEditModal(${reg.id})" class="edit-btn mx-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </button>
+                            <button onclick="apagarRegistro(${reg.id})" class="text-red-500 hover:text-red-700 mx-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderOPView(data) {
+            const ops = {};
+            data.forEach(reg => {
+                if (!ops[reg.op]) {
+                    ops[reg.op] = [];
+                }
+                ops[reg.op].push(reg);
+            });
+            
+            const timelineContainer = document.getElementById('opTimelineContainer');
+            timelineContainer.innerHTML = '';
+            
+            Object.entries(ops).forEach(([op, registros]) => {
+                registros.sort((a, b) => new Date(a.date) - new Date(b.date));
+                const firstReg = registros[0];
+                const lastReg = registros[registros.length - 1];
+                const totalProduzido = registros.reduce((sum, r) => sum + (r.produzido || 0), 0);
+                const totalTempo = registros.reduce((sum, r) => {
+                    const minutos = calcularDuracaoHoras(r.inicio, r.fim);
+                    return sum + minutos;
+                }, 0);
+                
+                timelineContainer.innerHTML += `
+                    <div class="border-l-4 border-green-600 pl-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="font-black text-lg">OP ${op}</span>
+                                <span class="ml-3 text-sm text-slate-400">${firstReg.produto || '-'}</span>
+                            </div>
+                            <span class="text-sm font-bold">${totalProduzido.toFixed(1)} kg</span>
+                        </div>
+                        <div class="text-xs text-slate-400 mt-1">
+                            ${registros.length} registro(s) • ${totalTempo.toFixed(1)} horas • 
+                            ${firstReg.date} a ${lastReg.date}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            const dispList = document.getElementById('opDispList');
+            dispList.innerHTML = '';
+            
+            Object.entries(ops).forEach(([op, registros]) => {
+                const avgDisp = Math.round(registros.reduce((sum, r) => sum + (r.disp || 0), 0) / registros.length);
+                dispList.innerHTML += `
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium">OP ${op}</span>
+                        <span class="font-bold ${avgDisp >= 85 ? 'text-green-600' : 'text-red-600'}">${avgDisp}%</span>
+                    </div>
+                `;
+            });
+            
+            const perfList = document.getElementById('opPerfList');
+            perfList.innerHTML = '';
+            
+            Object.entries(ops).forEach(([op, registros]) => {
+                const avgPerf = Math.round(registros.reduce((sum, r) => sum + (r.perf || 0), 0) / registros.length);
+                perfList.innerHTML += `
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium">OP ${op}</span>
+                        <span class="font-bold ${avgPerf >= 95 ? 'text-green-600' : avgPerf >= 85 ? 'text-yellow-600' : 'text-red-600'}">${avgPerf}%</span>
+                    </div>
+                `;
+            });
+            
+            const qualList = document.getElementById('opQualList');
+            qualList.innerHTML = '';
+            
+            Object.entries(ops).forEach(([op, registros]) => {
+                const avgQual = Math.round(registros.reduce((sum, r) => sum + (r.qual || 0), 0) / registros.length);
+                qualList.innerHTML += `
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium">OP ${op}</span>
+                        <span class="font-bold ${avgQual >= 98 ? 'text-green-600' : avgQual >= 95 ? 'text-yellow-600' : 'text-red-600'}">${avgQual}%</span>
+                    </div>
+                `;
+            });
+            
+            const detailRows = document.getElementById('op-detail-rows');
+            detailRows.innerHTML = '';
+            
+            data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(reg => {
+                const duracaoHoras = calcularDuracaoHoras(reg.inicio, reg.fim).toFixed(1);
+                const perda = ((reg.dispTurno || 0) - (reg.disp || 0)).toFixed(1);
+                const motivoClass = reg.motivoPerda ? `perda-${reg.motivoPerda.toLowerCase().replace(/ /g, '-')}` : '';
+                
+                detailRows.innerHTML += `
+                    <tr>
+                        <td class="py-2">${reg.date.split('-').reverse().join('/')}</td>
+                        <td class="py-2">${reg.turno}</td>
+                        <td class="py-2">${reg.op}</td>
+                        <td class="py-2">${reg.produto || '-'}</td>
+                        <td class="py-2 text-center">${reg.inicio}</td>
+                        <td class="py-2 text-center">${reg.fim}</td>
+                        <td class="py-2 text-center">${duracaoHoras}h</td>
+                        <td class="py-2 text-center">${reg.setup || 0}</td>
+                        <td class="py-2 text-center">${reg.avaria || 0}</td>
+                        <td class="py-2 text-center">${reg.disp || 0}%</td>
+                        <td class="py-2 text-center">${reg.dispTurno || 0}%</td>
+                        <td class="py-2 text-center text-red-600 font-bold">${perda}%</td>
+                        <td class="py-2 text-center">${reg.est || 0}</td>
+                        <td class="py-2 text-center">${reg.realKgH || 0}</td>
+                        <td class="py-2 text-center">${reg.perf || 0}%</td>
+                        <td class="py-2 text-center">${reg.qual || 0}%</td>
+                        <td class="py-2 text-center">
+                            ${reg.motivoPerda ? `<span class="perda-badge ${motivoClass}">${reg.motivoPerda}</span>` : '-'}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderHistoryView(data) {
+            const tbody = document.getElementById('history-rows');
+            tbody.innerHTML = '';
+            
+            data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(reg => {
+                const oee = calcularOEE(reg.disp, reg.perf, reg.qual);
+                const statusClass = oee >= META ? 'text-green-600' : 'text-red-600';
+                const statusText = oee >= META ? '✅ Meta' : '⚠️ Abaixo';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="py-2">${reg.date.split('-').reverse().join('/')}</td>
+                        <td class="py-2">${reg.machine}</td>
+                        <td class="py-2">${reg.turno}</td>
+                        <td class="py-2">${reg.op}</td>
+                        <td class="py-2">${reg.produto || '-'}</td>
+                        <td class="py-2 text-center">${reg.est || 0}</td>
+                        <td class="py-2 text-center">${reg.realKgH || 0}</td>
+                        <td class="py-2 text-center">${reg.disp || 0}%</td>
+                        <td class="py-2 text-center">${reg.dispTurno || 0}%</td>
+                        <td class="py-2 text-center">${reg.perf || 0}%</td>
+                        <td class="py-2 text-center">${reg.qual || 0}%</td>
+                        <td class="py-2 text-right font-bold ${statusClass}">${oee}%</td>
+                        <td class="py-2 text-center">
+                            <span class="inline-block px-2 py-1 rounded-full text-[8px] font-bold uppercase ${oee >= META ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td class="py-2 text-center">
+                            <button onclick="openEditModal(${reg.id})" class="edit-btn mx-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </button>
+                            <button onclick="apagarRegistro(${reg.id})" class="text-red-500 hover:text-red-700 mx-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderClientsView(data) {
+            const clientesData = {};
+            data.forEach(reg => {
+                const cliente = reg.cliente || 'Sem cliente';
+                if (!clientesData[cliente]) {
+                    clientesData[cliente] = [];
+                }
+                clientesData[cliente].push(reg);
+            });
+            
+            const perfList = document.getElementById('client-performance-list');
+            perfList.innerHTML = '';
+            
+            Object.entries(clientesData).forEach(([cliente, registros]) => {
+                const avgDisp = Math.round(registros.reduce((sum, r) => sum + (r.disp || 0), 0) / registros.length);
+                const avgPerf = Math.round(registros.reduce((sum, r) => sum + (r.perf || 0), 0) / registros.length);
+                const avgQual = Math.round(registros.reduce((sum, r) => sum + (r.qual || 0), 0) / registros.length);
+                const avgOEE = Math.round(registros.reduce((sum, r) => {
+                    return sum + calcularOEE(r.disp, r.perf, r.qual);
+                }, 0) / registros.length);
+                
+                perfList.innerHTML += `
+                    <div class="border-b pb-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-black">${cliente}</span>
+                            <span class="text-2xl font-bold ${avgOEE >= META ? 'text-green-600' : 'text-red-600'}">${avgOEE}%</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <div><span class="text-slate-400">Disp.:</span> ${avgDisp}%</div>
+                            <div><span class="text-slate-400">Perf.:</span> ${avgPerf}%</div>
+                            <div><span class="text-slate-400">Qual.:</span> ${avgQual}%</div>
+                            <div><span class="text-slate-400">Registros:</span> ${registros.length}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            const oppList = document.getElementById('opportunities-list');
+            oppList.innerHTML = '';
+            
+            Object.entries(clientesData).forEach(([cliente, registros]) => {
+                const avgPerf = registros.reduce((sum, r) => sum + (r.perf || 0), 0) / registros.length;
+                if (avgPerf < 90) {
+                    const potencial = (90 - avgPerf).toFixed(1);
+                    oppList.innerHTML += `
+                        <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                            <div>
+                                <span class="font-bold">${cliente}</span>
+                                <p class="text-xs text-slate-500">Performance atual: ${avgPerf.toFixed(1)}%</p>
+                                <p class="text-xs font-bold text-green-600">Potencial: +${potencial}%</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-green-600">${Math.round(avgPerf + parseFloat(potencial))}%</span>
+                                <p class="text-xs text-slate-500">meta 90%</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    oppList.innerHTML += `
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div>
+                                <span class="font-bold">${cliente}</span>
+                                <p class="text-xs text-slate-500">Performance: ${avgPerf.toFixed(1)}%</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-green-600">✅ Meta atingida</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            const historyRows = document.getElementById('client-history-rows');
+            historyRows.innerHTML = '';
+            
+            data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(reg => {
+                const variacao = reg.realKgH && reg.est ? ((reg.realKgH - reg.est) / reg.est * 100).toFixed(1) : 0;
+                const perfClass = variacao >= 5 ? 'text-green-600' : variacao >= -5 ? 'text-blue-600' : 'text-red-600';
+                const oee = calcularOEE(reg.disp, reg.perf, reg.qual);
+                
+                // Disponibilidade + Variação
+                const dispComVariacao = reg.disp ? (reg.disp + (reg.disp * (variacao / 100))).toFixed(1) : '0';
+                const dispClass = dispComVariacao > 100 ? 'disp-high' : '';
+                
+                // Determinar oportunidade
+                let oportunidadeClass = '';
+                let oportunidadeText = '';
+                if (reg.perf < 85) {
+                    oportunidadeClass = 'opportunity-low';
+                    oportunidadeText = '⬇ Baixa perf.';
+                } else if (reg.perf < 95) {
+                    oportunidadeClass = 'opportunity-medium';
+                    oportunidadeText = '⚡ Pode melhorar';
+                } else {
+                    oportunidadeClass = 'opportunity-high';
+                    oportunidadeText = '✅ Ótimo';
+                }
+                
+                historyRows.innerHTML += `
+                    <tr>
+                        <td class="py-2">${reg.date.split('-').reverse().join('/')}</td>
+                        <td class="py-2">${reg.cliente || '-'}</td>
+                        <td class="py-2">${reg.produto || '-'}</td>
+                        <td class="py-2">${reg.machine}</td>
+                        <td class="py-2">${reg.turno}</td>
+                        <td class="py-2">${reg.op}</td>
+                        <td class="py-2 text-center">${reg.est || 0}</td>
+                        <td class="py-2 text-center">${reg.realKgH || 0}</td>
+                        <td class="py-2 text-center ${dispClass}">${dispComVariacao}%</td>
+                        <td class="py-2 text-center">${reg.perf || 0}%</td>
+                        <td class="py-2 text-center">${reg.qual || 0}%</td>
+                        <td class="py-2 text-center ${perfClass}">${variacao > 0 ? '+' : ''}${variacao}%</td>
+                        <td class="py-2 text-center font-bold ${oee >= META ? 'text-green-600' : 'text-red-600'}">${oee}%</td>
+                        <td class="py-2 text-center"><span class="opportunity-badge ${oportunidadeClass}">${oportunidadeText}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.onload = async function() {
+            await carregarDados(); // Agora é async porque chama o Supabase
+            
+            const end = new Date().toISOString().split('T')[0];
+            const start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            document.getElementById('startDate').value = start; 
+            document.getElementById('endDate').value = end;
+            
+            filterByRange();
+            atualizarSelectClientesProduto();
+            atualizarListaClientesProdutos();
+        };
+    </script>
+</body>
+
+</html>
+
+
+
+

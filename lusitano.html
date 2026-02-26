@@ -1411,181 +1411,181 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        // ============================================
-        // 1. CONFIGURAÇÃO DO SUPABASE (APENAS UMA VEZ)
-        // ============================================
-        const SUPABASE_URL = "https://qyozqutvlppmgrmxcjit.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5b3pxdXR2bHBwbWdybXhjaml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MjE1ODIsImV4cCI6MjA4NzQ5NzU4Mn0.n2TmDlJQ5EkLyRXQHcrHZ6FP5SR8ja3NxSzP-oZjpo0";
+    // ============================================
+    // 1. CONFIGURAÇÃO DO SUPABASE (APENAS UMA VEZ)
+    // ============================================
+    const SUPABASE_URL = "https://qyozqutvlppmgrmxcjit.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5b3pxdXR2bHBwbWdybXhjaml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MjE1ODIsImV4cCI6MjA4NzQ5NzU4Mn0.n2TmDlJQ5EkLyRXQHcrHZ6FP5SR8ja3NxSzP-oZjpo0";
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-            auth: {
-                persistSession: true,
-                autoRefreshToken: true
-            }
-        });
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true
+        }
+    });
 
-        // ============================================
-        // 2. FUNÇÕES DO SUPABASE (CRUD)
-        // ============================================
+    // ============================================
+    // 2. FUNÇÃO DE LOGOUT (DEFINIDA PRIMEIRO)
+    // ============================================
+    window.fazerLogout = async function() {
+        console.log("🔵 Botão de logout clicado!");
         
-        // Função para listar registros do banco
-        async function listarRegistros() {
-            try {
-                const { data, error } = await supabase
-                    .from("oee_registros")
-                    .select("*")
-                    .order('date', { ascending: false });
-
-                if (error) {
-                    console.error("Erro ao listar do banco:", error.message);
-                    return [];
-                } else {
-                    console.log("Registros carregados do banco:", data.length);
-                    return data || [];
-                }
-            } catch (error) {
-                console.error("Erro ao listar registros:", error);
-                return [];
-            }
-        }
-
-        // Função para inserir registro no banco
-        async function inserirRegistro(novo) {
-            try {
-                const { data, error } = await supabase
-                    .from("oee_registros")
-                    .insert([novo]);
-
-                if (error) {
-                    console.error("Erro ao inserir no banco:", error.message);
-                    showErrorToast("Erro ao inserir no banco: " + error.message);
-                    return null;
-                } else {
-                    console.log("Registro inserido no banco:", data);
-                    return data;
-                }
-            } catch (error) {
-                console.error("Erro ao inserir registro:", error);
-                showErrorToast("Erro ao conectar com banco de dados");
-                return null;
-            }
-        }
-
-        // Função para atualizar registro no banco
-        async function atualizarRegistro(id, dados) {
-            try {
-                const { data, error } = await supabase
-                    .from("oee_registros")
-                    .update(dados)
-                    .eq('id', id);
-
-                if (error) {
-                    console.error("Erro ao atualizar no banco:", error.message);
-                    showErrorToast("Erro ao atualizar no banco: " + error.message);
-                    return null;
-                } else {
-                    console.log("Registro atualizado no banco:", data);
-                    return data;
-                }
-            } catch (error) {
-                console.error("Erro ao atualizar registro:", error);
-                showErrorToast("Erro ao conectar com banco de dados");
-                return null;
-            }
-        }
-
-        // Função para apagar registro no banco
-        async function apagarRegistroBanco(id) {
-            try {
-                const { error } = await supabase
-                    .from("oee_registros")
-                    .delete()
-                    .eq('id', id);
-
-                if (error) {
-                    console.error("Erro ao apagar no banco:", error.message);
-                    showErrorToast("Erro ao apagar no banco: " + error.message);
-                    return false;
-                } else {
-                    console.log("Registro apagado do banco:", id);
-                    return true;
-                }
-            } catch (error) {
-                console.error("Erro ao apagar registro:", error);
-                showErrorToast("Erro ao conectar com banco de dados");
-                return false;
-            }
-        }
-
-        // ============================================
-        // 3. FUNÇÃO DE VERIFICAÇÃO DE USUÁRIO
-        // ============================================
-        async function verificarUsuario() {
-            console.log("🔍 Verificando usuário...");
-            
-            const { data: { user }, error } = await supabase.auth.getUser();
-            
-            console.log("Usuário:", user);
-            console.log("Erro:", error);
+        try {
+            console.log("🔵 Tentando fazer logout no Supabase...");
+            const { error } = await supabase.auth.signOut();
             
             if (error) {
-                console.error("❌ Erro na verificação:", error);
-            }
-            
-            if (!user) {
-                console.log("❌ Sem usuário - redirecionando para login.html");
-                window.location.href = "login.html";
+                console.error("🔴 Erro no logout:", error);
+                alert("Erro ao sair: " + error.message);
             } else {
-                console.log("✅ Usuário logado:", user.email);
+                console.log("🟢 Logout bem sucedido!");
+                window.location.href = "login.html";
             }
+        } catch (erro) {
+            console.error("🔴 Erro inesperado:", erro);
+            alert("Erro inesperado: " + erro.message);
         }
+    };
 
-        verificarUsuario();
+    // ============================================
+    // 3. FUNÇÕES DO SUPABASE (CRUD)
+    // ============================================
+    
+    // Função para listar registros do banco
+    async function listarRegistros() {
+        try {
+            const { data, error } = await supabase
+                .from("oee_registros")
+                .select("*")
+                .order('date', { ascending: false });
 
-        // ============================================
-        // 4. FUNÇÃO DE LOGOUT
-        // ============================================
-        async function fazerLogout() {
-            console.log("🔵 Botão de logout clicado!");
-            
-            try {
-                console.log("🔵 Tentando fazer logout no Supabase...");
-                const { error } = await supabase.auth.signOut();
-                
-                if (error) {
-                    console.error("🔴 Erro no logout:", error);
-                    alert("Erro ao sair: " + error.message);
-                } else {
-                    console.log("🟢 Logout bem sucedido!");
-                    window.location.href = "login.html";
-                }
-            } catch (erro) {
-                console.error("🔴 Erro inesperado:", erro);
-                alert("Erro inesperado: " + erro.message);
+            if (error) {
+                console.error("Erro ao listar do banco:", error.message);
+                return [];
+            } else {
+                console.log("Registros carregados do banco:", data.length);
+                return data || [];
             }
+        } catch (error) {
+            console.error("Erro ao listar registros:", error);
+            return [];
         }
+    }
 
-        // ============================================
-        // 5. TIMER DE INATIVIDADE
-        // ============================================
-        let tempoInatividade;
-        const TEMPO_LIMITE = 30 * 60 * 1000; // 30 minutos em milissegundos
+    // Função para inserir registro no banco
+    async function inserirRegistro(novo) {
+        try {
+            const { data, error } = await supabase
+                .from("oee_registros")
+                .insert([novo]);
 
-        function reiniciarTimer() {
-            clearTimeout(tempoInatividade);
-            tempoInatividade = setTimeout(() => {
-                alert("Sessão expirada por inatividade. Faça login novamente.");
-                fazerLogout();
-            }, TEMPO_LIMITE);
+            if (error) {
+                console.error("Erro ao inserir no banco:", error.message);
+                showErrorToast("Erro ao inserir no banco: " + error.message);
+                return null;
+            } else {
+                console.log("Registro inserido no banco:", data);
+                return data;
+            }
+        } catch (error) {
+            console.error("Erro ao inserir registro:", error);
+            showErrorToast("Erro ao conectar com banco de dados");
+            return null;
         }
+    }
 
-        // Eventos que resetam o timer de inatividade
-        window.onload = reiniciarTimer;
-        document.onmousemove = reiniciarTimer;
-        document.onkeypress = reiniciarTimer;
-        document.onscroll = reiniciarTimer;
-        document.onclick = reiniciarTimer;
-    </script>
+    // Função para atualizar registro no banco
+    async function atualizarRegistro(id, dados) {
+        try {
+            const { data, error } = await supabase
+                .from("oee_registros")
+                .update(dados)
+                .eq('id', id);
+
+            if (error) {
+                console.error("Erro ao atualizar no banco:", error.message);
+                showErrorToast("Erro ao atualizar no banco: " + error.message);
+                return null;
+            } else {
+                console.log("Registro atualizado no banco:", data);
+                return data;
+            }
+        } catch (error) {
+            console.error("Erro ao atualizar registro:", error);
+            showErrorToast("Erro ao conectar com banco de dados");
+            return null;
+        }
+    }
+
+    // Função para apagar registro no banco
+    async function apagarRegistroBanco(id) {
+        try {
+            const { error } = await supabase
+                .from("oee_registros")
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                console.error("Erro ao apagar no banco:", error.message);
+                showErrorToast("Erro ao apagar no banco: " + error.message);
+                return false;
+            } else {
+                console.log("Registro apagado do banco:", id);
+                return true;
+            }
+        } catch (error) {
+            console.error("Erro ao apagar registro:", error);
+            showErrorToast("Erro ao conectar com banco de dados");
+            return false;
+        }
+    }
+
+    // ============================================
+    // 4. FUNÇÃO DE VERIFICAÇÃO DE USUÁRIO
+    // ============================================
+    async function verificarUsuario() {
+        console.log("🔍 Verificando usuário...");
+        
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        console.log("Usuário:", user);
+        console.log("Erro:", error);
+        
+        if (error) {
+            console.error("❌ Erro na verificação:", error);
+        }
+        
+        if (!user) {
+            console.log("❌ Sem usuário - redirecionando para login.html");
+            window.location.href = "login.html";
+        } else {
+            console.log("✅ Usuário logado:", user.email);
+        }
+    }
+
+    verificarUsuario();
+
+    // ============================================
+    // 5. TIMER DE INATIVIDADE
+    // ============================================
+    let tempoInatividade;
+    const TEMPO_LIMITE = 30 * 60 * 1000; // 30 minutos em milissegundos
+
+    function reiniciarTimer() {
+        clearTimeout(tempoInatividade);
+        tempoInatividade = setTimeout(() => {
+            alert("Sessão expirada por inatividade. Faça login novamente.");
+            window.fazerLogout();
+        }, TEMPO_LIMITE);
+    }
+
+    // Eventos que resetam o timer de inatividade
+    window.onload = reiniciarTimer;
+    document.onmousemove = reiniciarTimer;
+    document.onkeypress = reiniciarTimer;
+    document.onscroll = reiniciarTimer;
+    document.onclick = reiniciarTimer;
+</script>
 
     <script>
         Chart.register(ChartDataLabels);

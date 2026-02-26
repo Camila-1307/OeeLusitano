@@ -1410,67 +1410,24 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-   <script>
-    // Configuração do Supabase
-    const SUPABASE_URL = "https://qyozqutvlppmgrmxcjit.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5b3pxdXR2bHBwbWdybXhjaml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MjE1ODIsImV4cCI6MjA4NzQ5NzU4Mn0.n2TmDlJQ5EkLyRXQHcrHZ6FP5SR8ja3NxSzP-oZjpo0";
+    <script>
+        // ============================================
+        // 1. CONFIGURAÇÃO DO SUPABASE (APENAS UMA VEZ)
+        // ============================================
+        const SUPABASE_URL = "https://qyozqutvlppmgrmxcjit.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5b3pxdXR2bHBwbWdybXhjaml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MjE1ODIsImV4cCI6MjA4NzQ5NzU4Mn0.n2TmDlJQ5EkLyRXQHcrHZ6FP5SR8ja3NxSzP-oZjpo0";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-        auth: {
-            persistSession: true,
-            autoRefreshToken: true
-        }
-    });
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true
+            }
+        });
 
-   async function verificarUsuario() {
-    console.log("🔍 Verificando usuário...");
-    
-    const { data: { user }, error } = await supabase.auth.getUser();
-    
-    console.log("Usuário:", user);
-    console.log("Erro:", error);
-    
-    if (error) {
-        console.error("❌ Erro na verificação:", error);
-    }
-    
-    if (!user) {
-        console.log("❌ Sem usuário - redirecionando para login.html");
-        window.location.href = "login.html";
-    } else {
-        console.log("✅ Usuário logado:", user.email);
-    }
-}
-
-    verificarUsuario();
-
-    // 🚪 Função de Logout (CORRIGIDA - usa supabase, não supabaseClient)
-    async function fazerLogout() {
-        const { error } = await supabase.auth.signOut();
-        if (!error) {
-            window.location.href = "login.html";
-        }
-    }
-
-    // ⏱️ Controle de inatividade (30 minutos)
-    let tempoInatividade;
-    const TEMPO_LIMITE = 30 * 60 * 1000; // 30 minutos em milissegundos
-
-    function reiniciarTimer() {
-        clearTimeout(tempoInatividade);
-        tempoInatividade = setTimeout(() => {
-            alert("Sessão expirada por inatividade. Faça login novamente.");
-            fazerLogout();
-        }, TEMPO_LIMITE);
-    }
-
-    // Eventos que resetam o timer de inatividade
-    window.onload = reiniciarTimer;
-    document.onmousemove = reiniciarTimer;
-    document.onkeypress = reiniciarTimer;
-    document.onscroll = reiniciarTimer;
-    document.onclick = reiniciarTimer;
-
+        // ============================================
+        // 2. FUNÇÕES DO SUPABASE (CRUD)
+        // ============================================
+        
         // Função para listar registros do banco
         async function listarRegistros() {
             try {
@@ -1559,6 +1516,75 @@
                 return false;
             }
         }
+
+        // ============================================
+        // 3. FUNÇÃO DE VERIFICAÇÃO DE USUÁRIO
+        // ============================================
+        async function verificarUsuario() {
+            console.log("🔍 Verificando usuário...");
+            
+            const { data: { user }, error } = await supabase.auth.getUser();
+            
+            console.log("Usuário:", user);
+            console.log("Erro:", error);
+            
+            if (error) {
+                console.error("❌ Erro na verificação:", error);
+            }
+            
+            if (!user) {
+                console.log("❌ Sem usuário - redirecionando para login.html");
+                window.location.href = "login.html";
+            } else {
+                console.log("✅ Usuário logado:", user.email);
+            }
+        }
+
+        verificarUsuario();
+
+        // ============================================
+        // 4. FUNÇÃO DE LOGOUT
+        // ============================================
+        async function fazerLogout() {
+            console.log("🔵 Botão de logout clicado!");
+            
+            try {
+                console.log("🔵 Tentando fazer logout no Supabase...");
+                const { error } = await supabase.auth.signOut();
+                
+                if (error) {
+                    console.error("🔴 Erro no logout:", error);
+                    alert("Erro ao sair: " + error.message);
+                } else {
+                    console.log("🟢 Logout bem sucedido!");
+                    window.location.href = "login.html";
+                }
+            } catch (erro) {
+                console.error("🔴 Erro inesperado:", erro);
+                alert("Erro inesperado: " + erro.message);
+            }
+        }
+
+        // ============================================
+        // 5. TIMER DE INATIVIDADE
+        // ============================================
+        let tempoInatividade;
+        const TEMPO_LIMITE = 30 * 60 * 1000; // 30 minutos em milissegundos
+
+        function reiniciarTimer() {
+            clearTimeout(tempoInatividade);
+            tempoInatividade = setTimeout(() => {
+                alert("Sessão expirada por inatividade. Faça login novamente.");
+                fazerLogout();
+            }, TEMPO_LIMITE);
+        }
+
+        // Eventos que resetam o timer de inatividade
+        window.onload = reiniciarTimer;
+        document.onmousemove = reiniciarTimer;
+        document.onkeypress = reiniciarTimer;
+        document.onscroll = reiniciarTimer;
+        document.onclick = reiniciarTimer;
     </script>
 
     <script>
@@ -3491,7 +3517,7 @@
         }
 
         window.onload = async function() {
-            await carregarDados(); // Agora é async porque chama o Supabase
+            await carregarDados();
             
             const end = new Date().toISOString().split('T')[0];
             const start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -3504,5 +3530,4 @@
         };
     </script>
 </body>
-
 </html>

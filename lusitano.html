@@ -91,6 +91,15 @@
             border-color: #8b5cf6;
         }
 
+        .btn-logout {
+            background-color: #dc2626 !important;
+            border-color: #b91c1c !important;
+        }
+
+        .btn-logout:hover {
+            background-color: #b91c1c !important;
+        }
+
         .nav-tabs {
             display: flex;
             justify-content: center;
@@ -728,7 +737,13 @@
             </svg>
             Gestão Clientes/Produtos
         </button>
-        <!-- Botão "Salvar Dados" removido -->
+        <!-- Botão de Logout -->
+        <button onclick="fazerLogout()" class="btn-action btn-logout">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Sair
+        </button>
     </div>
 
     <div id="toast">✅ Dados salvos com sucesso!</div>
@@ -1428,14 +1443,33 @@
 }
 
     verificarUsuario();
-            const { data: { user } } = await supabase.auth.getUser();
 
-            if (!user) {
-                window.location.href = "login.html";
-            }
+    // 🚪 Função de Logout
+    async function fazerLogout() {
+        const { error } = await supabase.auth.signOut();
+        if (!error) {
+            window.location.href = "login.html";
         }
+    }
 
-        verificarUsuario();
+    // ⏱️ Controle de inatividade (30 minutos)
+    let tempoInatividade;
+    const TEMPO_LIMITE = 30 * 60 * 1000; // 30 minutos em milissegundos
+
+    function reiniciarTimer() {
+        clearTimeout(tempoInatividade);
+        tempoInatividade = setTimeout(() => {
+            alert("Sessão expirada por inatividade. Faça login novamente.");
+            fazerLogout();
+        }, TEMPO_LIMITE);
+    }
+
+    // Eventos que resetam o timer de inatividade
+    window.onload = reiniciarTimer;
+    document.onmousemove = reiniciarTimer;
+    document.onkeypress = reiniciarTimer;
+    document.onscroll = reiniciarTimer;
+    document.onclick = reiniciarTimer;
 
         // Função para listar registros do banco
         async function listarRegistros() {
@@ -3472,7 +3506,3 @@
 </body>
 
 </html>
-
-
-
-

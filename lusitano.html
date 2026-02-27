@@ -2242,176 +2242,94 @@
     }
 
     async function carregarDados() {
-        const clientesSalvos = localStorage.getItem('lusitano_clientes');
-        const produtosSalvos = localStorage.getItem('lusitano_produtos');
-        
-        if (clientesSalvos) {
-            try { clientes = JSON.parse(clientesSalvos); } catch (e) {}
-        }
-        
-        if (produtosSalvos) {
-            try { produtos = JSON.parse(produtosSalvos); } catch (e) {}
-        }
-        
-        const registrosBanco = await listarRegistros();
-        
-        if (registrosBanco && registrosBanco.length > 0) {
-            // MAPEAR CORRETAMENTE: colunas do banco → campos do código
-            historico = registrosBanco.map(reg => {
-                const registroMapeado = {
-                    id: reg.id,
-                    data: reg.data,
-                    machine: reg.maquina,
-                    turno: reg.turno,
-                    op: reg.op,
-                    produto: reg.produto,
-                    cliente: reg.cliente,
-                    disp: reg.disponibilidade,
-                    perf: reg.performance,
-                    qual: reg.qualidade,
-                    pedido: reg.pedido,
-                    inicio: reg.inicio,
-                    fim: reg.fim,
-                    setup: reg.setup,
-                    avaria: reg.paradas,
-                    motivoPerda: reg.motivo_perda,
-                    est: reg.est,
-                    realKgH: reg.real_kgh,
-                    produzido: reg.produzido,
-                    rejeicao: reg.rejeicao,
-                    aparas: reg.aparas,
-                    timestamp: reg.criado_em,
-                    // Manter valores numéricos
-                    disp: safeNumber(reg.disponibilidade),
-                    perf: safeNumber(reg.performance),
-                    qual: safeNumber(reg.qualidade),
-                    setup: safeNumber(reg.setup),
-                    avaria: safeNumber(reg.paradas),
-                    produzido: safeNumber(reg.produzido),
-                    est: safeNumber(reg.est),
-                    realKgH: safeNumber(reg.real_kgh)
-                };
-                return registroMapeado;
-            });
-            
-            console.log(`✅ Carregados ${historico.length} registros do banco`);
-        } else {
-            historico = [];
-            console.log("📭 Nenhum registro encontrado no banco");
-        }
-        
-        // Recalcular disponibilidades
-        const grupos = {};
-        historico.forEach(reg => {
-            const key = `${reg.data}-${reg.machine}-${reg.turno}`;
-            if (!grupos[key]) grupos[key] = [];
-            grupos[key].push(reg);
-        });
-        
-        Object.values(grupos).forEach(grupo => {
-            if (grupo.length > 0) {
-                const dispTurno = calcularDisponibilidadeTurno(grupo);
-                grupo.forEach(op => {
-                    op.disp = calcularDisponibilidadeOP(
-                        op.inicio, 
-                        op.fim, 
-                        op.setup, 
-                        op.avaria,
-                        op.turno,
-                        grupo
-                    );
-                    op.dispTurno = dispTurno;
-                });
-            }
-        });
-        
-        filterByRange();
+    const clientesSalvos = localStorage.getItem('lusitano_clientes');
+    const produtosSalvos = localStorage.getItem('lusitano_produtos');
+    
+    if (clientesSalvos) {
+        try { clientes = JSON.parse(clientesSalvos); } catch (e) {}
     }
-
-    async function calcularESalvar() {
-        const date = document.getElementById('regDate').value;
-        const machine = document.getElementById('regMachine').value;
-        const op = document.getElementById('regOP').value;
-        const produtoDisplay = document.getElementById('regProduto').value;
-        const pedido = safeNumber(document.getElementById('regPedido').value);
-        
-        if (!date || !machine || !op || !produtoDisplay) {
-            showErrorToast('Preencha todos os campos obrigatórios!');
-            return;
-        }
-        
-        const produtoInfo = produtos.find(p => p.displayName === produtoDisplay);
-        if (!produtoInfo) return;
-        
-        const est = safeNumber(document.getElementById('regEst').value) || produtoInfo.est;
-        
-        if (turnosTemp.length === 0) {
-            const turno = document.getElementById('regTurno').value;
-            const inicio = document.getElementById('regInicio').value;
-            const fim = document.getElementById('regFim').value;
-            
-            if (!turno || !inicio || !fim) {
-                showErrorToast('Preencha os dados do turno!');
-                return;
-            }
-            
-            const conflitos = verificarSobreposicao(date, machine, inicio, fim);
-            if (conflitos.length > 0) {
-                showErrorToast(`Conflito de horário! Já existe um pedido (${conflitos[0].op}) das ${conflitos[0].inicio} às ${conflitos[0].fim} na máquina ${machine}.`);
-                return;
-            }
-            
-            const setup = safeNumber(document.getElementById('regSetup').value);
-            const avaria = safeNumber(document.getElementById('regAvaria').value);
-            const motivoPerda = document.getElementById('regMotivoPerda').value;
-            const produzido = safeNumber(document.getElementById('regProduzido').value);
-            const rejeicao = safeNumber(document.getElementById('regRejeicao').value);
-            const aparas = safeNumber(document.getElementById('regAparas').value);
-            
-            const realKgH = calcularRealKgH(produzido, inicio, fim);
-            const perf = calcularPerformance(est, realKgH);
-            const qual = calcularQualidade(produzido, rejeicao, aparas);
-            
-            // Preparar objeto com nomes internos do código
-            const novoRegistro = {
-                data: date,
-                machine: machine,
-                turno: turno,
-                op: op,
-                produto: produtoDisplay,
-                cliente: produtoInfo.cliente,
-                disp: 0,
-                perf: perf,
-                qual: qual,
-                pedido: pedido,
-                inicio: inicio,
-                fim: fim,
-                setup: setup,
-                avaria: avaria,
-                motivoPerda: motivoPerda,
-                est: est,
-                realKgH: realKgH,
-                produzido: produzido,
-                rejeicao: rejeicao,
-                aparas: aparas,
-                timestamp: new Date().toISOString()
+    
+    if (produtosSalvos) {
+        try { produtos = JSON.parse(produtosSalvos); } catch (e) {}
+    }
+    
+    const registrosBanco = await listarRegistros();
+    
+    if (registrosBanco && registrosBanco.length > 0) {
+        // MAPEAR CORRETAMENTE: colunas do banco → campos do código
+        historico = registrosBanco.map(reg => {
+            // Mapeamento completo
+            const registroMapeado = {
+                id: reg.id,
+                data: reg.data,
+                machine: reg.maquina,           // maquina → machine
+                turno: reg.turno,
+                op: reg.op || '---',             // valor padrão se for null
+                produto: reg.produto || '---',
+                cliente: reg.cliente || '---',
+                disp: reg.disponibilidade,       // disponibilidade → disp
+                perf: reg.performance,            // performance → perf
+                qual: reg.qualidade,              // qualidade → qual
+                pedido: reg.pedido || 0,
+                inicio: reg.inicio || '00:00',
+                fim: reg.fim || '00:00',
+                setup: reg.setup || 0,
+                avaria: reg.paradas || 0,         // paradas → avaria
+                motivoPerda: reg.motivo_perda || '',
+                est: reg.est || 0,
+                realKgH: reg.real_kgh || 0,       // real_kgh → realKgH
+                produzido: reg.produzido || 0,
+                rejeicao: reg.rejeicao || 0,
+                aparas: reg.aparas || 0,
+                timestamp: reg.criado_em || new Date().toISOString(),
+                // Manter valores numéricos
+                dispNum: safeNumber(reg.disponibilidade),
+                perfNum: safeNumber(reg.performance),
+                qualNum: safeNumber(reg.qualidade),
             };
             
-            // Inserir (a função inserirRegistro faz o mapeamento)
-            historico.push(novoRegistro);
-            const resultado = await inserirRegistro(novoRegistro);
+            // Usar os valores numéricos
+            registroMapeado.disp = registroMapeado.dispNum;
+            registroMapeado.perf = registroMapeado.perfNum;
+            registroMapeado.qual = registroMapeado.qualNum;
             
-            if (resultado) {
-                recalcularDisponibilidadesTurno(date, machine, turno);
-                showToast('Dados salvos com sucesso!');
-                limparIndicadorAutosave();
-                
-                document.getElementById('regForm').reset();
-                turnosTemp = [];
-                atualizarListaTurnos();
-                closeModal();
-                filterByRange();
-            }
+            return registroMapeado;
+        });
+        
+        console.log(`✅ Carregados ${historico.length} registros do banco`);
+        console.log("📋 Primeiro registro mapeado:", historico[0]);
+    } else {
+        historico = [];
+        console.log("📭 Nenhum registro encontrado no banco");
+    }
+    
+    // Recalcular disponibilidades
+    const grupos = {};
+    historico.forEach(reg => {
+        const key = `${reg.data}-${reg.machine}-${reg.turno}`;
+        if (!grupos[key]) grupos[key] = [];
+        grupos[key].push(reg);
+    });
+    
+    Object.values(grupos).forEach(grupo => {
+        if (grupo.length > 0) {
+            const dispTurno = calcularDisponibilidadeTurno(grupo);
+            grupo.forEach(op => {
+                op.disp = calcularDisponibilidadeOP(
+                    op.inicio, 
+                    op.fim, 
+                    op.setup, 
+                    op.avaria,
+                    op.turno,
+                    grupo
+                );
+                op.dispTurno = dispTurno;
+            });
+        }
+    });
+    
+    filterByRange();
+}
         } else {
             // Código para múltiplos turnos (similar, mas adaptado)
             showErrorToast('Funcionalidade de múltiplos turnos em desenvolvimento');

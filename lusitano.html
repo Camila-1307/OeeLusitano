@@ -286,7 +286,7 @@
             color: #94a3b8;
         }
 
-        #modal, #clientModal, #editModal, #turnosModal {
+        #modal, #clientModal, #editModal, #turnosModal, #detalhesOPModal, #detalhesClienteModal {
             display: none;
             position: fixed;
             inset: 0;
@@ -708,6 +708,16 @@
             color: var(--lusitano-green);
             background-color: #f0fdf4;
         }
+        
+        .op-card {
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+        
+        .op-card:hover {
+            border-left-color: var(--lusitano-green);
+            transform: translateX(4px);
+        }
     </style>
 </head>
 <body>
@@ -925,10 +935,10 @@
                                 <th class="py-2">Cliente/Produto</th>
                                 <th class="py-2 text-right">Est.</th>
                                 <th class="py-2 text-right">Real</th>
-                                <th class="py-2 text-right">Disp.OP</th>
+                                <th class="py-2 text-right">Disp</th>
                                 <th class="py-2 text-right">Disp.Turno</th>
-                                <th class="py-2 text-right">Perf.</th>
-                                <th class="py-2 text-right">Qual.</th>
+                                <th class="py-2 text-right">Perf</th>
+                                <th class="py-2 text-right">Qual</th>
                                 <th class="py-2 text-right">OEE</th>
                                 <th class="py-2 text-center">Status</th>
                                 <th class="py-2 text-center">Ações</th>
@@ -942,53 +952,8 @@
 
         <div id="view-op" class="view-content">
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mb-8">
-                <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Timeline de Produção por Turno</h3>
-                <div id="opTimelineContainer" class="space-y-6"></div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-4">Disponibilidade por OP</h3>
-                    <div id="opDispList" class="space-y-3"></div>
-                </div>
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-4">Performance por OP</h3>
-                    <div id="opPerfList" class="space-y-3"></div>
-                </div>
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-4">Qualidade por OP</h3>
-                    <div id="opQualList" class="space-y-3"></div>
-                </div>
-            </div>
-            
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Detalhamento por OP</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead>
-                            <tr class="text-[10px] uppercase text-slate-400 border-b">
-                                <th class="pb-4">Data</th>
-                                <th class="pb-4">Turno</th>
-                                <th class="pb-4">OP</th>
-                                <th class="pb-4">Cliente/Produto</th>
-                                <th class="pb-4 text-center">Início</th>
-                                <th class="pb-4 text-center">Fim</th>
-                                <th class="pb-4 text-center">Duração</th>
-                                <th class="pb-4 text-center">Setup</th>
-                                <th class="pb-4 text-center">Paradas</th>
-                                <th class="pb-4 text-center">Disp.OP</th>
-                                <th class="pb-4 text-center">Disp.Turno</th>
-                                <th class="pb-4 text-center">Perda</th>
-                                <th class="pb-4 text-center">Est.</th>
-                                <th class="pb-4 text-center">Real</th>
-                                <th class="pb-4 text-center">Perf.</th>
-                                <th class="pb-4 text-center">Qual.</th>
-                                <th class="pb-4 text-center">Motivo Perda</th>
-                            </tr>
-                        </thead>
-                        <tbody id="op-detail-rows" class="divide-y divide-slate-50"></tbody>
-                    </table>
-                </div>
+                <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Análise por OP - Cards Consolidados</h3>
+                <div id="opTimelineContainer" class="space-y-4"></div>
             </div>
         </div>
 
@@ -1006,10 +971,10 @@
                                 <th class="pb-4">Cliente/Produto</th>
                                 <th class="pb-4 text-center">Est.</th>
                                 <th class="pb-4 text-center">Real</th>
-                                <th class="pb-4 text-center">Disp.OP</th>
+                                <th class="pb-4 text-center">Disp</th>
                                 <th class="pb-4 text-center">Disp.Turno</th>
-                                <th class="pb-4 text-center">Perf.</th>
-                                <th class="pb-4 text-center">Qual.</th>
+                                <th class="pb-4 text-center">Perf</th>
+                                <th class="pb-4 text-center">Qual</th>
                                 <th class="pb-4 text-right">OEE</th>
                                 <th class="pb-4 text-center">Status</th>
                                 <th class="pb-4 text-center">Ações</th>
@@ -1025,7 +990,7 @@
             <div class="bg-white p-8 rounded-3xl border border-slate-200 mb-8">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-6">
                     <div>
-                        <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Análise por Cliente</h3>
+                        <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Análise por Cliente - Cards Consolidados</h3>
                         <p class="text-slate-400 text-sm font-medium">Digite o nome do cliente ou selecione abaixo</p>
                     </div>
                     <div class="client-search-container">
@@ -1040,41 +1005,16 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div id="client-performance-list" class="space-y-4"></div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
                 <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Performance por Cliente</h3>
-                    <div id="client-performance-list" class="space-y-4"></div>
-                </div>
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Oportunidades de Aumento</h3>
+                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Oportunidades de Melhoria</h3>
                     <div id="opportunities-list" class="space-y-4"></div>
                 </div>
-            </div>
-            
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Detalhamento por Cliente</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead>
-                            <tr class="text-[10px] uppercase text-slate-400 border-b">
-                                <th class="pb-4">Data</th>
-                                <th class="pb-4">Cliente</th>
-                                <th class="pb-4">Produto</th>
-                                <th class="pb-4">Máq</th>
-                                <th class="pb-4">Turno</th>
-                                <th class="pb-4">OP</th>
-                                <th class="pb-4 text-center">Est.</th>
-                                <th class="pb-4 text-center">Real</th>
-                                <th class="pb-4 text-center">Disp. + Var.</th>
-                                <th class="pb-4 text-center">Perf.</th>
-                                <th class="pb-4 text-center">Qual.</th>
-                                <th class="pb-4 text-center">Variação</th>
-                                <th class="pb-4 text-center">OEE</th>
-                                <th class="pb-4 text-center">Oportunidade</th>
-                            </tr>
-                        </thead>
-                        <tbody id="client-history-rows" class="divide-y divide-slate-50"></tbody>
-                    </table>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Clientes Destaque</h3>
+                    <div id="top-clients-list" class="space-y-4"></div>
                 </div>
             </div>
         </div>
@@ -1201,15 +1141,15 @@
                     <h3 class="text-xs font-black uppercase opacity-60 tracking-widest mb-3">PRÉ-VISUALIZAÇÃO DO OEE</h3>
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
-                            <p class="text-[9px] uppercase opacity-50">Disp. OP</p>
+                            <p class="text-[9px] uppercase opacity-50">Disp</p>
                             <p id="previewDispOP" class="text-2xl font-black">0%</p>
                         </div>
                         <div>
-                            <p class="text-[9px] uppercase opacity-50">Performance</p>
+                            <p class="text-[9px] uppercase opacity-50">Perf</p>
                             <p id="previewPerf" class="text-2xl font-black">0%</p>
                         </div>
                         <div>
-                            <p class="text-[9px] uppercase opacity-50">Qualidade</p>
+                            <p class="text-[9px] uppercase opacity-50">Qual</p>
                             <p id="previewQual" class="text-2xl font-black">0%</p>
                         </div>
                         <div>
@@ -2685,7 +2625,7 @@
     }
 
     // ============================================
-    // FUNÇÃO PRINCIPAL DE SALVAR - CORRIGIDA
+    // FUNÇÃO PRINCIPAL DE SALVAR
     // ============================================
     async function calcularESalvar() {
         const date = document.getElementById('regDate').value;
@@ -3583,8 +3523,12 @@
         });
     }
 
+    // ============================================
+    // FUNÇÃO CORRIGIDA: renderOPView
+    // ============================================
     function renderOPView(data) {
         const ops = {};
+        
         data.forEach(reg => {
             if (!ops[reg.op]) {
                 ops[reg.op] = [];
@@ -3596,103 +3540,528 @@
         timelineContainer.innerHTML = '';
         
         Object.entries(ops).forEach(([op, registros]) => {
-            registros.sort((a, b) => new Date(a.date) - new Date(b.date));
-            const firstReg = registros[0];
-            const lastReg = registros[registros.length - 1];
-            const totalProduzido = registros.reduce((sum, r) => sum + (r.produzido || 0), 0);
-            const totalTempo = registros.reduce((sum, r) => {
-                const minutos = calcularDuracaoHoras(r.inicio, r.fim);
-                return sum + minutos;
-            }, 0);
+            registros.sort((a, b) => {
+                const dataA = new Date(a.date + ' ' + a.inicio);
+                const dataB = new Date(b.date + ' ' + b.inicio);
+                return dataA - dataB;
+            });
+            
+            let totalProduzido = 0;
+            let totalPedido = 0;
+            let somaDisp = 0;
+            let somaPerf = 0;
+            let somaQual = 0;
+            let totalHoras = 0;
+            
+            registros.forEach(reg => {
+                totalProduzido += reg.produzido || 0;
+                totalPedido = reg.pedido || totalPedido;
+                somaDisp += reg.disp || 0;
+                somaPerf += reg.perf || 0;
+                somaQual += reg.qual || 0;
+                
+                const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
+                totalHoras += horas;
+            });
+            
+            const mediaDisp = Math.round(somaDisp / registros.length);
+            const mediaPerf = Math.round(somaPerf / registros.length);
+            const mediaQual = Math.round(somaQual / registros.length);
+            const mediaOEE = calcularOEE(mediaDisp, mediaPerf, mediaQual);
+            
+            const metaAtingida = totalProduzido >= totalPedido;
+            const primeiroReg = registros[0];
+            const ultimoReg = registros[registros.length - 1];
+            
+            const periodo = primeiroReg.date === ultimoReg.date 
+                ? primeiroReg.date.split('-').reverse().join('/')
+                : `${primeiroReg.date.split('-').reverse().join('/')} a ${ultimoReg.date.split('-').reverse().join('/')}`;
             
             timelineContainer.innerHTML += `
-                <div class="border-l-4 border-green-600 pl-4">
-                    <div class="flex justify-between items-start">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md transition-all hover:border-green-600 op-card" 
+                     onclick="abrirDetalhesOP('${op}')">
+                    
+                    <div class="flex justify-between items-start mb-3">
                         <div>
-                            <span class="font-black text-lg">OP ${op}</span>
-                            <span class="ml-3 text-sm text-slate-400">${firstReg.produto || '-'}</span>
+                            <span class="font-black text-xl text-green-700">OP ${op}</span>
+                            <span class="ml-3 text-sm font-medium text-slate-500">${primeiroReg.produto || '-'}</span>
                         </div>
-                        <span class="text-sm font-bold">${totalProduzido.toFixed(1)} kg</span>
+                        <span class="text-sm font-bold px-3 py-1 rounded-full ${metaAtingida ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                            ${metaAtingida ? '✅ META' : '⚠️ META NÃO ATINGIDA'}
+                        </span>
                     </div>
-                    <div class="text-xs text-slate-400 mt-1">
-                        ${registros.length} registro(s) • ${totalTempo.toFixed(1)} horas • 
-                        ${firstReg.date} a ${lastReg.date}
+                    
+                    <div class="grid grid-cols-4 gap-4 mb-4">
+                        <div class="bg-slate-50 p-3 rounded-xl text-center">
+                            <span class="text-xs font-bold uppercase text-slate-400">DISP</span>
+                            <div class="text-2xl font-black ${mediaDisp >= 85 ? 'text-green-600' : 'text-red-600'}">${mediaDisp}%</div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center">
+                            <span class="text-xs font-bold uppercase text-slate-400">PERF</span>
+                            <div class="text-2xl font-black ${mediaPerf >= 90 ? 'text-green-600' : 'text-yellow-600'}">${mediaPerf}%</div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center">
+                            <span class="text-xs font-bold uppercase text-slate-400">QUAL</span>
+                            <div class="text-2xl font-black ${mediaQual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${mediaQual}%</div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center">
+                            <span class="text-xs font-bold uppercase text-slate-400">OEE</span>
+                            <div class="text-2xl font-black ${mediaOEE >= 85 ? 'text-green-600' : 'text-red-600'}">${mediaOEE}%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
+                        <div>
+                            <span class="font-medium">📦 ${totalProduzido.toFixed(0)} kg</span>
+                            <span class="mx-2">•</span>
+                            <span>🎯 ${totalPedido} kg</span>
+                            <span class="mx-2">•</span>
+                            <span>🕒 ${totalHoras.toFixed(1)}h</span>
+                        </div>
+                        <div>
+                            <span>📅 ${periodo}</span>
+                            <span class="ml-4 text-blue-600 font-medium">👆 Clique para detalhes</span>
+                        </div>
                     </div>
                 </div>
             `;
         });
         
-        const dispList = document.getElementById('opDispList');
-        dispList.innerHTML = '';
+        if (Object.keys(ops).length === 0) {
+            timelineContainer.innerHTML = '<p class="text-center text-slate-400 py-8">Nenhuma OP encontrada no período.</p>';
+        }
+    }
+
+    // ============================================
+    // FUNÇÃO CORRIGIDA: abrirDetalhesOP
+    // ============================================
+    function abrirDetalhesOP(op) {
+        console.log("🔍 Abrindo detalhes da OP:", op);
         
-        Object.entries(ops).forEach(([op, registros]) => {
-            const avgDisp = Math.round(registros.reduce((sum, r) => sum + (r.disp || 0), 0) / registros.length);
-            dispList.innerHTML += `
-                <div class="flex justify-between items-center">
-                    <span class="font-medium">OP ${op}</span>
-                    <span class="font-bold ${avgDisp >= 85 ? 'text-green-600' : 'text-red-600'}">${avgDisp}%</span>
-                </div>
-            `;
+        const registros = historico.filter(reg => reg.op == op);
+        
+        if (registros.length === 0) {
+            console.error("Nenhum registro encontrado para OP:", op);
+            return;
+        }
+        
+        console.log(`📊 Encontrados ${registros.length} registros`);
+        
+        registros.sort((a, b) => {
+            const dataA = new Date(a.date + ' ' + a.inicio);
+            const dataB = new Date(b.date + ' ' + b.inicio);
+            return dataA - dataB;
         });
         
-        const perfList = document.getElementById('opPerfList');
-        perfList.innerHTML = '';
+        let rowsHTML = '';
+        let totalDisp = 0, totalPerf = 0, totalQual = 0, totalOEE = 0;
         
-        Object.entries(ops).forEach(([op, registros]) => {
-            const avgPerf = Math.round(registros.reduce((sum, r) => sum + (r.perf || 0), 0) / registros.length);
-            perfList.innerHTML += `
-                <div class="flex justify-between items-center">
-                    <span class="font-medium">OP ${op}</span>
-                    <span class="font-bold ${avgPerf >= 95 ? 'text-green-600' : avgPerf >= 85 ? 'text-yellow-600' : 'text-red-600'}">${avgPerf}%</span>
-                </div>
-            `;
-        });
-        
-        const qualList = document.getElementById('opQualList');
-        qualList.innerHTML = '';
-        
-        Object.entries(ops).forEach(([op, registros]) => {
-            const avgQual = Math.round(registros.reduce((sum, r) => sum + (r.qual || 0), 0) / registros.length);
-            qualList.innerHTML += `
-                <div class="flex justify-between items-center">
-                    <span class="font-medium">OP ${op}</span>
-                    <span class="font-bold ${avgQual >= 98 ? 'text-green-600' : avgQual >= 95 ? 'text-yellow-600' : 'text-red-600'}">${avgQual}%</span>
-                </div>
-            `;
-        });
-        
-        const detailRows = document.getElementById('op-detail-rows');
-        detailRows.innerHTML = '';
-        
-        data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(reg => {
+        registros.forEach((reg, index) => {
             const duracaoHoras = calcularDuracaoHoras(reg.inicio, reg.fim).toFixed(1);
             const perda = ((reg.dispTurno || 0) - (reg.disp || 0)).toFixed(1);
             const motivoClass = reg.motivoPerda ? `perda-${reg.motivoPerda.toLowerCase().replace(/ /g, '-')}` : '';
+            const oee = calcularOEE(reg.disp, reg.perf, reg.qual);
             
-            detailRows.innerHTML += `
-                <tr>
-                    <td class="py-2">${reg.date.split('-').reverse().join('/')}</td>
-                    <td class="py-2">${reg.turno}</td>
-                    <td class="py-2">${reg.op}</td>
-                    <td class="py-2">${reg.produto || '-'}</td>
-                    <td class="py-2 text-center">${reg.inicio}</td>
-                    <td class="py-2 text-center">${reg.fim}</td>
-                    <td class="py-2 text-center">${duracaoHoras}h</td>
-                    <td class="py-2 text-center">${reg.setup || 0}</td>
-                    <td class="py-2 text-center">${reg.avaria || 0}</td>
-                    <td class="py-2 text-center">${reg.disp || 0}%</td>
-                    <td class="py-2 text-center">${reg.dispTurno || 0}%</td>
-                    <td class="py-2 text-center text-red-600 font-bold">${perda}%</td>
-                    <td class="py-2 text-center">${reg.est || 0}</td>
-                    <td class="py-2 text-center">${reg.realKgH || 0}</td>
-                    <td class="py-2 text-center">${reg.perf || 0}%</td>
-                    <td class="py-2 text-center">${reg.qual || 0}%</td>
-                    <td class="py-2 text-center">
+            totalDisp += reg.disp || 0;
+            totalPerf += reg.perf || 0;
+            totalQual += reg.qual || 0;
+            totalOEE += oee;
+            
+            rowsHTML += `
+                <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+                    <td class="py-3">${reg.date.split('-').reverse().join('/')}</td>
+                    <td class="py-3 font-bold">${reg.turno}</td>
+                    <td class="py-3">${reg.op}</td>
+                    <td class="py-3 max-w-xs truncate">${reg.produto || '-'}</td>
+                    <td class="py-3 text-center">${reg.inicio}</td>
+                    <td class="py-3 text-center">${reg.fim}</td>
+                    <td class="py-3 text-center">${duracaoHoras}h</td>
+                    <td class="py-3 text-center ${reg.setup > 0 ? 'text-orange-600 font-bold' : ''}">${reg.setup || 0}</td>
+                    <td class="py-3 text-center ${reg.avaria > 0 ? 'text-red-600 font-bold' : ''}">${reg.avaria || 0}</td>
+                    <td class="py-3 text-center font-bold">${reg.disp || 0}%</td>
+                    <td class="py-3 text-center">${reg.dispTurno || 0}%</td>
+                    <td class="py-3 text-center text-red-600 font-bold">${perda}%</td>
+                    <td class="py-3 text-center">${reg.est || 0}</td>
+                    <td class="py-3 text-center">${reg.realKgH || 0}</td>
+                    <td class="py-3 text-center font-bold ${reg.perf >= 90 ? 'text-green-600' : 'text-yellow-600'}">${reg.perf || 0}%</td>
+                    <td class="py-3 text-center font-bold ${reg.qual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${reg.qual || 0}%</td>
+                    <td class="py-3 text-center font-bold ${oee >= 85 ? 'text-green-600' : 'text-red-600'}">${oee}%</td>
+                    <td class="py-3 text-center">
                         ${reg.motivoPerda ? `<span class="perda-badge ${motivoClass}">${reg.motivoPerda}</span>` : '-'}
                     </td>
                 </tr>
             `;
         });
+        
+        const mediaDisp = Math.round(totalDisp / registros.length);
+        const mediaPerf = Math.round(totalPerf / registros.length);
+        const mediaQual = Math.round(totalQual / registros.length);
+        const mediaOEE = Math.round(totalOEE / registros.length);
+        
+        rowsHTML += `
+            <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
+                <td colspan="4" class="py-3 text-blue-800">📊 MÉDIA DA OP</td>
+                <td colspan="3" class="py-3 text-center"></td>
+                <td colspan="2" class="py-3 text-center"></td>
+                <td class="py-3 text-center text-blue-800">${mediaDisp}%</td>
+                <td class="py-3 text-center"></td>
+                <td class="py-3 text-center"></td>
+                <td class="py-3 text-center"></td>
+                <td class="py-3 text-center"></td>
+                <td class="py-3 text-center text-blue-800">${mediaPerf}%</td>
+                <td class="py-3 text-center text-blue-800">${mediaQual}%</td>
+                <td class="py-3 text-center text-blue-800 font-black text-base">${mediaOEE}%</td>
+                <td class="py-3 text-center"></td>
+            </tr>
+        `;
+        
+        // Remover modal existente
+        const modalExistente = document.getElementById('detalhesOPModal');
+        if (modalExistente) modalExistente.remove();
+        
+        // Criar e mostrar modal
+        const modalHTML = `
+            <div id="detalhesOPModal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[200]" style="display: flex;">
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-7xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
+                    <div class="flex justify-between items-center mb-6 border-b pb-4">
+                        <h2 class="font-black uppercase text-slate-800 text-xl">
+                            OP ${op} - Detalhamento por Turno
+                        </h2>
+                        <button onclick="fecharDetalhesOP()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="text-[10px] uppercase text-slate-400 border-b">
+                                    <th class="pb-4">DATA</th>
+                                    <th class="pb-4">TURNO</th>
+                                    <th class="pb-4">OP</th>
+                                    <th class="pb-4">CLIENTE/PRODUTO</th>
+                                    <th class="pb-4 text-center">INÍCIO</th>
+                                    <th class="pb-4 text-center">FIM</th>
+                                    <th class="pb-4 text-center">DURAÇÃO</th>
+                                    <th class="pb-4 text-center">SETUP</th>
+                                    <th class="pb-4 text-center">PARADAS</th>
+                                    <th class="pb-4 text-center">DISP</th>
+                                    <th class="pb-4 text-center">DISP.TURNO</th>
+                                    <th class="pb-4 text-center">PERDA</th>
+                                    <th class="pb-4 text-center">EST.</th>
+                                    <th class="pb-4 text-center">REAL</th>
+                                    <th class="pb-4 text-center">PERF</th>
+                                    <th class="pb-4 text-center">QUAL</th>
+                                    <th class="pb-4 text-center">OEE</th>
+                                    <th class="pb-4 text-center">MOTIVO PERDA</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                ${rowsHTML}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="fecharDetalhesOP()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300 transition-colors">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    function fecharDetalhesOP() {
+        const modal = document.getElementById('detalhesOPModal');
+        if (modal) modal.remove();
+    }
+
+    // ============================================
+    // FUNÇÃO CORRIGIDA: renderClientsView
+    // ============================================
+    function renderClientsView(data) {
+        const clientesData = {};
+        
+        data.forEach(reg => {
+            const cliente = reg.cliente || 'Sem cliente';
+            if (!clientesData[cliente]) {
+                clientesData[cliente] = [];
+            }
+            clientesData[cliente].push(reg);
+        });
+        
+        const perfList = document.getElementById('client-performance-list');
+        perfList.innerHTML = '';
+        
+        const clientesOrdenados = Object.keys(clientesData).sort();
+        
+        clientesOrdenados.forEach(cliente => {
+            const registros = clientesData[cliente];
+            
+            let totalProduzido = 0;
+            let somaDisp = 0;
+            let somaPerf = 0;
+            let somaQual = 0;
+            let totalHoras = 0;
+            let datas = [];
+            
+            registros.forEach(reg => {
+                totalProduzido += reg.produzido || 0;
+                somaDisp += reg.disp || 0;
+                somaPerf += reg.perf || 0;
+                somaQual += reg.qual || 0;
+                datas.push(reg.date);
+                
+                const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
+                totalHoras += horas;
+            });
+            
+            const mediaDisp = Math.round(somaDisp / registros.length);
+            const mediaPerf = Math.round(somaPerf / registros.length);
+            const mediaQual = Math.round(somaQual / registros.length);
+            const mediaOEE = calcularOEE(mediaDisp, mediaPerf, mediaQual);
+            
+            datas.sort();
+            const primeiraData = datas[0]?.split('-').reverse().join('/') || '';
+            const ultimaData = datas[datas.length - 1]?.split('-').reverse().join('/') || '';
+            const periodo = primeiraData === ultimaData ? primeiraData : `${primeiraData} a ${ultimaData}`;
+            
+            const clienteEscapado = cliente.replace(/'/g, "\\'");
+            
+            perfList.innerHTML += `
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md transition-all hover:border-green-600 op-card" 
+                     onclick="abrirDetalhesCliente('${clienteEscapado}')">
+                    
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="font-black text-xl text-green-700">${cliente}</span>
+                        </div>
+                        <span class="text-sm font-bold px-3 py-1 rounded-full ${mediaOEE >= 85 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                            ${mediaOEE >= 85 ? '✅ ACIMA DA META' : '⚠️ ABAIXO DA META'}
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-4 gap-4 mb-4">
+                        <div class="bg-slate-50 p-3 rounded-xl text-center">
+                            <span class="text-xs font-bold uppercase text-slate-400">DISP</span>
+                            <div class="text-2xl font-black ${mediaDisp >= 85 ? 'text-green-600' : 'text-red-600'}">${mediaDisp}%</div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center">
+                            <span class="text-xs font-bold uppercase text-slate-400">PERF</span>
+                            <div class="text-2xl font-black ${mediaPerf >= 90 ? 'text-green-600' : 'text-yellow-600'}">${mediaPerf}%</div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center">
+                            <span class="text-xs font-bold uppercase text-slate-400">QUAL</span>
+                            <div class="text-2xl font-black ${mediaQual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${mediaQual}%</div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center">
+                            <span class="text-xs font-bold uppercase text-slate-400">OEE</span>
+                            <div class="text-2xl font-black ${mediaOEE >= 85 ? 'text-green-600' : 'text-red-600'}">${mediaOEE}%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
+                        <div>
+                            <span class="font-medium">📦 ${totalProduzido.toFixed(0)} kg</span>
+                            <span class="mx-2">•</span>
+                            <span>📋 ${registros.length} registros</span>
+                            <span class="mx-2">•</span>
+                            <span>🕒 ${totalHoras.toFixed(1)}h</span>
+                        </div>
+                        <div>
+                            <span>📅 ${periodo}</span>
+                            <span class="ml-4 text-blue-600 font-medium">👆 Clique para detalhes</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        if (Object.keys(clientesData).length === 0) {
+            perfList.innerHTML = '<p class="text-center text-slate-400 py-8">Nenhum registro encontrado no período.</p>';
+            return;
+        }
+        
+        const oppList = document.getElementById('opportunities-list');
+        if (oppList) {
+            oppList.innerHTML = '';
+            
+            const clientesComOEE = [];
+            Object.entries(clientesData).forEach(([cliente, registros]) => {
+                const somaOEE = registros.reduce((sum, r) => sum + calcularOEE(r.disp, r.perf, r.qual), 0);
+                const mediaOEE = Math.round(somaOEE / registros.length);
+                const totalKg = registros.reduce((sum, r) => sum + (r.produzido || 0), 0);
+                clientesComOEE.push({ cliente, mediaOEE, totalKg, registros: registros.length });
+            });
+            
+            clientesComOEE.sort((a, b) => a.mediaOEE - b.mediaOEE);
+            
+            let oportunidadesCount = 0;
+            clientesComOEE.filter(c => c.mediaOEE < 85).forEach(c => {
+                oportunidadesCount++;
+                const potencial = (85 - c.mediaOEE).toFixed(1);
+                oppList.innerHTML += `
+                    <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                        <div>
+                            <span class="font-bold">${c.cliente}</span>
+                            <p class="text-xs text-slate-500">OEE atual: ${c.mediaOEE}%</p>
+                            <p class="text-xs font-bold text-green-600">Potencial: +${potencial}%</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-bold text-green-600">${(c.mediaOEE + parseFloat(potencial)).toFixed(0)}%</span>
+                            <p class="text-xs text-slate-500">meta 85%</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if (oportunidadesCount === 0) {
+                oppList.innerHTML = '<p class="text-center text-green-600 font-bold py-4">✅ Todos os clientes estão acima da meta!</p>';
+            }
+        }
+        
+        const topClientsList = document.getElementById('top-clients-list');
+        if (topClientsList) {
+            topClientsList.innerHTML = '';
+            
+            const melhoresClientes = [...clientesComOEE].sort((a, b) => b.mediaOEE - a.mediaOEE).slice(0, 5);
+            
+            melhoresClientes.forEach((c, index) => {
+                topClientsList.innerHTML += `
+                    <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div>
+                            <span class="font-bold">${index + 1}. ${c.cliente}</span>
+                            <p class="text-xs text-slate-500">${c.registros} pedidos • ${c.totalKg} kg</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-lg font-black text-green-600">${c.mediaOEE}%</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    // ============================================
+    // FUNÇÃO CORRIGIDA: abrirDetalhesCliente
+    // ============================================
+    function abrirDetalhesCliente(cliente) {
+        console.log("🔍 Abrindo detalhes do cliente:", cliente);
+        
+        const registros = historico.filter(reg => reg.cliente === cliente);
+        
+        if (registros.length === 0) {
+            console.error("Nenhum registro encontrado para cliente:", cliente);
+            return;
+        }
+        
+        console.log(`📊 Encontrados ${registros.length} registros`);
+        
+        registros.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        let rowsHTML = '';
+        let totalDisp = 0, totalPerf = 0, totalQual = 0, totalOEE = 0;
+        
+        registros.forEach((reg, index) => {
+            const oee = calcularOEE(reg.disp, reg.perf, reg.qual);
+            const variacao = reg.realKgH && reg.est ? ((reg.realKgH - reg.est) / reg.est * 100).toFixed(1) : 0;
+            const perfClass = variacao >= 5 ? 'text-green-600' : variacao >= -5 ? 'text-blue-600' : 'text-red-600';
+            
+            totalDisp += reg.disp || 0;
+            totalPerf += reg.perf || 0;
+            totalQual += reg.qual || 0;
+            totalOEE += oee;
+            
+            rowsHTML += `
+                <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+                    <td class="py-3">${reg.date.split('-').reverse().join('/')}</td>
+                    <td class="py-3">${reg.machine}</td>
+                    <td class="py-3">${reg.turno}</td>
+                    <td class="py-3 font-bold">${reg.op}</td>
+                    <td class="py-3 max-w-xs truncate">${reg.produto || '-'}</td>
+                    <td class="py-3 text-center">${reg.est || 0}</td>
+                    <td class="py-3 text-center">${reg.realKgH || 0}</td>
+                    <td class="py-3 text-center font-bold">${reg.disp || 0}%</td>
+                    <td class="py-3 text-center font-bold ${reg.perf >= 90 ? 'text-green-600' : 'text-yellow-600'}">${reg.perf || 0}%</td>
+                    <td class="py-3 text-center font-bold ${reg.qual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${reg.qual || 0}%</td>
+                    <td class="py-3 text-center ${perfClass}">${variacao > 0 ? '+' : ''}${variacao}%</td>
+                    <td class="py-3 text-center font-bold ${oee >= 85 ? 'text-green-600' : 'text-red-600'}">${oee}%</td>
+                </tr>
+            `;
+        });
+        
+        const mediaDisp = Math.round(totalDisp / registros.length);
+        const mediaPerf = Math.round(totalPerf / registros.length);
+        const mediaQual = Math.round(totalQual / registros.length);
+        const mediaOEE = Math.round(totalOEE / registros.length);
+        
+        rowsHTML += `
+            <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
+                <td colspan="5" class="py-3 text-blue-800">📊 MÉDIA DO CLIENTE</td>
+                <td colspan="2" class="py-3 text-center"></td>
+                <td class="py-3 text-center text-blue-800">${mediaDisp}%</td>
+                <td class="py-3 text-center text-blue-800">${mediaPerf}%</td>
+                <td class="py-3 text-center text-blue-800">${mediaQual}%</td>
+                <td class="py-3 text-center"></td>
+                <td class="py-3 text-center text-blue-800 font-black text-base">${mediaOEE}%</td>
+            </tr>
+        `;
+        
+        // Remover modal existente
+        const modalExistente = document.getElementById('detalhesClienteModal');
+        if (modalExistente) modalExistente.remove();
+        
+        // Criar e mostrar modal
+        const modalHTML = `
+            <div id="detalhesClienteModal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[200]" style="display: flex;">
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-7xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
+                    <div class="flex justify-between items-center mb-6 border-b pb-4">
+                        <h2 class="font-black uppercase text-slate-800 text-xl">
+                            ${cliente} - Histórico de Pedidos
+                        </h2>
+                        <button onclick="fecharDetalhesCliente()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="text-[10px] uppercase text-slate-400 border-b">
+                                    <th class="pb-4">DATA</th>
+                                    <th class="pb-4">MÁQ</th>
+                                    <th class="pb-4">TURNO</th>
+                                    <th class="pb-4">OP</th>
+                                    <th class="pb-4">PRODUTO</th>
+                                    <th class="pb-4 text-center">EST.</th>
+                                    <th class="pb-4 text-center">REAL</th>
+                                    <th class="pb-4 text-center">DISP</th>
+                                    <th class="pb-4 text-center">PERF</th>
+                                    <th class="pb-4 text-center">QUAL</th>
+                                    <th class="pb-4 text-center">VARIAÇÃO</th>
+                                    <th class="pb-4 text-center">OEE</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                ${rowsHTML}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="fecharDetalhesCliente()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300 transition-colors">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    function fecharDetalhesCliente() {
+        const modal = document.getElementById('detalhesClienteModal');
+        if (modal) modal.remove();
     }
 
     function renderHistoryView(data) {
@@ -3735,123 +4104,6 @@
                             </svg>
                         </button>
                     </td>
-                </tr>
-            `;
-        });
-    }
-
-    function renderClientsView(data) {
-        const clientesData = {};
-        data.forEach(reg => {
-            const cliente = reg.cliente || 'Sem cliente';
-            if (!clientesData[cliente]) {
-                clientesData[cliente] = [];
-            }
-            clientesData[cliente].push(reg);
-        });
-        
-        const perfList = document.getElementById('client-performance-list');
-        perfList.innerHTML = '';
-        
-        Object.entries(clientesData).forEach(([cliente, registros]) => {
-            const avgDisp = Math.round(registros.reduce((sum, r) => sum + (r.disp || 0), 0) / registros.length);
-            const avgPerf = Math.round(registros.reduce((sum, r) => sum + (r.perf || 0), 0) / registros.length);
-            const avgQual = Math.round(registros.reduce((sum, r) => sum + (r.qual || 0), 0) / registros.length);
-            const avgOEE = Math.round(registros.reduce((sum, r) => {
-                return sum + calcularOEE(r.disp, r.perf, r.qual);
-            }, 0) / registros.length);
-            
-            perfList.innerHTML += `
-                <div class="border-b pb-3">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-black">${cliente}</span>
-                        <span class="text-2xl font-bold ${avgOEE >= META ? 'text-green-600' : 'text-red-600'}">${avgOEE}%</span>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2 text-xs">
-                        <div><span class="text-slate-400">Disp.:</span> ${avgDisp}%</div>
-                        <div><span class="text-slate-400">Perf.:</span> ${avgPerf}%</div>
-                        <div><span class="text-slate-400">Qual.:</span> ${avgQual}%</div>
-                        <div><span class="text-slate-400">Registros:</span> ${registros.length}</div>
-                    </div>
-                </div>
-            `;
-        });
-        
-        const oppList = document.getElementById('opportunities-list');
-        oppList.innerHTML = '';
-        
-        Object.entries(clientesData).forEach(([cliente, registros]) => {
-            const avgPerf = registros.reduce((sum, r) => sum + (r.perf || 0), 0) / registros.length;
-            if (avgPerf < 90) {
-                const potencial = (90 - avgPerf).toFixed(1);
-                oppList.innerHTML += `
-                    <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                        <div>
-                            <span class="font-bold">${cliente}</span>
-                            <p class="text-xs text-slate-500">Performance atual: ${avgPerf.toFixed(1)}%</p>
-                            <p class="text-xs font-bold text-green-600">Potencial: +${potencial}%</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-sm font-bold text-green-600">${Math.round(avgPerf + parseFloat(potencial))}%</span>
-                            <p class="text-xs text-slate-500">meta 90%</p>
-                        </div>
-                    </div>
-                `;
-            } else {
-                oppList.innerHTML += `
-                    <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <div>
-                            <span class="font-bold">${cliente}</span>
-                            <p class="text-xs text-slate-500">Performance: ${avgPerf.toFixed(1)}%</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-sm font-bold text-green-600">✅ Meta atingida</span>
-                        </div>
-                    </div>
-                `;
-            }
-        });
-        
-        const historyRows = document.getElementById('client-history-rows');
-        historyRows.innerHTML = '';
-        
-        data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(reg => {
-            const variacao = reg.realKgH && reg.est ? ((reg.realKgH - reg.est) / reg.est * 100).toFixed(1) : 0;
-            const perfClass = variacao >= 5 ? 'text-green-600' : variacao >= -5 ? 'text-blue-600' : 'text-red-600';
-            const oee = calcularOEE(reg.disp, reg.perf, reg.qual);
-            
-            const dispComVariacao = reg.disp ? (reg.disp + (reg.disp * (variacao / 100))).toFixed(1) : '0';
-            const dispClass = dispComVariacao > 100 ? 'disp-high' : '';
-            
-            let oportunidadeClass = '';
-            let oportunidadeText = '';
-            if (reg.perf < 85) {
-                oportunidadeClass = 'opportunity-low';
-                oportunidadeText = '⬇ Baixa perf.';
-            } else if (reg.perf < 95) {
-                oportunidadeClass = 'opportunity-medium';
-                oportunidadeText = '⚡ Pode melhorar';
-            } else {
-                oportunidadeClass = 'opportunity-high';
-                oportunidadeText = '✅ Ótimo';
-            }
-            
-            historyRows.innerHTML += `
-                <tr>
-                    <td class="py-2">${reg.date.split('-').reverse().join('/')}</td>
-                    <td class="py-2">${reg.cliente || '-'}</td>
-                    <td class="py-2">${reg.produto || '-'}</td>
-                    <td class="py-2">${reg.machine}</td>
-                    <td class="py-2">${reg.turno}</td>
-                    <td class="py-2">${reg.op}</td>
-                    <td class="py-2 text-center">${reg.est || 0}</td>
-                    <td class="py-2 text-center">${reg.realKgH || 0}</td>
-                    <td class="py-2 text-center ${dispClass}">${dispComVariacao}%</td>
-                    <td class="py-2 text-center">${reg.perf || 0}%</td>
-                    <td class="py-2 text-center">${reg.qual || 0}%</td>
-                    <td class="py-2 text-center ${perfClass}">${variacao > 0 ? '+' : ''}${variacao}%</td>
-                    <td class="py-2 text-center font-bold ${oee >= META ? 'text-green-600' : 'text-red-600'}">${oee}%</td>
-                    <td class="py-2 text-center"><span class="opportunity-badge ${oportunidadeClass}">${oportunidadeText}</span></td>
                 </tr>
             `;
         });

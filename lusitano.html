@@ -1392,8 +1392,7 @@
         "APARECIDO DONIZETE", "MARELLI", "QUALITY CENTRAL", "C.VALE"
     ];
 
-    // PRODUTOS REAIS (amostra)
-     // PRODUTOS REAIS
+    // PRODUTOS REAIS
     let produtos = [
         {
             cliente: "Cliente Teste",
@@ -2743,8 +2742,73 @@
                 filterByRange();
             }
         } else {
-            // Código para múltiplos turnos (simplificado)
-            showErrorToast('Funcionalidade de múltiplos turnos em desenvolvimento');
+            // ============================================
+            // SALVAR MÚLTIPLOS TURNOS (CORRIGIDO)
+            // ============================================
+            console.log("🔄 Salvando múltiplos turnos:", turnosTemp);
+            
+            // Verificar conflitos para cada turno
+            for (let t of turnosTemp) {
+                const conflitos = verificarSobreposicao(date, machine, t.inicio, t.fim);
+                if (conflitos.length > 0) {
+                    showErrorToast(`Conflito no Turno ${t.turno}! Já existe um pedido (${conflitos[0].op}) das ${conflitos[0].inicio} às ${conflitos[0].fim} na máquina ${machine}.`);
+                    return;
+                }
+            }
+            
+            let registrosSalvos = 0;
+            
+            // Salvar cada turno individualmente
+            for (let t of turnosTemp) {
+                const realKgH = calcularRealKgH(t.produzido, t.inicio, t.fim);
+                const perf = calcularPerformance(est, realKgH);
+                const qual = calcularQualidade(t.produzido, t.rejeicao, t.aparas);
+                
+                const novoRegistro = {
+                    data: date,
+                    machine: machine,
+                    turno: t.turno,
+                    op: op,
+                    produto: produtoDisplay,
+                    cliente: produtoInfo.cliente,
+                    disp: 0,
+                    perf: perf,
+                    qual: qual,
+                    pedido: pedido,
+                    inicio: t.inicio,
+                    fim: t.fim,
+                    setup: t.setup,
+                    avaria: t.avaria,
+                    motivoPerda: t.motivoPerda,
+                    est: est,
+                    realKgH: realKgH,
+                    produzido: t.produzido,
+                    rejeicao: t.rejeicao,
+                    aparas: t.aparas,
+                    timestamp: new Date().toISOString()
+                };
+                
+                historico.push(novoRegistro);
+                const resultado = await inserirRegistro(novoRegistro);
+                
+                if (resultado) {
+                    registrosSalvos++;
+                    recalcularDisponibilidadesTurno(date, machine, t.turno);
+                }
+            }
+            
+            if (registrosSalvos === turnosTemp.length) {
+                showToast(`${registrosSalvos} turnos salvos com sucesso!`);
+                limparIndicadorAutosave();
+                
+                document.getElementById('regForm').reset();
+                turnosTemp = [];
+                atualizarListaTurnos();
+                closeModal();
+                filterByRange();
+            } else {
+                showErrorToast(`Erro ao salvar alguns turnos (${registrosSalvos}/${turnosTemp.length})`);
+            }
         }
     }
 

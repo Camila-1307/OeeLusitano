@@ -2743,7 +2743,7 @@
             }
         } else {
             // ============================================
-            // SALVAR MÚLTIPLOS TURNOS (CORRIGIDO)
+            // SALVAR MÚLTIPLOS TURNOS (CORRIGIDO - FINAL)
             // ============================================
             console.log("🔄 Salvando múltiplos turnos:", turnosTemp);
             
@@ -2797,18 +2797,21 @@
                 }
             }
             
+            // Mostrar resultado final e SEMPRE fechar o modal
             if (registrosSalvos === turnosTemp.length) {
                 showToast(`${registrosSalvos} turnos salvos com sucesso!`);
-                limparIndicadorAutosave();
-                
-                document.getElementById('regForm').reset();
-                turnosTemp = [];
-                atualizarListaTurnos();
-                closeModal();
-                filterByRange();
+            } else if (registrosSalvos > 0) {
+                showToast(`⚠️ ${registrosSalvos} de ${turnosTemp.length} turnos salvos.`);
             } else {
-                showErrorToast(`Erro ao salvar alguns turnos (${registrosSalvos}/${turnosTemp.length})`);
+                showErrorToast(`Erro ao salvar os turnos.`);
             }
+            
+            limparIndicadorAutosave();
+            document.getElementById('regForm').reset();
+            turnosTemp = [];
+            atualizarListaTurnos();
+            closeModal();
+            filterByRange();
         }
     }
 

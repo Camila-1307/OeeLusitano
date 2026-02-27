@@ -1358,7 +1358,7 @@
         </div>
     </div>
 
-    <!-- Modal de Gestão de Clientes/Produtos - VERSÃO CORRIGIDA -->
+    <!-- Modal de Gestão de Clientes/Produtos -->
     <div id="clientModal">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
             <div class="flex justify-between items-center mb-6 border-b pb-4">
@@ -1390,7 +1390,7 @@
                         </button>
                     </div>
                     
-                    <!-- Área de preview dos produtos - NOVO -->
+                    <!-- Área de preview dos produtos -->
                     <div id="produtosPreviewContainer" class="mt-4 p-4 bg-white rounded-xl border border-blue-200" style="display: none;">
                         <h4 class="font-bold text-sm mb-3 text-blue-800">Produtos de <span id="clienteSelecionadoNome"></span>:</h4>
                         <div id="produtosPreviewList" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-60 overflow-y-auto"></div>
@@ -1534,7 +1534,7 @@
         "APARECIDO DONIZETE", "MARELLI", "QUALITY CENTRAL", "C.VALE"
     ];
 
-    // PRODUTOS REAIS (extraídos do teu localStorage)
+    // PRODUTOS REAIS
     let produtos = [
         {
             cliente: "Cliente Teste",
@@ -2078,28 +2078,6 @@
         return Math.round(oee) || 0;
     }
 
-    function distribuirPerdasProporcionalmente(turnos, rejeicaoTotal, aparasTotal) {
-        if (!turnos || turnos.length === 0) return;
-        
-        const producaoTotal = turnos.reduce((sum, t) => sum + (t.produzido || 0), 0);
-        
-        if (producaoTotal <= 0) {
-            const rejPorTurno = rejeicaoTotal / turnos.length;
-            const apaPorTurno = aparasTotal / turnos.length;
-            
-            turnos.forEach(t => {
-                t.rejeicao = rejPorTurno;
-                t.aparas = apaPorTurno;
-            });
-        } else {
-            turnos.forEach(t => {
-                const proporcao = (t.produzido || 0) / producaoTotal;
-                t.rejeicao = rejeicaoTotal * proporcao;
-                t.aparas = aparasTotal * proporcao;
-            });
-        }
-    }
-
     function atualizarPreview() {
         const inicio = document.getElementById('regInicio')?.value;
         const fim = document.getElementById('regFim')?.value;
@@ -2148,6 +2126,9 @@
         const setup = document.getElementById('regSetup').value;
         const avaria = document.getElementById('regAvaria').value;
         const produzido = document.getElementById('regProduzido').value;
+        const rejeicao = document.getElementById('regRejeicao').value;
+        const aparas = document.getElementById('regAparas').value;
+        const motivoPerda = document.getElementById('regMotivoPerda').value;
         
         if (!turno || !inicio || !fim) {
             showErrorToast('Preencha os dados do turno antes de adicionar!');
@@ -2166,17 +2147,24 @@
             fim,
             setup: safeNumber(setup),
             avaria: safeNumber(avaria),
-            produzido: safeNumber(produzido)
+            produzido: safeNumber(produzido),
+            rejeicao: safeNumber(rejeicao),
+            aparas: safeNumber(aparas),
+            motivoPerda: motivoPerda
         });
         
         atualizarListaTurnos();
         
+        // Limpar campos para o próximo turno
         document.getElementById('regTurno').value = '';
         document.getElementById('regInicio').value = '';
         document.getElementById('regFim').value = '';
         document.getElementById('regSetup').value = '0';
         document.getElementById('regAvaria').value = '0';
         document.getElementById('regProduzido').value = '0';
+        document.getElementById('regRejeicao').value = '0';
+        document.getElementById('regAparas').value = '0';
+        document.getElementById('regMotivoPerda').value = '';
     }
 
     function atualizarListaTurnos() {
@@ -2191,6 +2179,8 @@
                         <span class="font-bold text-sm">Turno ${turno.turno}</span>
                         <span class="text-xs ml-2 text-slate-500">${turno.inicio} - ${turno.fim} (${duracao}h)</span>
                         <span class="text-xs ml-2 font-medium">Prod: ${turno.produzido} kg</span>
+                        <span class="text-xs ml-2 ${turno.setup > 0 ? 'text-orange-600' : 'text-slate-400'}">Setup: ${turno.setup}min</span>
+                        <span class="text-xs ml-2 ${turno.avaria > 0 ? 'text-red-600' : 'text-slate-400'}">Avaria: ${turno.avaria}min</span>
                     </div>
                     <button type="button" onclick="removerTurno(${index})" class="text-red-500 hover:text-red-700">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2338,7 +2328,6 @@
     // FUNÇÕES DE GESTÃO DE CLIENTES E PRODUTOS
     // ============================================
     
-    // NOVA FUNÇÃO: Mostrar produtos do cliente selecionado
     function mostrarProdutosDoCliente() {
         const clienteSelect = document.getElementById('produtoCliente');
         const cliente = clienteSelect.value;
@@ -2379,7 +2368,6 @@
         atualizarSelectClientesProduto();
         atualizarListaClientesProdutos();
         
-        // Esconder preview ao abrir
         document.getElementById('produtosPreviewContainer').style.display = 'none';
         document.getElementById('produtoCliente').value = '';
         
@@ -2399,7 +2387,6 @@
             }
             clientes.push(novoCliente);
             
-            // Guardar no localStorage
             localStorage.setItem('lusitano_clientes', JSON.stringify(clientes));
             
             atualizarSelectClientesProduto();
@@ -2447,12 +2434,11 @@
             displayName: produtoCompleto
         });
         
-        // Guardar no localStorage
         localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
         
         atualizarSelectClientesProduto();
         atualizarListaClientesProdutos();
-        mostrarProdutosDoCliente(); // Atualizar a pré-visualização
+        mostrarProdutosDoCliente();
         
         document.getElementById('novoProduto').value = '';
         document.getElementById('produtoEst').value = '';
@@ -2464,14 +2450,12 @@
             clientes = clientes.filter(c => c !== cliente);
             produtos = produtos.filter(p => p.cliente !== cliente);
             
-            // Guardar no localStorage
             localStorage.setItem('lusitano_clientes', JSON.stringify(clientes));
             localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
             
             atualizarSelectClientesProduto();
             atualizarListaClientesProdutos();
             
-            // Esconder preview se o cliente removido era o selecionado
             const selectCliente = document.getElementById('produtoCliente');
             if (selectCliente.value === cliente) {
                 document.getElementById('produtosPreviewContainer').style.display = 'none';
@@ -2486,12 +2470,11 @@
         if (confirm(`Deseja remover o produto "${produtoNome}"?`)) {
             produtos = produtos.filter(p => p.nome !== produtoNome || p.cliente !== cliente);
             
-            // Guardar no localStorage
             localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
             
             atualizarSelectClientesProduto();
             atualizarListaClientesProdutos();
-            mostrarProdutosDoCliente(); // Atualizar a pré-visualização
+            mostrarProdutosDoCliente();
             
             showToast('Produto removido com sucesso!');
         }
@@ -2701,14 +2684,15 @@
         });
     }
 
+    // ============================================
+    // FUNÇÃO PRINCIPAL DE SALVAR - CORRIGIDA
+    // ============================================
     async function calcularESalvar() {
         const date = document.getElementById('regDate').value;
         const machine = document.getElementById('regMachine').value;
         const op = document.getElementById('regOP').value;
         const produtoDisplay = document.getElementById('regProduto').value;
         const pedido = safeNumber(document.getElementById('regPedido').value);
-        const rejeicaoTotal = safeNumber(document.getElementById('regRejeicao').value);
-        const aparasTotal = safeNumber(document.getElementById('regAparas').value);
         
         if (!date || !machine || !op || !produtoDisplay) {
             alert('Por favor, preencha todos os campos obrigatórios!');
@@ -2720,6 +2704,7 @@
         
         const est = safeNumber(document.getElementById('regEst').value) || produtoInfo.est;
         
+        // CASO 1: APENAS 1 TURNO
         if (turnosTemp.length === 0) {
             const turno = document.getElementById('regTurno').value;
             const inicio = document.getElementById('regInicio').value;
@@ -2741,10 +2726,12 @@
             const avaria = safeNumber(document.getElementById('regAvaria').value);
             const motivoPerda = document.getElementById('regMotivoPerda').value;
             const produzido = safeNumber(document.getElementById('regProduzido').value);
+            const rejeicao = safeNumber(document.getElementById('regRejeicao').value);
+            const aparas = safeNumber(document.getElementById('regAparas').value);
             
             const realKgH = calcularRealKgH(produzido, inicio, fim);
             const perf = calcularPerformance(est, realKgH);
-            const qual = calcularQualidade(produzido, rejeicaoTotal, aparasTotal);
+            const qual = calcularQualidade(produzido, rejeicao, aparas);
             
             const novoRegistro = {
                 id: Date.now(),
@@ -2766,17 +2753,20 @@
                 est: est,
                 realKgH: realKgH,
                 produzido: produzido,
-                rejeicao: rejeicaoTotal,
-                aparas: aparasTotal,
+                rejeicao: rejeicao,
+                aparas: aparas,
                 timestamp: new Date().toISOString()
             };
             
             historico.push(novoRegistro);
             await inserirRegistro(novoRegistro);
             recalcularDisponibilidadesTurno(date, machine, turno);
-        } else {
-            const motivoPerda = document.getElementById('regMotivoPerda').value;
             
+            showToast('Dados salvos com sucesso!');
+        } 
+        // CASO 2: MÚLTIPLOS TURNOS - CADA UM COM SEUS PRÓPRIOS VALORES
+        else {
+            // Verificar conflitos para cada turno
             for (const turno of turnosTemp) {
                 const conflitos = verificarSobreposicao(date, machine, turno.inicio, turno.fim);
                 if (conflitos.length > 0) {
@@ -2786,10 +2776,11 @@
                 }
             }
             
-            distribuirPerdasProporcionalmente(turnosTemp, rejeicaoTotal, aparasTotal);
-            
+            // Para cada turno, criar um registro INDIVIDUAL com seus próprios valores
             for (let i = 0; i < turnosTemp.length; i++) {
                 const turno = turnosTemp[i];
+                
+                // Cada turno tem seus PRÓPRIOS valores
                 const realKgH = calcularRealKgH(turno.produzido, turno.inicio, turno.fim);
                 const perf = calcularPerformance(est, realKgH);
                 const qual = calcularQualidade(turno.produzido, turno.rejeicao, turno.aparas);
@@ -2810,7 +2801,7 @@
                     fim: turno.fim,
                     setup: turno.setup,
                     avaria: turno.avaria,
-                    motivoPerda: motivoPerda,
+                    motivoPerda: turno.motivoPerda || '',
                     est: est,
                     realKgH: realKgH,
                     produzido: turno.produzido,
@@ -2821,15 +2812,15 @@
                 
                 historico.push(novoRegistro);
                 await inserirRegistro(novoRegistro);
+                
+                // Recalcular disponibilidade para este turno específico
+                recalcularDisponibilidadesTurno(date, machine, turno.turno);
             }
             
-            turnosTemp.forEach(turno => {
-                recalcularDisponibilidadesTurno(date, machine, turno.turno);
-            });
+            showToast(`${turnosTemp.length} turnos salvos com sucesso!`);
         }
         
-        showToast('Dados salvos com sucesso!');
-        
+        // Limpar formulário
         document.getElementById('regForm').reset();
         turnosTemp = [];
         atualizarListaTurnos();

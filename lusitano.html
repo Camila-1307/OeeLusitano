@@ -1380,7 +1380,7 @@
     let autoSaveTimer = null;
     let dadosPendentes = false;
     
-    // CLIENTES REAIS (42 clientes)
+    // CLIENTES REAIS
     let clientes = [
         "VINIPLAST", "NEOVIA NUTRIÇÃO", "TCHÊ PACK EMBALAGENS", "FLEXFILMS FLEXIBLE", 
         "TEXTIL TRES ELLOS", "AÇO CEARENSE", "TAKFILMS DISTRIBUIDORA", "LUSITANO IND E COM",
@@ -1393,7 +1393,7 @@
         "APARECIDO DONIZETE", "MARELLI", "QUALITY CENTRAL", "C.VALE"
     ];
 
-    // PRODUTOS REAIS (apenas alguns para não ficar muito longo, mas podes adicionar todos)
+    // PRODUTOS REAIS (amostra)
     let produtos = [
         {
             cliente: "VINIPLAST",
@@ -1484,11 +1484,6 @@
         }, TEMPO_LIMITE);
     }
 
-    window.onload = function() {
-        reiniciarTimer();
-        carregarDados();
-    };
-    
     document.onmousemove = reiniciarTimer;
     document.onkeypress = reiniciarTimer;
     document.onclick = reiniciarTimer;
@@ -1546,7 +1541,7 @@
             if (dadosPendentes) {
                 autoSalvar();
             }
-        }, 30000); // 30 segundos
+        }, 30000);
     }
 
     function limparIndicadorAutosave() {
@@ -1572,10 +1567,8 @@
             return;
         }
         
-        // Verificar se o modal está aberto e tem dados
         const modal = document.getElementById('modal');
         if (modal && modal.style.display === 'flex') {
-            // Tem dados no modal, tenta salvar
             await calcularESalvar();
         } else {
             console.log("❌ Modal fechado, não há dados para salvar");
@@ -1610,8 +1603,7 @@
             minutosFim += 24 * 60;
         }
         
-        const minutosTotais = minutosFim - minutosInicio;
-        return minutosTotais / 60;
+        return (minutosFim - minutosInicio) / 60;
     }
 
     function verificarSobreposicao(data, maquina, inicio, fim, idIgnorar = null) {
@@ -1622,9 +1614,9 @@
             novoFim += 24 * 60;
         }
         
-        const registrosConflitantes = historico.filter(reg => {
+        return historico.filter(reg => {
             if (reg.id === idIgnorar) return false;
-            if (reg.date !== data) return false;
+            if (reg.data !== data) return false;
             if (reg.machine !== maquina) return false;
             
             const regInicio = horaParaMinutos(reg.inicio);
@@ -1636,8 +1628,6 @@
             
             return (novoInicio < regFim && novoFim > regInicio);
         });
-        
-        return registrosConflitantes;
     }
 
     function safeNumber(value, defaultValue = 0) {
@@ -1665,14 +1655,10 @@
         const duracaoOP = minutosFim - minutosInicio;
         if (duracaoOP <= 0) return 0;
         
-        const tempoSetup = safeNumber(setup);
-        const tempoAvaria = safeNumber(avaria);
-        
-        const tempoProdutivoOP = duracaoOP - tempoSetup - tempoAvaria;
+        const tempoProdutivo = duracaoOP - safeNumber(setup) - safeNumber(avaria);
         
         if (!opsDoTurno || opsDoTurno.length === 1) {
-            const disponibilidade = (tempoProdutivoOP / duracaoOP) * 100;
-            return Math.min(100, Math.max(0, Math.round(disponibilidade))) || 0;
+            return Math.min(100, Math.max(0, Math.round((tempoProdutivo / duracaoOP) * 100)));
         }
         
         const turnoInfo = TURNOS[turno];
@@ -1688,8 +1674,7 @@
         const duracaoTurno = minutosFimTurno - minutosInicioTurno;
         if (duracaoTurno <= 0) return 0;
         
-        const disponibilidade = (tempoProdutivoOP / duracaoTurno) * 100;
-        return Math.min(100, Math.max(0, Math.round(disponibilidade))) || 0;
+        return Math.min(100, Math.max(0, Math.round((tempoProdutivo / duracaoTurno) * 100)));
     }
 
     function calcularDisponibilidadeTurno(opsDoTurno) {
@@ -1709,60 +1694,37 @@
         const duracaoTurno = minutosFimTurno - minutosInicioTurno;
         if (duracaoTurno <= 0) return 0;
         
-        let tempoTotalSetup = 0;
-        let tempoTotalAvaria = 0;
-        
+        let tempoPerdas = 0;
         opsDoTurno.forEach(op => {
-            tempoTotalSetup += safeNumber(op.setup);
-            tempoTotalAvaria += safeNumber(op.avaria);
+            tempoPerdas += safeNumber(op.setup) + safeNumber(op.avaria);
         });
         
-        const tempoPerdas = tempoTotalSetup + tempoTotalAvaria;
-        const disponibilidade = ((duracaoTurno - tempoPerdas) / duracaoTurno) * 100;
-        
-        return Math.min(100, Math.max(0, Math.round(disponibilidade))) || 0;
+        return Math.min(100, Math.max(0, Math.round(((duracaoTurno - tempoPerdas) / duracaoTurno) * 100)));
     }
 
     function calcularRealKgH(produzido, inicio, fim) {
-        const prodVal = safeNumber(produzido);
-        if (!inicio || !fim || prodVal <= 0) return 0;
-        
+        const prod = safeNumber(produzido);
+        if (!inicio || !fim || prod <= 0) return 0;
         const horas = calcularDuracaoHoras(inicio, fim);
-        if (horas <= 0) return 0;
-        
-        return Math.round((prodVal / horas) * 10) / 10;
+        return horas > 0 ? Math.round((prod / horas) * 10) / 10 : 0;
     }
 
     function calcularPerformance(est, realKgH) {
-        const estVal = safeNumber(est);
-        const realVal = safeNumber(realKgH);
-        
-        if (estVal <= 0 || realVal <= 0) return 0;
-        const performance = (realVal / estVal) * 100;
-        return Math.min(100, Math.max(0, Math.round(performance))) || 0;
+        const e = safeNumber(est);
+        const r = safeNumber(realKgH);
+        if (e <= 0 || r <= 0) return 0;
+        return Math.min(100, Math.max(0, Math.round((r / e) * 100)));
     }
 
     function calcularQualidade(produzido, rejeicao, aparas) {
-        const prodVal = safeNumber(produzido);
-        if (prodVal <= 0) return 0;
-        
-        const rejVal = safeNumber(rejeicao);
-        const apaVal = safeNumber(aparas);
-        
-        const totalBom = prodVal - rejVal - apaVal;
-        if (totalBom < 0) return 0;
-        
-        const qualidade = (totalBom / prodVal) * 100;
-        return Math.min(100, Math.max(0, Math.round(qualidade))) || 0;
+        const prod = safeNumber(produzido);
+        if (prod <= 0) return 0;
+        const bom = prod - safeNumber(rejeicao) - safeNumber(aparas);
+        return Math.min(100, Math.max(0, Math.round((bom / prod) * 100)));
     }
 
     function calcularOEE(disp, perf, qual) {
-        const d = safeNumber(disp) / 100;
-        const p = safeNumber(perf) / 100;
-        const q = safeNumber(qual) / 100;
-        
-        const oee = d * p * q * 100;
-        return Math.round(oee) || 0;
+        return Math.round((safeNumber(disp) * safeNumber(perf) * safeNumber(qual)) / 10000);
     }
 
     function atualizarPreview() {
@@ -1792,7 +1754,6 @@
         else if (oee >= 60) previewOEE.className = 'text-3xl font-black text-yellow-400';
         else previewOEE.className = 'text-3xl font-black text-red-400';
         
-        // Marcar que há dados pendentes
         marcarDadosPendentes();
     }
 
@@ -1825,8 +1786,7 @@
             return;
         }
         
-        const turnoExistente = turnosTemp.find(t => t.turno === turno);
-        if (turnoExistente) {
+        if (turnosTemp.find(t => t.turno === turno)) {
             showErrorToast('Este turno já foi adicionado!');
             return;
         }
@@ -1840,13 +1800,12 @@
             produzido: safeNumber(produzido),
             rejeicao: safeNumber(rejeicao),
             aparas: safeNumber(aparas),
-            motivoPerda: motivoPerda
+            motivoPerda
         });
         
         atualizarListaTurnos();
         marcarDadosPendentes();
         
-        // Limpar campos para o próximo turno
         document.getElementById('regTurno').value = '';
         document.getElementById('regInicio').value = '';
         document.getElementById('regFim').value = '';
@@ -1898,8 +1857,7 @@
         periodInfo.style.display = 'block';
         periodInfo.classList.add('print-visible');
         
-        const element = document.getElementById('dashboard-content');
-        html2canvas(element, {
+        html2canvas(document.getElementById('dashboard-content'), {
             scale: 2,
             backgroundColor: '#ffffff',
             logging: false,
@@ -1923,25 +1881,25 @@
     }
 
     function openEditModal(id) {
-        const registro = historico.find(h => h.id === id);
-        if (!registro) return;
+        const reg = historico.find(h => h.id === id);
+        if (!reg) return;
         
-        document.getElementById('editId').value = registro.id;
-        document.getElementById('editDate').value = registro.date;
-        document.getElementById('editMachine').value = registro.machine;
-        document.getElementById('editTurno').value = registro.turno;
-        document.getElementById('editOP').value = registro.op || '';
-        document.getElementById('editPedido').value = registro.pedido || 0;
-        document.getElementById('editProduto').value = registro.produto || '';
-        document.getElementById('editInicio').value = registro.inicio || '06:00';
-        document.getElementById('editFim').value = registro.fim || '14:00';
-        document.getElementById('editSetup').value = registro.setup || 0;
-        document.getElementById('editAvaria').value = registro.avaria || 0;
-        document.getElementById('editMotivoPerda').value = registro.motivoPerda || '';
-        document.getElementById('editEst').value = registro.est || 90;
-        document.getElementById('editProduzido').value = registro.produzido || 0;
-        document.getElementById('editRejeicao').value = registro.rejeicao || 0;
-        document.getElementById('editAparas').value = registro.aparas || 0;
+        document.getElementById('editId').value = reg.id;
+        document.getElementById('editDate').value = reg.date;
+        document.getElementById('editMachine').value = reg.machine;
+        document.getElementById('editTurno').value = reg.turno;
+        document.getElementById('editOP').value = reg.op || '';
+        document.getElementById('editPedido').value = reg.pedido || 0;
+        document.getElementById('editProduto').value = reg.produto || '';
+        document.getElementById('editInicio').value = reg.inicio || '06:00';
+        document.getElementById('editFim').value = reg.fim || '14:00';
+        document.getElementById('editSetup').value = reg.setup || 0;
+        document.getElementById('editAvaria').value = reg.avaria || 0;
+        document.getElementById('editMotivoPerda').value = reg.motivoPerda || '';
+        document.getElementById('editEst').value = reg.est || 90;
+        document.getElementById('editProduzido').value = reg.produzido || 0;
+        document.getElementById('editRejeicao').value = reg.rejeicao || 0;
+        document.getElementById('editAparas').value = reg.aparas || 0;
         
         document.getElementById('editModal').style.display = 'flex';
     }
@@ -1953,7 +1911,6 @@
     async function salvarEdicao() {
         const id = parseInt(document.getElementById('editId').value);
         const index = historico.findIndex(h => h.id === id);
-        
         if (index === -1) return;
         
         const date = document.getElementById('editDate').value;
@@ -1974,8 +1931,7 @@
         
         const conflitos = verificarSobreposicao(date, machine, inicio, fim, id);
         if (conflitos.length > 0) {
-            const conflito = conflitos[0];
-            showErrorToast(`Conflito de horário! Já existe um pedido (${conflito.op}) das ${conflito.inicio} às ${conflito.fim} na máquina ${machine}.`);
+            showErrorToast(`Conflito de horário! Já existe um pedido (${conflitos[0].op}) das ${conflitos[0].inicio} às ${conflitos[0].fim} na máquina ${machine}.`);
             return;
         }
         
@@ -1987,7 +1943,8 @@
         
         const registroAtualizado = {
             ...historico[index],
-            date, machine, turno, op, produto, pedido,
+            data: date,
+            machine, turno, op, produto, pedido,
             cliente: produtoInfo.cliente,
             inicio, fim, setup, avaria, motivoPerda,
             est, realKgH, produzido, rejeicao, aparas,
@@ -2012,10 +1969,8 @@
     // ============================================
     // FUNÇÕES DE GESTÃO DE CLIENTES E PRODUTOS
     // ============================================
-    
     function mostrarProdutosDoCliente() {
-        const clienteSelect = document.getElementById('produtoCliente');
-        const cliente = clienteSelect.value;
+        const cliente = document.getElementById('produtoCliente').value;
         const container = document.getElementById('produtosPreviewContainer');
         const lista = document.getElementById('produtosPreviewList');
         const nomeSpan = document.getElementById('clienteSelecionadoNome');
@@ -2035,27 +1990,22 @@
             return;
         }
         
-        let html = '';
-        produtosDoCliente.forEach((p, index) => {
+        lista.innerHTML = produtosDoCliente.map((p, index) => {
             const produtoNum = (produtos.indexOf(p) % 8) + 1;
-            html += `
+            return `
                 <div class="flex items-center justify-between bg-slate-50 p-2 rounded">
                     <span class="product-badge product-${produtoNum}">${p.nome}</span>
                     <span class="text-sm font-bold">${p.est} kg/h</span>
                 </div>
             `;
-        });
-        
-        lista.innerHTML = html;
+        }).join('');
     }
 
     function openClientModal() {
         atualizarSelectClientesProduto();
         atualizarListaClientesProdutos();
-        
         document.getElementById('produtosPreviewContainer').style.display = 'none';
         document.getElementById('produtoCliente').value = '';
-        
         document.getElementById('clientModal').style.display = 'flex';
     }
 
@@ -2071,9 +2021,7 @@
                 return;
             }
             clientes.push(novoCliente);
-            
             localStorage.setItem('lusitano_clientes', JSON.stringify(clientes));
-            
             atualizarSelectClientesProduto();
             atualizarListaClientesProdutos();
             document.getElementById('novoCliente').value = '';
@@ -2088,39 +2036,24 @@
         const produto = document.getElementById('novoProduto').value.trim();
         const est = safeNumber(document.getElementById('produtoEst').value);
         
-        if (!cliente) {
-            alert('Selecione um cliente!');
-            return;
-        }
-        if (!produto) {
-            alert('Digite o nome do produto!');
-            return;
-        }
-        if (est <= 0) {
-            alert('Digite um valor válido para kg/h estimado!');
+        if (!cliente || !produto || est <= 0) {
+            alert('Preencha todos os campos corretamente!');
             return;
         }
         
-        const produtoCompleto = `${cliente} - ${produto} (${est} kg/h)`;
-        
-        const produtoExistente = produtos.find(p => 
-            p.cliente === cliente && p.nome.toLowerCase() === produto.toLowerCase()
-        );
-        
-        if (produtoExistente) {
+        if (produtos.find(p => p.cliente === cliente && p.nome.toLowerCase() === produto.toLowerCase())) {
             showErrorToast('Este produto já existe para este cliente!');
             return;
         }
         
         produtos.push({
-            cliente: cliente,
+            cliente,
             nome: produto,
-            est: est,
-            displayName: produtoCompleto
+            est,
+            displayName: `${cliente} - ${produto} (${est} kg/h)`
         });
         
         localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
-        
         atualizarSelectClientesProduto();
         atualizarListaClientesProdutos();
         mostrarProdutosDoCliente();
@@ -2134,10 +2067,8 @@
         if (confirm(`Deseja remover o cliente "${cliente}" e todos os seus produtos?`)) {
             clientes = clientes.filter(c => c !== cliente);
             produtos = produtos.filter(p => p.cliente !== cliente);
-            
             localStorage.setItem('lusitano_clientes', JSON.stringify(clientes));
             localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
-            
             atualizarSelectClientesProduto();
             atualizarListaClientesProdutos();
             
@@ -2154,13 +2085,10 @@
     function removerProduto(produtoNome, cliente) {
         if (confirm(`Deseja remover o produto "${produtoNome}"?`)) {
             produtos = produtos.filter(p => p.nome !== produtoNome || p.cliente !== cliente);
-            
             localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
-            
             atualizarSelectClientesProduto();
             atualizarListaClientesProdutos();
             mostrarProdutosDoCliente();
-            
             showToast('Produto removido com sucesso!');
         }
     }
@@ -2172,32 +2100,23 @@
         const selectClientFilter = document.getElementById('clientSelect');
         
         if (selectCliente) {
-            selectCliente.innerHTML = '<option value="">Selecionar cliente...</option>';
-            clientes.forEach(cliente => {
-                selectCliente.innerHTML += `<option value="${cliente}">${cliente}</option>`;
-            });
+            selectCliente.innerHTML = '<option value="">Selecionar cliente...</option>' + 
+                clientes.map(c => `<option value="${c}">${c}</option>`).join('');
         }
         
         if (selectReg) {
-            selectReg.innerHTML = '<option value="">Selecionar cliente/produto...</option>';
-            produtos.forEach((p, index) => {
-                const produtoNum = (index % 8) + 1;
-                selectReg.innerHTML += `<option value="${p.displayName}" data-cliente="${p.cliente}" data-est="${p.est}" class="product-option product-${produtoNum}">${p.displayName}</option>`;
-            });
+            selectReg.innerHTML = '<option value="">Selecionar cliente/produto...</option>' + 
+                produtos.map((p, i) => `<option value="${p.displayName}" data-cliente="${p.cliente}" data-est="${p.est}" class="product-option product-${(i % 8) + 1}">${p.displayName}</option>`).join('');
         }
         
         if (selectEdit) {
-            selectEdit.innerHTML = '<option value="">Selecionar cliente/produto...</option>';
-            produtos.forEach(p => {
-                selectEdit.innerHTML += `<option value="${p.displayName}">${p.displayName}</option>`;
-            });
+            selectEdit.innerHTML = '<option value="">Selecionar cliente/produto...</option>' + 
+                produtos.map(p => `<option value="${p.displayName}">${p.displayName}</option>`).join('');
         }
         
         if (selectClientFilter) {
-            selectClientFilter.innerHTML = '<option value="ALL">TODOS OS CLIENTES</option>';
-            clientes.forEach(cliente => {
-                selectClientFilter.innerHTML += `<option value="${cliente}">${cliente}</option>`;
-            });
+            selectClientFilter.innerHTML = '<option value="ALL">TODOS OS CLIENTES</option>' + 
+                clientes.map(c => `<option value="${c}">${c}</option>`).join('');
         }
     }
 
@@ -2205,15 +2124,11 @@
         const tbody = document.getElementById('clientes-produtos-list');
         if (!tbody) return;
         
-        tbody.innerHTML = '';
-        
-        clientes.forEach(cliente => {
+        tbody.innerHTML = clientes.map(cliente => {
             const produtosCliente = produtos.filter(p => p.cliente === cliente);
-            let produtosHTML = '<div class="flex flex-col gap-1">';
-            
-            produtosCliente.forEach((p, idx) => {
+            const produtosHTML = produtosCliente.map((p, idx) => {
                 const produtoNum = (produtos.indexOf(p) % 8) + 1;
-                produtosHTML += `
+                return `
                     <div class="flex items-center justify-between bg-slate-50 p-2 rounded">
                         <span class="product-badge product-${produtoNum}">${p.nome}</span>
                         <span class="text-sm font-bold">${p.est} kg/h</span>
@@ -2224,14 +2139,12 @@
                         </button>
                     </div>
                 `;
-            });
+            }).join('');
             
-            produtosHTML += '</div>';
-            
-            tbody.innerHTML += `
+            return `
                 <tr class="border-t">
                     <td class="p-4 font-bold align-top">${cliente}</td>
-                    <td class="p-4">${produtosHTML}</td>
+                    <td class="p-4"><div class="flex flex-col gap-1">${produtosHTML}</div></td>
                     <td class="p-4 text-center align-top">
                         <button onclick="removerCliente('${cliente}')" class="text-red-500 hover:text-red-700">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2241,16 +2154,14 @@
                     </td>
                 </tr>
             `;
-        });
+        }).join('');
     }
 
     document.addEventListener('change', function(e) {
         if (e.target.id === 'regProduto') {
-            const selectedOption = e.target.options[e.target.selectedIndex];
-            const est = selectedOption.getAttribute('data-est');
-            if (est) {
-                document.getElementById('regEst').value = est;
-            }
+            const selected = e.target.options[e.target.selectedIndex];
+            const est = selected.getAttribute('data-est');
+            if (est) document.getElementById('regEst').value = est;
         }
     });
 
@@ -2259,14 +2170,13 @@
             const { data, error } = await window.supabase
                 .from("oee_registros")
                 .select("*")
-                .order('date', { ascending: false });
+                .order('data', { ascending: false });
 
             if (error) {
                 console.error("Erro ao listar do banco:", error.message);
                 return [];
-            } else {
-                return data || [];
             }
+            return data || [];
         } catch (error) {
             console.error("Erro ao listar registros:", error);
             return [];
@@ -2282,14 +2192,12 @@
                 .insert([novo]);
 
             if (error) {
-                console.error("❌ Erro ao inserir no banco:", error.message);
-                console.error("Detalhes do erro:", error);
+                console.error("❌ Erro ao inserir no banco:", error);
                 showErrorToast("Erro ao salvar: " + error.message);
                 return null;
-            } else {
-                console.log("✅ Registro inserido no banco:", data);
-                return data;
             }
+            console.log("✅ Registro inserido no banco:", data);
+            return data;
         } catch (error) {
             console.error("❌ Erro ao inserir registro:", error);
             showErrorToast("Erro ao conectar com o banco");
@@ -2304,12 +2212,7 @@
                 .delete()
                 .eq('id', id);
 
-            if (error) {
-                console.error("Erro ao apagar no banco:", error.message);
-                return false;
-            } else {
-                return true;
-            }
+            return !error;
         } catch (error) {
             console.error("Erro ao apagar registro:", error);
             return false;
@@ -2321,34 +2224,33 @@
         const produtosSalvos = localStorage.getItem('lusitano_produtos');
         
         if (clientesSalvos) {
-            try { clientes = JSON.parse(clientesSalvos); } catch (e) { console.error('Erro ao carregar clientes:', e); }
+            try { clientes = JSON.parse(clientesSalvos); } catch (e) {}
         }
         
         if (produtosSalvos) {
-            try { produtos = JSON.parse(produtosSalvos); } catch (e) { console.error('Erro ao carregar produtos:', e); }
+            try { produtos = JSON.parse(produtosSalvos); } catch (e) {}
         }
         
         const registrosBanco = await listarRegistros();
         
         if (registrosBanco && registrosBanco.length > 0) {
-            historico = registrosBanco;
+            historico = registrosBanco.map(reg => ({
+                ...reg,
+                date: reg.data,
+                disp: safeNumber(reg.disp),
+                perf: safeNumber(reg.perf),
+                qual: safeNumber(reg.qual),
+                setup: safeNumber(reg.setup),
+                avaria: safeNumber(reg.avaria),
+                produzido: safeNumber(reg.produzido),
+                est: safeNumber(reg.est),
+                realKgH: safeNumber(reg.realKgH)
+            }));
             console.log(`Carregados ${historico.length} registros do banco`);
         } else {
             historico = [];
             console.log("Nenhum registro encontrado no banco");
         }
-        
-        historico = historico.map(reg => ({
-            ...reg,
-            disp: safeNumber(reg.disp),
-            perf: safeNumber(reg.perf),
-            qual: safeNumber(reg.qual),
-            setup: safeNumber(reg.setup),
-            avaria: safeNumber(reg.avaria),
-            produzido: safeNumber(reg.produzido),
-            est: safeNumber(reg.est),
-            realKgH: safeNumber(reg.realKgH)
-        }));
         
         const grupos = {};
         historico.forEach(reg => {
@@ -2361,26 +2263,15 @@
             if (grupo.length > 0) {
                 const dispTurno = calcularDisponibilidadeTurno(grupo);
                 grupo.forEach(op => {
-                    op.disp = calcularDisponibilidadeOP(
-                        op.inicio, 
-                        op.fim, 
-                        op.setup, 
-                        op.avaria,
-                        op.turno,
-                        grupo
-                    );
+                    op.disp = calcularDisponibilidadeOP(op.inicio, op.fim, op.setup, op.avaria, op.turno, grupo);
                     op.dispTurno = dispTurno;
                 });
             }
         });
         
-        // Atualizar a view atual
         filterByRange();
     }
 
-    // ============================================
-    // FUNÇÃO PRINCIPAL DE SALVAR
-    // ============================================
     async function calcularESalvar() {
         const date = document.getElementById('regDate').value;
         const machine = document.getElementById('regMachine').value;
@@ -2398,7 +2289,6 @@
         
         const est = safeNumber(document.getElementById('regEst').value) || produtoInfo.est;
         
-        // CASO 1: APENAS 1 TURNO
         if (turnosTemp.length === 0) {
             const turno = document.getElementById('regTurno').value;
             const inicio = document.getElementById('regInicio').value;
@@ -2411,8 +2301,7 @@
             
             const conflitos = verificarSobreposicao(date, machine, inicio, fim);
             if (conflitos.length > 0) {
-                const conflito = conflitos[0];
-                showErrorToast(`Conflito de horário! Já existe um pedido (${conflito.op}) das ${conflito.inicio} às ${conflito.fim} na máquina ${machine}.`);
+                showErrorToast(`Conflito de horário! Já existe um pedido (${conflitos[0].op}) das ${conflitos[0].inicio} às ${conflitos[0].fim} na máquina ${machine}.`);
                 return;
             }
             
@@ -2429,26 +2318,26 @@
             
             const novoRegistro = {
                 id: Date.now(),
-                date: date,
-                machine: machine,
-                turno: turno,
-                op: op,
+                data: date,
+                machine,
+                turno,
+                op,
                 produto: produtoDisplay,
                 cliente: produtoInfo.cliente,
                 disp: 0,
-                perf: perf,
-                qual: qual,
-                pedido: pedido,
-                inicio: inicio,
-                fim: fim,
-                setup: setup,
-                avaria: avaria,
-                motivoPerda: motivoPerda,
-                est: est,
-                realKgH: realKgH,
-                produzido: produzido,
-                rejeicao: rejeicao,
-                aparas: aparas,
+                perf,
+                qual,
+                pedido,
+                inicio,
+                fim,
+                setup,
+                avaria,
+                motivoPerda,
+                est,
+                realKgH,
+                produzido,
+                rejeicao,
+                aparas,
                 timestamp: new Date().toISOString()
             };
             
@@ -2460,29 +2349,23 @@
                 showToast('Dados salvos com sucesso!');
                 limparIndicadorAutosave();
                 
-                // Limpar formulário apenas se salvou com sucesso
                 document.getElementById('regForm').reset();
                 turnosTemp = [];
                 atualizarListaTurnos();
                 closeModal();
                 filterByRange();
             }
-        } 
-        // CASO 2: MÚLTIPLOS TURNOS
-        else {
-            // Verificar conflitos para cada turno
+        } else {
             for (const turno of turnosTemp) {
                 const conflitos = verificarSobreposicao(date, machine, turno.inicio, turno.fim);
                 if (conflitos.length > 0) {
-                    const conflito = conflitos[0];
-                    showErrorToast(`Conflito de horário no Turno ${turno.turno}! Já existe um pedido (${conflito.op}) das ${conflito.inicio} às ${conflito.fim} na máquina ${machine}.`);
+                    showErrorToast(`Conflito de horário no Turno ${turno.turno}! Já existe um pedido (${conflitos[0].op}) das ${conflitos[0].inicio} às ${conflitos[0].fim} na máquina ${machine}.`);
                     return;
                 }
             }
             
             let todosSalvos = true;
             
-            // Para cada turno, criar um registro INDIVIDUAL com seus próprios valores
             for (let i = 0; i < turnosTemp.length; i++) {
                 const turno = turnosTemp[i];
                 
@@ -2492,23 +2375,23 @@
                 
                 const novoRegistro = {
                     id: Date.now() + i,
-                    date: date,
-                    machine: machine,
+                    data: date,
+                    machine,
                     turno: turno.turno,
-                    op: op,
+                    op,
                     produto: produtoDisplay,
                     cliente: produtoInfo.cliente,
                     disp: 0,
-                    perf: perf,
-                    qual: qual,
-                    pedido: pedido,
+                    perf,
+                    qual,
+                    pedido,
                     inicio: turno.inicio,
                     fim: turno.fim,
                     setup: turno.setup,
                     avaria: turno.avaria,
                     motivoPerda: turno.motivoPerda || '',
-                    est: est,
-                    realKgH: realKgH,
+                    est,
+                    realKgH,
                     produzido: turno.produzido,
                     rejeicao: turno.rejeicao,
                     aparas: turno.aparas,
@@ -2529,7 +2412,6 @@
                 showToast(`${turnosTemp.length} turnos salvos com sucesso!`);
                 limparIndicadorAutosave();
                 
-                // Limpar formulário
                 document.getElementById('regForm').reset();
                 turnosTemp = [];
                 atualizarListaTurnos();
@@ -2543,26 +2425,15 @@
 
     function recalcularDisponibilidadesTurno(data, maquina, turno) {
         const opsDoTurno = historico.filter(h => 
-            h.date === data && 
-            h.machine === maquina && 
-            h.turno === turno
-        ).sort((a, b) => {
-            return horaParaMinutos(a.inicio) - horaParaMinutos(b.inicio);
-        });
+            h.data === data && h.machine === maquina && h.turno === turno
+        ).sort((a, b) => horaParaMinutos(a.inicio) - horaParaMinutos(b.inicio));
         
         if (opsDoTurno.length === 0) return;
         
         const dispTurno = calcularDisponibilidadeTurno(opsDoTurno);
         
         opsDoTurno.forEach(op => {
-            op.disp = calcularDisponibilidadeOP(
-                op.inicio, 
-                op.fim, 
-                op.setup, 
-                op.avaria,
-                op.turno,
-                opsDoTurno
-            );
+            op.disp = calcularDisponibilidadeOP(op.inicio, op.fim, op.setup, op.avaria, op.turno, opsDoTurno);
             op.dispTurno = dispTurno;
         });
     }
@@ -2572,7 +2443,6 @@
         document.getElementById('view-' + viewId).classList.add('active');
         document.querySelectorAll('.nav-tab-item').forEach(t => t.classList.remove('active'));
         document.getElementById('tab-' + viewId).classList.add('active');
-        
         filterByRange();
     }
 
@@ -2582,9 +2452,7 @@
         atualizarListaTurnos();
         dadosPendentes = false;
         
-        const hoje = new Date().toISOString().split('T')[0];
-        document.getElementById('regDate').value = hoje;
-        
+        document.getElementById('regDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('regInicio').value = '06:00';
         document.getElementById('regFim').value = '14:00';
         document.getElementById('regSetup').value = '0';
@@ -2603,20 +2471,16 @@
     }
 
     function closeModal() { 
-        // Se houver dados pendentes, perguntar se quer salvar
-        if (dadosPendentes) {
-            if (confirm('Tem dados não salvos. Deseja salvar antes de fechar?')) {
-                autoSalvar();
-            }
+        if (dadosPendentes && confirm('Tem dados não salvos. Deseja salvar antes de fechar?')) {
+            autoSalvar();
         }
         dadosPendentes = false;
         document.getElementById('modal').style.display = 'none'; 
     }
 
     async function apagarRegistro(id) {
-        if(confirm("Deseja apagar este registo permanentemente?")) {
+        if (confirm("Deseja apagar este registo permanentemente?")) {
             const apagado = await apagarRegistroBanco(id);
-            
             if (apagado) {
                 historico = historico.filter(h => h.id !== id);
                 filterByRange();
@@ -2657,23 +2521,18 @@
     }
 
     function searchClient() {
-        const searchTerm = document.getElementById('clientSearchInput').value.trim().toLowerCase();
-        if (searchTerm) {
+        const term = document.getElementById('clientSearchInput').value.trim().toLowerCase();
+        if (term) {
             const select = document.getElementById('clientSelect');
-            let found = false;
             for (let i = 0; i < select.options.length; i++) {
-                if (select.options[i].value.toLowerCase().includes(searchTerm)) {
+                if (select.options[i].value.toLowerCase().includes(term)) {
                     select.value = select.options[i].value;
-                    found = true;
-                    break;
+                    filterByRange();
+                    showToast(`🔍 Cliente encontrado: ${select.value}`);
+                    return;
                 }
             }
-            if (found) {
-                filterByRange();
-                showToast(`🔍 Cliente encontrado: ${select.value}`);
-            } else {
-                alert('Cliente não encontrado!');
-            }
+            alert('Cliente não encontrado!');
         }
     }
 
@@ -2682,7 +2541,7 @@
         const end = document.getElementById('endDate').value;
         let filtered = historico;
         
-        if(start && end) {
+        if (start && end) {
             filtered = historico.filter(h => h.date >= start && h.date <= end);
         }
         
@@ -2701,21 +2560,11 @@
         
         const activeView = document.querySelector('.view-content.active').id.replace('view-', '');
         switch(activeView) {
-            case 'efficiency':
-                renderEfficiencyView(filtered);
-                break;
-            case 'op':
-                renderOPView(filtered);
-                break;
-            case 'history':
-                renderHistoryView(filtered);
-                break;
-            case 'clients':
-                renderClientsView(filtered);
-                break;
-            case 'perdas':
-                renderPerdasView(filtered);
-                break;
+            case 'efficiency': renderEfficiencyView(filtered); break;
+            case 'op': renderOPView(filtered); break;
+            case 'history': renderHistoryView(filtered); break;
+            case 'clients': renderClientsView(filtered); break;
+            case 'perdas': renderPerdasView(filtered); break;
         }
         
         const periodInfo = document.getElementById('printPeriodInfo');
@@ -2735,23 +2584,14 @@
             const machineData = data.filter(d => d.machine === mId);
             let avg = { disp: 0, perf: 0, qual: 0, oee: 0 };
             
-            if(machineData.length > 0) {
+            if (machineData.length > 0) {
                 let totalDisp = 0, totalPerf = 0, totalQual = 0;
                 let countDisp = 0, countPerf = 0, countQual = 0;
                 
                 machineData.forEach(d => {
-                    if (d.disp > 0) {
-                        totalDisp += d.disp;
-                        countDisp++;
-                    }
-                    if (d.perf > 0) {
-                        totalPerf += d.perf;
-                        countPerf++;
-                    }
-                    if (d.qual > 0) {
-                        totalQual += d.qual;
-                        countQual++;
-                    }
+                    if (d.disp > 0) { totalDisp += d.disp; countDisp++; }
+                    if (d.perf > 0) { totalPerf += d.perf; countPerf++; }
+                    if (d.qual > 0) { totalQual += d.qual; countQual++; }
                 });
                 
                 avg.disp = countDisp > 0 ? Math.round(totalDisp / countDisp) : 0;
@@ -2763,62 +2603,44 @@
             machinesMetrics.push({ id: mId, ...avg });
             
             const oeeDisplay = avg.oee || 0;
-            const dispDisplay = avg.disp || 0;
-            const perfDisplay = avg.perf || 0;
-            const qualDisplay = avg.qual || 0;
-            
             const atingida = oeeDisplay >= META;
             
             grid.innerHTML += `
                 <div class="card-machine">
-                    <div class="header-row">
-                        <p class="title">${mId}</p>
-                    </div>
+                    <div class="header-row"><p class="title">${mId}</p></div>
                     <div class="oee-container">
                         <span class="oee-number ${atingida ? 'text-green-700' : 'text-red-700'}">${oeeDisplay}%</span>
-                        <span class="meta-indicator ${atingida ? 'atingida' : 'nao-atingida'}">
-                            ${atingida ? '✓ META' : '✗ META'}
-                        </span>
+                        <span class="meta-indicator ${atingida ? 'atingida' : 'nao-atingida'}">${atingida ? '✓ META' : '✗ META'}</span>
                     </div>
                     <div class="space-y-3">
-                        ${renderBar('DISP', dispDisplay)}
-                        ${renderBar('PERF', perfDisplay)}
-                        ${renderBar('QUAL', qualDisplay)}
+                        ${renderBar('DISP', avg.disp)}
+                        ${renderBar('PERF', avg.perf)}
+                        ${renderBar('QUAL', avg.qual)}
                     </div>
                 </div>
             `;
         });
         
         const validMachines = machinesMetrics.filter(m => m.oee > 0);
-        const topMachine = validMachines.length > 0 
-            ? validMachines.sort((a,b) => b.oee - a.oee)[0] 
-            : { id: '--', oee: 0 };
+        const topMachine = validMachines.length > 0 ? validMachines.sort((a,b) => b.oee - a.oee)[0] : { id: '--', oee: 0 };
         
         let global = { disp: 0, perf: 0, qual: 0 };
-        let globalCount = 0;
-        
-        if(data.length > 0) {
+        if (data.length > 0) {
             data.forEach(d => {
                 global.disp += d.disp || 0;
                 global.perf += d.perf || 0;
                 global.qual += d.qual || 0;
             });
-            globalCount = data.length;
-            
-            global.disp = globalCount > 0 ? global.disp / globalCount : 0;
-            global.perf = globalCount > 0 ? global.perf / globalCount : 0;
-            global.qual = globalCount > 0 ? global.qual / globalCount : 0;
+            global.disp = Math.round(global.disp / data.length);
+            global.perf = Math.round(global.perf / data.length);
+            global.qual = Math.round(global.qual / data.length);
         }
         
         const globalOee = calcularOEE(global.disp, global.perf, global.qual);
 
         document.getElementById('topMachineName').innerText = topMachine.id;
         document.getElementById('topMachineValue').innerText = (topMachine.oee > 0 ? topMachine.oee : 0) + '%';
-        
-        const globalLabel = document.getElementById('avgGlobalOee');
-        globalLabel.innerText = globalOee + '%';
-        globalLabel.className = `text-3xl font-black ${globalOee >= META ? 'text-green-600' : 'text-red-600'}`;
-        
+        document.getElementById('avgGlobalOee').innerText = globalOee + '%';
         document.getElementById('totalReg').innerText = data.length;
         
         updateCharts(data, machinesMetrics);
@@ -2826,7 +2648,6 @@
 
     function renderBar(label, val) {
         const safeVal = !isNaN(val) && val !== null ? Math.min(100, Math.max(0, val)) : 0;
-        
         return `
             <div>
                 <div class="flex justify-between text-[9px] font-bold uppercase text-slate-400 mb-1">
@@ -2841,15 +2662,10 @@
     }
 
     function renderPerdasChart(data) {
-        const perdasPorMaquina = {
-            'M1': 0,
-            'M2': 0,
-            'M3': 0
-        };
-        
+        const perdas = { M1: 0, M2: 0, M3: 0 };
         data.forEach(reg => {
-            if (reg.machine && perdasPorMaquina.hasOwnProperty(reg.machine)) {
-                perdasPorMaquina[reg.machine] += (reg.setup || 0) + (reg.avaria || 0);
+            if (reg.machine && perdas.hasOwnProperty(reg.machine)) {
+                perdas[reg.machine] += (reg.setup || 0) + (reg.avaria || 0);
             }
         });
         
@@ -2864,7 +2680,7 @@
                 labels: ['M1', 'M2', 'M3'],
                 datasets: [{
                     label: 'Perdas (minutos)',
-                    data: [perdasPorMaquina.M1, perdasPorMaquina.M2, perdasPorMaquina.M3],
+                    data: [perdas.M1, perdas.M2, perdas.M3],
                     backgroundColor: ['#005a2b', '#c4121a', '#FFD700']
                 }]
             },
@@ -2875,128 +2691,58 @@
                     datalabels: {
                         anchor: 'end',
                         align: 'top',
-                        formatter: (val) => val + ' min',
+                        formatter: val => val + ' min',
                         font: { weight: 'bold', size: 10 }
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Minutos'
-                        }
-                    }
-                }
+                scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
             }
         });
     }
 
     function renderPerdasView(data) {
-        const perdasPorMaquina = {
-            'M1': 0,
-            'M2': 0,
-            'M3': 0
-        };
-        
-        const perdasPorMotivo = {};
-        const perdasPorDia = {};
+        const perdasMaq = { M1: 0, M2: 0, M3: 0 };
+        const perdasMot = {};
+        const perdasDia = {};
         
         data.forEach(reg => {
-            const totalPerda = (reg.setup || 0) + (reg.avaria || 0);
-            
-            if (reg.machine && perdasPorMaquina.hasOwnProperty(reg.machine)) {
-                perdasPorMaquina[reg.machine] += totalPerda;
-            }
-            
-            if (reg.motivoPerda && reg.motivoPerda !== '') {
-                if (!perdasPorMotivo[reg.motivoPerda]) {
-                    perdasPorMotivo[reg.motivoPerda] = 0;
-                }
-                perdasPorMotivo[reg.motivoPerda] += totalPerda;
-            }
-            
-            if (reg.date) {
-                if (!perdasPorDia[reg.date]) {
-                    perdasPorDia[reg.date] = 0;
-                }
-                perdasPorDia[reg.date] += totalPerda;
-            }
+            const total = (reg.setup || 0) + (reg.avaria || 0);
+            if (reg.machine && perdasMaq.hasOwnProperty(reg.machine)) perdasMaq[reg.machine] += total;
+            if (reg.motivoPerda) perdasMot[reg.motivoPerda] = (perdasMot[reg.motivoPerda] || 0) + total;
+            if (reg.date) perdasDia[reg.date] = (perdasDia[reg.date] || 0) + total;
         });
         
-        let topMaquina = '--';
-        let topMaquinaValor = 0;
-        Object.entries(perdasPorMaquina).forEach(([maq, val]) => {
-            if (val > topMaquinaValor) {
-                topMaquinaValor = val;
-                topMaquina = maq;
-            }
-        });
+        let topMaq = '--', topMaqVal = 0;
+        Object.entries(perdasMaq).forEach(([m, v]) => { if (v > topMaqVal) { topMaqVal = v; topMaq = m; } });
+        document.getElementById('topMaquinaNome').innerText = topMaq;
+        document.getElementById('topMaquinaMinutos').innerText = topMaqVal + ' min';
         
-        document.getElementById('topMaquinaNome').innerText = topMaquina;
-        document.getElementById('topMaquinaMinutos').innerText = topMaquinaValor + ' min';
+        let topMot = '--', topMotVal = 0;
+        Object.entries(perdasMot).forEach(([m, v]) => { if (v > topMotVal) { topMotVal = v; topMot = m; } });
+        document.getElementById('topMotivoNome').innerText = topMot;
+        document.getElementById('topMotivoMinutos').innerText = topMotVal + ' min';
         
-        let topMotivo = '--';
-        let topMotivoValor = 0;
-        Object.entries(perdasPorMotivo).forEach(([mot, val]) => {
-            if (val > topMotivoValor) {
-                topMotivoValor = val;
-                topMotivo = mot;
-            }
-        });
-        
-        document.getElementById('topMotivoNome').innerText = topMotivo;
-        document.getElementById('topMotivoMinutos').innerText = topMotivoValor + ' min';
-        
-        let topDia = '--';
-        let topDiaValor = 0;
-        Object.entries(perdasPorDia).forEach(([dia, val]) => {
-            if (val > topDiaValor) {
-                topDiaValor = val;
-                topDia = dia.split('-').reverse().join('/');
-            }
-        });
-        
+        let topDia = '--', topDiaVal = 0;
+        Object.entries(perdasDia).forEach(([d, v]) => { if (v > topDiaVal) { topDiaVal = v; topDia = d.split('-').reverse().join('/'); } });
         document.getElementById('topDiaData').innerText = topDia;
-        document.getElementById('topDiaMinutos').innerText = topDiaValor + ' min';
+        document.getElementById('topDiaMinutos').innerText = topDiaVal + ' min';
         
         const ctxMaq = document.getElementById('perdasMaquinaDetalheChart')?.getContext('2d');
         if (ctxMaq) {
             if (perdasMaquinaDetalheChart) perdasMaquinaDetalheChart.destroy();
-            
             perdasMaquinaDetalheChart = new Chart(ctxMaq, {
                 type: 'bar',
                 data: {
                     labels: ['M1', 'M2', 'M3'],
-                    datasets: [{
-                        label: 'Setup',
-                        data: [
-                            data.filter(r => r.machine === 'M1').reduce((s, r) => s + (r.setup || 0), 0),
-                            data.filter(r => r.machine === 'M2').reduce((s, r) => s + (r.setup || 0), 0),
-                            data.filter(r => r.machine === 'M3').reduce((s, r) => s + (r.setup || 0), 0)
-                        ],
-                        backgroundColor: '#f59e0b'
-                    }, {
-                        label: 'Paradas',
-                        data: [
-                            data.filter(r => r.machine === 'M1').reduce((s, r) => s + (r.avaria || 0), 0),
-                            data.filter(r => r.machine === 'M2').reduce((s, r) => s + (r.avaria || 0), 0),
-                            data.filter(r => r.machine === 'M3').reduce((s, r) => s + (r.avaria || 0), 0)
-                        ],
-                        backgroundColor: '#ef4444'
-                    }]
+                    datasets: [
+                        { label: 'Setup', data: ['M1','M2','M3'].map(m => data.filter(r => r.machine === m).reduce((s, r) => s + (r.setup || 0), 0)), backgroundColor: '#f59e0b' },
+                        { label: 'Paradas', data: ['M1','M2','M3'].map(m => data.filter(r => r.machine === m).reduce((s, r) => s + (r.avaria || 0), 0)), backgroundColor: '#ef4444' }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        datalabels: {
-                            anchor: 'end',
-                            align: 'top',
-                            formatter: (val) => val + ' min',
-                            font: { weight: 'bold', size: 10 }
-                        }
-                    },
+                    plugins: { datalabels: { anchor: 'end', align: 'top', formatter: val => val + ' min', font: { weight: 'bold', size: 10 } } },
                     scales: { y: { beginAtZero: true } }
                 }
             });
@@ -3004,52 +2750,34 @@
         
         const ctxMot = document.getElementById('perdasMotivoChart')?.getContext('2d');
         if (ctxMot) {
-            const motivos = Object.keys(perdasPorMotivo);
-            const valores = Object.values(perdasPorMotivo);
-            
             if (perdasMotivoChart) perdasMotivoChart.destroy();
-            
             perdasMotivoChart = new Chart(ctxMot, {
                 type: 'pie',
                 data: {
-                    labels: motivos,
-                    datasets: [{
-                        data: valores,
-                        backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#10b981', '#64748b']
-                    }]
+                    labels: Object.keys(perdasMot),
+                    datasets: [{ data: Object.values(perdasMot), backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#10b981', '#64748b'] }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        datalabels: {
-                            color: '#fff',
-                            font: { weight: 'bold', size: 10 },
-                            formatter: (val, ctx) => {
-                                return val + ' min';
-                            }
-                        }
-                    }
+                    plugins: { datalabels: { color: '#fff', font: { weight: 'bold', size: 10 }, formatter: val => val + ' min' } }
                 }
             });
         }
         
         const ctxEvol = document.getElementById('perdasEvolucaoChart')?.getContext('2d');
         if (ctxEvol) {
-            const datas = Object.keys(perdasPorDia).sort();
-            const valoresEvol = datas.map(d => perdasPorDia[d]);
-            
+            const dias = Object.keys(perdasDia).sort();
             if (perdasEvolucaoChart) perdasEvolucaoChart.destroy();
-            
             perdasEvolucaoChart = new Chart(ctxEvol, {
                 type: 'line',
                 data: {
-                    labels: datas.map(d => d.split('-').reverse().join('/')),
+                    labels: dias.map(d => d.split('-').reverse().join('/')),
                     datasets: [{
                         label: 'Perdas Totais (min)',
-                        data: valoresEvol,
+                        data: dias.map(d => perdasDia[d]),
                         borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        backgroundColor: 'rgba(239,68,68,0.1)',
                         fill: true,
                         tension: 0.4
                     }]
@@ -3057,22 +2785,17 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        datalabels: { display: false }
-                    }
+                    plugins: { datalabels: { display: false } }
                 }
             });
         }
         
         const tbody = document.getElementById('perdas-detail-rows');
         tbody.innerHTML = '';
-        
         data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(reg => {
-            const totalPerda = (reg.setup || 0) + (reg.avaria || 0);
-            
-            if (totalPerda > 0) {
+            const total = (reg.setup || 0) + (reg.avaria || 0);
+            if (total > 0) {
                 const motivoClass = reg.motivoPerda ? `perda-${reg.motivoPerda.toLowerCase().replace(/ /g, '-')}` : '';
-                
                 tbody.innerHTML += `
                     <tr>
                         <td class="py-2">${reg.date.split('-').reverse().join('/')}</td>
@@ -3082,7 +2805,7 @@
                         <td class="py-2">${reg.produto || '-'}</td>
                         <td class="py-2 text-center">${reg.setup || 0}</td>
                         <td class="py-2 text-center">${reg.avaria || 0}</td>
-                        <td class="py-2 text-center font-bold text-red-600">${totalPerda}</td>
+                        <td class="py-2 text-center font-bold text-red-600">${total}</td>
                         <td class="py-2"><span class="perda-badge ${motivoClass}">${reg.motivoPerda || '-'}</span></td>
                     </tr>
                 `;
@@ -3091,170 +2814,157 @@
     }
 
     function updateCharts(data, machineAvg) {
-        const trendCtx = document.getElementById('weeklyChart').getContext('2d');
-        const dates = [...new Set(data.map(d => d.date))].sort();
-        const trendValues = dates.map(d => {
-            const dayData = data.filter(h => h.date === d);
-            let dAvg = { disp: 0, perf: 0, qual: 0 };
-            dayData.forEach(h => { 
-                dAvg.disp += h.disp || 0; 
-                dAvg.perf += h.perf || 0; 
-                dAvg.qual += h.qual || 0; 
+        const trendCtx = document.getElementById('weeklyChart')?.getContext('2d');
+        if (trendCtx) {
+            const dates = [...new Set(data.map(d => d.date))].sort();
+            const trendVals = dates.map(d => {
+                const day = data.filter(h => h.date === d);
+                let avg = { disp: 0, perf: 0, qual: 0 };
+                day.forEach(h => { avg.disp += h.disp || 0; avg.perf += h.perf || 0; avg.qual += h.qual || 0; });
+                avg.disp = day.length ? avg.disp / day.length : 0;
+                avg.perf = day.length ? avg.perf / day.length : 0;
+                avg.qual = day.length ? avg.qual / day.length : 0;
+                return calcularOEE(avg.disp, avg.perf, avg.qual);
             });
-            dAvg.disp = dayData.length > 0 ? dAvg.disp / dayData.length : 0;
-            dAvg.perf = dayData.length > 0 ? dAvg.perf / dayData.length : 0;
-            dAvg.qual = dayData.length > 0 ? dAvg.qual / dayData.length : 0;
-            return calcularOEE(dAvg.disp, dAvg.perf, dAvg.qual);
-        });
-        
-        if(trendChart) trendChart.destroy();
-        trendChart = new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: dates.map(d => d.split('-').reverse().join('/')),
-                datasets: [{
-                    label: 'OEE Médio %',
-                    data: trendValues,
-                    borderColor: '#005a2b',
-                    backgroundColor: 'rgba(0, 90, 43, 0.1)',
-                    fill: true, tension: 0.4, borderWidth: 3, pointRadius: 4
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { display: false }, 
-                    datalabels: { display: false },
-                    annotation: { 
-                        annotations: { 
-                            line1: { 
-                                type: 'line', 
-                                yMin: 85, 
-                                yMax: 85, 
-                                borderColor: 'rgb(220, 38, 38)', 
-                                borderWidth: 2, 
-                                borderDash: [6, 6], 
-                                label: { 
-                                    display: true, 
-                                    content: 'Meta 85%', 
-                                    position: 'end', 
-                                    backgroundColor: 'rgba(220, 38, 38, 0.8)', 
-                                    font: { size: 10, weight: 'bold' } 
-                                } 
-                            } 
-                        } 
-                    } 
-                } 
-            }
-        });
-
-        const pillarCtx = document.getElementById('pillarChart').getContext('2d');
-        if(pillarChart) pillarChart.destroy();
-        pillarChart = new Chart(pillarCtx, {
-            type: 'bar',
-            data: {
-                labels: machineAvg.map(m => m.id),
-                datasets: [
-                    { label: 'Disp', data: machineAvg.map(m => m.disp || 0), backgroundColor: '#005a2b' },
-                    { label: 'Perf', data: machineAvg.map(m => m.perf || 0), backgroundColor: '#c4121a' },
-                    { label: 'Qual', data: machineAvg.map(m => m.qual || 0), backgroundColor: '#FFD700' }
-                ]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: {
-                    datalabels: {
-                        anchor: 'end',
-                        align: 'top',
-                        formatter: (val) => val + '%',
-                        font: { weight: 'bold', size: 10 },
-                        color: '#475569'
-                    }
+            
+            if (trendChart) trendChart.destroy();
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: dates.map(d => d.split('-').reverse().join('/')),
+                    datasets: [{
+                        label: 'OEE Médio %',
+                        data: trendVals,
+                        borderColor: '#005a2b',
+                        backgroundColor: 'rgba(0,90,43,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 4
+                    }]
                 },
-                scales: { y: { max: 115, ticks: { callback: v => v + '%' } } } 
-            }
-        });
-
-        const shiftCtx = document.getElementById('shiftChart').getContext('2d');
-        const shiftValues = ['A', 'B', 'C'].map(s => {
-            const sData = data.filter(d => d.turno === s);
-            if(sData.length === 0) return 0;
-            let sAvg = { disp: 0, perf: 0, qual: 0 };
-            sData.forEach(h => { 
-                sAvg.disp += h.disp || 0; 
-                sAvg.perf += h.perf || 0; 
-                sAvg.qual += h.qual || 0; 
-            });
-            sAvg.disp /= sData.length; 
-            sAvg.perf /= sData.length; 
-            sAvg.qual /= sData.length;
-            return calcularOEE(sAvg.disp, sAvg.perf, sAvg.qual);
-        });
-        
-        if(shiftChart) shiftChart.destroy();
-        shiftChart = new Chart(shiftCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Turno A', 'Turno B', 'Turno C'],
-                datasets: [{ data: shiftValues, backgroundColor: ['#FFD700', '#005a2b', '#c4121a'], borderWidth: 0, hoverOffset: 10 }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { position: 'bottom' },
-                    datalabels: {
-                        color: '#fff',
-                        font: { weight: 'bold', size: 12 },
-                        formatter: (val) => val > 0 ? val + '%' : ''
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: { display: false },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    yMin: 85,
+                                    yMax: 85,
+                                    borderColor: 'rgb(220,38,38)',
+                                    borderWidth: 2,
+                                    borderDash: [6,6],
+                                    label: {
+                                        display: true,
+                                        content: 'Meta 85%',
+                                        position: 'end',
+                                        backgroundColor: 'rgba(220,38,38,0.8)',
+                                        font: { size: 10, weight: 'bold' }
+                                    }
+                                }
+                            }
+                        }
                     }
-                } 
-            }
-        });
+                }
+            });
+        }
+
+        const pillarCtx = document.getElementById('pillarChart')?.getContext('2d');
+        if (pillarCtx) {
+            if (pillarChart) pillarChart.destroy();
+            pillarChart = new Chart(pillarCtx, {
+                type: 'bar',
+                data: {
+                    labels: machineAvg.map(m => m.id),
+                    datasets: [
+                        { label: 'Disp', data: machineAvg.map(m => m.disp || 0), backgroundColor: '#005a2b' },
+                        { label: 'Perf', data: machineAvg.map(m => m.perf || 0), backgroundColor: '#c4121a' },
+                        { label: 'Qual', data: machineAvg.map(m => m.qual || 0), backgroundColor: '#FFD700' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: val => val + '%',
+                            font: { weight: 'bold', size: 10 },
+                            color: '#475569'
+                        }
+                    },
+                    scales: { y: { max: 115, ticks: { callback: v => v + '%' } } }
+                }
+            });
+        }
+
+        const shiftCtx = document.getElementById('shiftChart')?.getContext('2d');
+        if (shiftCtx) {
+            const shiftVals = ['A','B','C'].map(s => {
+                const sd = data.filter(d => d.turno === s);
+                if (!sd.length) return 0;
+                let avg = { disp: 0, perf: 0, qual: 0 };
+                sd.forEach(h => { avg.disp += h.disp || 0; avg.perf += h.perf || 0; avg.qual += h.qual || 0; });
+                avg.disp /= sd.length; avg.perf /= sd.length; avg.qual /= sd.length;
+                return calcularOEE(avg.disp, avg.perf, avg.qual);
+            });
+            
+            if (shiftChart) shiftChart.destroy();
+            shiftChart = new Chart(shiftCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Turno A','Turno B','Turno C'],
+                    datasets: [{ data: shiftVals, backgroundColor: ['#FFD700','#005a2b','#c4121a'], borderWidth: 0, hoverOffset: 10 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold', size: 12 },
+                            formatter: val => val > 0 ? val + '%' : ''
+                        }
+                    }
+                }
+            });
+        }
     }
 
     function renderEfficiencyView(data) {
-        const machineSelect = document.getElementById('machineSelect').value;
-        const filteredData = machineSelect === 'ALL' ? data : data.filter(d => d.machine === machineSelect);
+        const machine = document.getElementById('machineSelect').value;
+        const filtered = machine === 'ALL' ? data : data.filter(d => d.machine === machine);
         
-        const cardsContainer = document.getElementById('efficiency-cards-container');
-        cardsContainer.innerHTML = '';
+        const cards = document.getElementById('efficiency-cards-container');
+        cards.innerHTML = '';
         
-        const turnos = ['A', 'B', 'C'];
-        turnos.forEach(turno => {
-            const turnoData = filteredData.filter(d => d.turno === turno);
-            if (turnoData.length === 0) {
-                cardsContainer.innerHTML += `
-                    <div class="bg-white p-6 rounded-xl border border-slate-200">
-                        <p class="text-xs font-bold uppercase text-slate-400 mb-2">Turno ${turno}</p>
-                        <p class="text-slate-400">Sem dados</p>
-                    </div>
-                `;
+        ['A','B','C'].forEach(t => {
+            const td = filtered.filter(d => d.turno === t);
+            if (!td.length) {
+                cards.innerHTML += `<div class="bg-white p-6 rounded-xl border border-slate-200"><p class="text-xs font-bold uppercase text-slate-400 mb-2">Turno ${t}</p><p class="text-slate-400">Sem dados</p></div>`;
                 return;
             }
             
-            let avgDisp = 0, avgPerf = 0, avgQual = 0;
-            turnoData.forEach(d => {
-                avgDisp += d.disp || 0;
-                avgPerf += d.perf || 0;
-                avgQual += d.qual || 0;
-            });
-            avgDisp = Math.round(avgDisp / turnoData.length);
-            avgPerf = Math.round(avgPerf / turnoData.length);
-            avgQual = Math.round(avgQual / turnoData.length);
-            const avgOEE = calcularOEE(avgDisp, avgPerf, avgQual);
+            let d=0,p=0,q=0;
+            td.forEach(r => { d += r.disp||0; p += r.perf||0; q += r.qual||0; });
+            d = Math.round(d/td.length); p = Math.round(p/td.length); q = Math.round(q/td.length);
+            const o = calcularOEE(d,p,q);
             
-            cardsContainer.innerHTML += `
+            cards.innerHTML += `
                 <div class="bg-white p-6 rounded-xl border border-slate-200">
-                    <p class="text-xs font-bold uppercase text-slate-400 mb-2">Turno ${turno}</p>
-                    <div class="text-3xl font-black mb-3 ${avgOEE >= META ? 'text-green-600' : 'text-red-600'}">${avgOEE}%</div>
+                    <p class="text-xs font-bold uppercase text-slate-400 mb-2">Turno ${t}</p>
+                    <div class="text-3xl font-black mb-3 ${o>=85?'text-green-600':'text-red-600'}">${o}%</div>
                     <div class="space-y-2">
-                        <div><span class="text-xs text-slate-400">Disponibilidade:</span> <span class="font-bold">${avgDisp}%</span></div>
-                        <div><span class="text-xs text-slate-400">Performance:</span> <span class="font-bold">${avgPerf}%</span></div>
-                        <div><span class="text-xs text-slate-400">Qualidade:</span> <span class="font-bold">${avgQual}%</span></div>
-                        <div><span class="text-xs text-slate-400">Registros:</span> <span class="font-bold">${turnoData.length}</span></div>
+                        <div><span class="text-xs text-slate-400">Disponibilidade:</span> <span class="font-bold">${d}%</span></div>
+                        <div><span class="text-xs text-slate-400">Performance:</span> <span class="font-bold">${p}%</span></div>
+                        <div><span class="text-xs text-slate-400">Qualidade:</span> <span class="font-bold">${q}%</span></div>
+                        <div><span class="text-xs text-slate-400">Registros:</span> <span class="font-bold">${td.length}</span></div>
                     </div>
                 </div>
             `;
@@ -3262,620 +2972,361 @@
         
         const tbody = document.getElementById('efficiency-selection-rows');
         tbody.innerHTML = '';
-        
-        data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(reg => {
-            const oee = calcularOEE(reg.disp, reg.perf, reg.qual);
-            const statusClass = oee >= META ? 'text-green-600' : 'text-red-600';
-            const statusText = oee >= META ? '✅' : '⚠️';
-            
+        data.sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(r => {
+            const o = calcularOEE(r.disp,r.perf,r.qual);
             tbody.innerHTML += `
                 <tr>
-                    <td class="py-2">${reg.date.split('-').reverse().join('/')}</td>
-                    <td class="py-2">${reg.machine}</td>
-                    <td class="py-2">${reg.turno}</td>
-                    <td class="py-2">${reg.op}</td>
-                    <td class="py-2">${reg.produto || '-'}</td>
-                    <td class="py-2 text-right">${reg.est || 0}</td>
-                    <td class="py-2 text-right">${reg.realKgH || 0}</td>
-                    <td class="py-2 text-right">${reg.disp || 0}%</td>
-                    <td class="py-2 text-right">${reg.dispTurno || 0}%</td>
-                    <td class="py-2 text-right">${reg.perf || 0}%</td>
-                    <td class="py-2 text-right">${reg.qual || 0}%</td>
-                    <td class="py-2 text-right font-bold ${statusClass}">${oee}%</td>
+                    <td class="py-2">${r.date.split('-').reverse().join('/')}</td>
+                    <td class="py-2">${r.machine}</td>
+                    <td class="py-2">${r.turno}</td>
+                    <td class="py-2">${r.op}</td>
+                    <td class="py-2">${r.produto||'-'}</td>
+                    <td class="py-2 text-right">${r.est||0}</td>
+                    <td class="py-2 text-right">${r.realKgH||0}</td>
+                    <td class="py-2 text-right">${r.disp||0}%</td>
+                    <td class="py-2 text-right">${r.dispTurno||0}%</td>
+                    <td class="py-2 text-right">${r.perf||0}%</td>
+                    <td class="py-2 text-right">${r.qual||0}%</td>
+                    <td class="py-2 text-right font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%</td>
+                    <td class="py-2 text-center"><span class="inline-block px-2 py-1 rounded-full text-[8px] font-bold uppercase ${o>=85?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${o>=85?'✅':'⚠️'}</span></td>
                     <td class="py-2 text-center">
-                        <span class="inline-block px-2 py-1 rounded-full text-[8px] font-bold uppercase ${oee >= META ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                            ${statusText}
-                        </span>
-                    </td>
-                    <td class="py-2 text-center">
-                        <button onclick="openEditModal(${reg.id})" class="edit-btn mx-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            </svg>
-                        </button>
-                        <button onclick="apagarRegistro(${reg.id})" class="text-red-500 hover:text-red-700 mx-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
+                        <button onclick="openEditModal(${r.id})" class="edit-btn mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+                        <button onclick="apagarRegistro(${r.id})" class="text-red-500 hover:text-red-700 mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
                     </td>
                 </tr>
             `;
         });
     }
 
-    // ============================================
-    // FUNÇÃO renderOPView
-    // ============================================
     function renderOPView(data) {
         const ops = {};
+        data.forEach(r => { if (!ops[r.op]) ops[r.op] = []; ops[r.op].push(r); });
         
-        data.forEach(reg => {
-            if (!ops[reg.op]) {
-                ops[reg.op] = [];
-            }
-            ops[reg.op].push(reg);
-        });
+        const container = document.getElementById('opTimelineContainer');
+        container.innerHTML = '';
         
-        const timelineContainer = document.getElementById('opTimelineContainer');
-        timelineContainer.innerHTML = '';
-        
-        Object.entries(ops).forEach(([op, registros]) => {
-            registros.sort((a, b) => {
-                const dataA = new Date(a.date + ' ' + a.inicio);
-                const dataB = new Date(b.date + ' ' + b.inicio);
-                return dataA - dataB;
+        Object.entries(ops).forEach(([op, rs]) => {
+            rs.sort((a,b)=>new Date(a.date+' '+a.inicio)-new Date(b.date+' '+b.inicio));
+            let totalProd = 0, totalPed = 0, sDisp=0, sPerf=0, sQual=0, totalH=0;
+            rs.forEach(r => {
+                totalProd += r.produzido||0;
+                totalPed = r.pedido||totalPed;
+                sDisp += r.disp||0;
+                sPerf += r.perf||0;
+                sQual += r.qual||0;
+                totalH += calcularDuracaoHoras(r.inicio,r.fim);
             });
+            const mDisp = Math.round(sDisp/rs.length), mPerf = Math.round(sPerf/rs.length), mQual = Math.round(sQual/rs.length), mOEE = calcularOEE(mDisp,mPerf,mQual);
+            const meta = totalProd >= totalPed;
+            const p = rs[0];
+            const per = p.date===rs[rs.length-1].date ? p.date.split('-').reverse().join('/') : `${p.date.split('-').reverse().join('/')} a ${rs[rs.length-1].date.split('-').reverse().join('/')}`;
             
-            let totalProduzido = 0;
-            let totalPedido = 0;
-            let somaDisp = 0;
-            let somaPerf = 0;
-            let somaQual = 0;
-            let totalHoras = 0;
-            
-            registros.forEach(reg => {
-                totalProduzido += reg.produzido || 0;
-                totalPedido = reg.pedido || totalPedido;
-                somaDisp += reg.disp || 0;
-                somaPerf += reg.perf || 0;
-                somaQual += reg.qual || 0;
-                
-                const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
-                totalHoras += horas;
-            });
-            
-            const mediaDisp = Math.round(somaDisp / registros.length);
-            const mediaPerf = Math.round(somaPerf / registros.length);
-            const mediaQual = Math.round(somaQual / registros.length);
-            const mediaOEE = calcularOEE(mediaDisp, mediaPerf, mediaQual);
-            
-            const metaAtingida = totalProduzido >= totalPedido;
-            const primeiroReg = registros[0];
-            const ultimoReg = registros[registros.length - 1];
-            
-            const periodo = primeiroReg.date === ultimoReg.date 
-                ? primeiroReg.date.split('-').reverse().join('/')
-                : `${primeiroReg.date.split('-').reverse().join('/')} a ${ultimoReg.date.split('-').reverse().join('/')}`;
-            
-            timelineContainer.innerHTML += `
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md transition-all hover:border-green-600 op-card" 
-                     onclick="abrirDetalhesOP('${op}')">
-                    
+            container.innerHTML += `
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesOP('${op}')">
                     <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <span class="font-black text-xl text-green-700">OP ${op}</span>
-                            <span class="ml-3 text-sm font-medium text-slate-500">${primeiroReg.produto || '-'}</span>
-                        </div>
-                        <span class="text-sm font-bold px-3 py-1 rounded-full ${metaAtingida ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                            ${metaAtingida ? '✅ META' : '⚠️ META NÃO ATINGIDA'}
-                        </span>
+                        <div><span class="font-black text-xl text-green-700">OP ${op}</span><span class="ml-3 text-sm font-medium text-slate-500">${p.produto||'-'}</span></div>
+                        <span class="text-sm font-bold px-3 py-1 rounded-full ${meta?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${meta?'✅ META':'⚠️ META NÃO ATINGIDA'}</span>
                     </div>
-                    
                     <div class="grid grid-cols-4 gap-4 mb-4">
-                        <div class="bg-slate-50 p-3 rounded-xl text-center">
-                            <span class="text-xs font-bold uppercase text-slate-400">DISP</span>
-                            <div class="text-2xl font-black ${mediaDisp >= 85 ? 'text-green-600' : 'text-red-600'}">${mediaDisp}%</div>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center">
-                            <span class="text-xs font-bold uppercase text-slate-400">PERF</span>
-                            <div class="text-2xl font-black ${mediaPerf >= 90 ? 'text-green-600' : 'text-yellow-600'}">${mediaPerf}%</div>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center">
-                            <span class="text-xs font-bold uppercase text-slate-400">QUAL</span>
-                            <div class="text-2xl font-black ${mediaQual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${mediaQual}%</div>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center">
-                            <span class="text-xs font-bold uppercase text-slate-400">OEE</span>
-                            <div class="text-2xl font-black ${mediaOEE >= 85 ? 'text-green-600' : 'text-red-600'}">${mediaOEE}%</div>
-                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">DISP</span><div class="text-2xl font-black ${mDisp>=85?'text-green-600':'text-red-600'}">${mDisp}%</div></div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">PERF</span><div class="text-2xl font-black ${mPerf>=90?'text-green-600':'text-yellow-600'}">${mPerf}%</div></div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">QUAL</span><div class="text-2xl font-black ${mQual>=98?'text-green-600':'text-yellow-600'}">${mQual}%</div></div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">OEE</span><div class="text-2xl font-black ${mOEE>=85?'text-green-600':'text-red-600'}">${mOEE}%</div></div>
                     </div>
-                    
                     <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
-                        <div>
-                            <span class="font-medium">📦 ${totalProduzido.toFixed(0)} kg</span>
-                            <span class="mx-2">•</span>
-                            <span>🎯 ${totalPedido} kg</span>
-                            <span class="mx-2">•</span>
-                            <span>🕒 ${totalHoras.toFixed(1)}h</span>
-                        </div>
-                        <div>
-                            <span>📅 ${periodo}</span>
-                            <span class="ml-4 text-blue-600 font-medium">👆 Clique para detalhes</span>
-                        </div>
+                        <div><span class="font-medium">📦 ${totalProd.toFixed(0)} kg</span><span class="mx-2">•</span><span>🎯 ${totalPed} kg</span><span class="mx-2">•</span><span>🕒 ${totalH.toFixed(1)}h</span></div>
+                        <div><span>📅 ${per}</span><span class="ml-4 text-blue-600 font-medium">👆 Clique para detalhes</span></div>
                     </div>
                 </div>
             `;
         });
         
-        if (Object.keys(ops).length === 0) {
-            timelineContainer.innerHTML = '<p class="text-center text-slate-400 py-8">Nenhuma OP encontrada no período.</p>';
-        }
+        if (!Object.keys(ops).length) container.innerHTML = '<p class="text-center text-slate-400 py-8">Nenhuma OP encontrada no período.</p>';
     }
 
-    // ============================================
-    // FUNÇÃO abrirDetalhesOP
-    // ============================================
     function abrirDetalhesOP(op) {
         console.log("🔍 Abrindo detalhes da OP:", op);
+        const rs = historico.filter(r => r.op == op);
+        if (!rs.length) { console.error("Nenhum registro"); return; }
+        console.log(`📊 Encontrados ${rs.length} registros`);
         
-        const registros = historico.filter(reg => reg.op == op);
+        rs.sort((a,b)=>new Date(a.date+' '+a.inicio)-new Date(b.date+' '+b.inicio));
+        let rows = '', tDisp=0, tPerf=0, tQual=0, tOEE=0;
         
-        if (registros.length === 0) {
-            console.error("Nenhum registro encontrado para OP:", op);
-            return;
-        }
-        
-        console.log(`📊 Encontrados ${registros.length} registros`);
-        
-        registros.sort((a, b) => {
-            const dataA = new Date(a.date + ' ' + a.inicio);
-            const dataB = new Date(b.date + ' ' + b.inicio);
-            return dataA - dataB;
-        });
-        
-        let rowsHTML = '';
-        let totalDisp = 0, totalPerf = 0, totalQual = 0, totalOEE = 0;
-        
-        registros.forEach((reg, index) => {
-            const duracaoHoras = calcularDuracaoHoras(reg.inicio, reg.fim).toFixed(1);
-            const perda = ((reg.dispTurno || 0) - (reg.disp || 0)).toFixed(1);
-            const motivoClass = reg.motivoPerda ? `perda-${reg.motivoPerda.toLowerCase().replace(/ /g, '-')}` : '';
-            const oee = calcularOEE(reg.disp, reg.perf, reg.qual);
+        rs.forEach((r,i) => {
+            const h = calcularDuracaoHoras(r.inicio,r.fim).toFixed(1);
+            const perda = ((r.dispTurno||0)-(r.disp||0)).toFixed(1);
+            const mc = r.motivoPerda ? `perda-${r.motivoPerda.toLowerCase().replace(/ /g,'-')}` : '';
+            const o = calcularOEE(r.disp,r.perf,r.qual);
+            tDisp += r.disp||0; tPerf += r.perf||0; tQual += r.qual||0; tOEE += o;
             
-            totalDisp += reg.disp || 0;
-            totalPerf += reg.perf || 0;
-            totalQual += reg.qual || 0;
-            totalOEE += oee;
-            
-            rowsHTML += `
-                <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-                    <td class="py-3">${reg.date.split('-').reverse().join('/')}</td>
-                    <td class="py-3 font-bold">${reg.turno}</td>
-                    <td class="py-3">${reg.op}</td>
-                    <td class="py-3 max-w-xs truncate">${reg.produto || '-'}</td>
-                    <td class="py-3 text-center">${reg.inicio}</td>
-                    <td class="py-3 text-center">${reg.fim}</td>
-                    <td class="py-3 text-center">${duracaoHoras}h</td>
-                    <td class="py-3 text-center ${reg.setup > 0 ? 'text-orange-600 font-bold' : ''}">${reg.setup || 0}</td>
-                    <td class="py-3 text-center ${reg.avaria > 0 ? 'text-red-600 font-bold' : ''}">${reg.avaria || 0}</td>
-                    <td class="py-3 text-center font-bold">${reg.disp || 0}%</td>
-                    <td class="py-3 text-center">${reg.dispTurno || 0}%</td>
+            rows += `
+                <tr class="${i%2===0?'bg-white':'bg-slate-50'}">
+                    <td class="py-3">${r.date.split('-').reverse().join('/')}</td>
+                    <td class="py-3 font-bold">${r.turno}</td>
+                    <td class="py-3">${r.op}</td>
+                    <td class="py-3 max-w-xs truncate">${r.produto||'-'}</td>
+                    <td class="py-3 text-center">${r.inicio}</td>
+                    <td class="py-3 text-center">${r.fim}</td>
+                    <td class="py-3 text-center">${h}h</td>
+                    <td class="py-3 text-center ${r.setup>0?'text-orange-600 font-bold':''}">${r.setup||0}</td>
+                    <td class="py-3 text-center ${r.avaria>0?'text-red-600 font-bold':''}">${r.avaria||0}</td>
+                    <td class="py-3 text-center font-bold">${r.disp||0}%</td>
+                    <td class="py-3 text-center">${r.dispTurno||0}%</td>
                     <td class="py-3 text-center text-red-600 font-bold">${perda}%</td>
-                    <td class="py-3 text-center">${reg.est || 0}</td>
-                    <td class="py-3 text-center">${reg.realKgH || 0}</td>
-                    <td class="py-3 text-center font-bold ${reg.perf >= 90 ? 'text-green-600' : 'text-yellow-600'}">${reg.perf || 0}%</td>
-                    <td class="py-3 text-center font-bold ${reg.qual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${reg.qual || 0}%</td>
-                    <td class="py-3 text-center font-bold ${oee >= 85 ? 'text-green-600' : 'text-red-600'}">${oee}%</td>
-                    <td class="py-3 text-center">
-                        ${reg.motivoPerda ? `<span class="perda-badge ${motivoClass}">${reg.motivoPerda}</span>` : '-'}
-                    </td>
+                    <td class="py-3 text-center">${r.est||0}</td>
+                    <td class="py-3 text-center">${r.realKgH||0}</td>
+                    <td class="py-3 text-center font-bold ${r.perf>=90?'text-green-600':'text-yellow-600'}">${r.perf||0}%</td>
+                    <td class="py-3 text-center font-bold ${r.qual>=98?'text-green-600':'text-yellow-600'}">${r.qual||0}%</td>
+                    <td class="py-3 text-center font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%</td>
+                    <td class="py-3 text-center">${r.motivoPerda?`<span class="perda-badge ${mc}">${r.motivoPerda}</span>`:'-'}</td>
                 </tr>
             `;
         });
         
-        const mediaDisp = Math.round(totalDisp / registros.length);
-        const mediaPerf = Math.round(totalPerf / registros.length);
-        const mediaQual = Math.round(totalQual / registros.length);
-        const mediaOEE = Math.round(totalOEE / registros.length);
-        
-        rowsHTML += `
+        const mDisp = Math.round(tDisp/rs.length), mPerf = Math.round(tPerf/rs.length), mQual = Math.round(tQual/rs.length), mOEE = Math.round(tOEE/rs.length);
+        rows += `
             <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
                 <td colspan="4" class="py-3 text-blue-800">📊 MÉDIA DA OP</td>
-                <td colspan="3" class="py-3 text-center"></td>
-                <td colspan="2" class="py-3 text-center"></td>
-                <td class="py-3 text-center text-blue-800">${mediaDisp}%</td>
-                <td class="py-3 text-center"></td>
-                <td class="py-3 text-center"></td>
-                <td class="py-3 text-center"></td>
-                <td class="py-3 text-center"></td>
-                <td class="py-3 text-center text-blue-800">${mediaPerf}%</td>
-                <td class="py-3 text-center text-blue-800">${mediaQual}%</td>
-                <td class="py-3 text-center text-blue-800 font-black text-base">${mediaOEE}%</td>
-                <td class="py-3 text-center"></td>
+                <td colspan="3" class="py-3 text-center"></td><td colspan="2" class="py-3 text-center"></td>
+                <td class="py-3 text-center text-blue-800">${mDisp}%</td><td class="py-3 text-center"></td><td class="py-3 text-center"></td>
+                <td class="py-3 text-center"></td><td class="py-3 text-center"></td>
+                <td class="py-3 text-center text-blue-800">${mPerf}%</td><td class="py-3 text-center text-blue-800">${mQual}%</td>
+                <td class="py-3 text-center text-blue-800 font-black text-base">${mOEE}%</td><td class="py-3 text-center"></td>
             </tr>
         `;
         
-        const modalExistente = document.getElementById('detalhesOPModal');
-        if (modalExistente) modalExistente.remove();
+        const existente = document.getElementById('detalhesOPModal');
+        if (existente) existente.remove();
         
-        const modalHTML = `
+        document.body.insertAdjacentHTML('beforeend', `
             <div id="detalhesOPModal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[200]" style="display: flex;">
                 <div class="bg-white rounded-3xl shadow-2xl w-full max-w-7xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
                     <div class="flex justify-between items-center mb-6 border-b pb-4">
-                        <h2 class="font-black uppercase text-slate-800 text-xl">
-                            OP ${op} - Detalhamento por Turno
-                        </h2>
+                        <h2 class="font-black uppercase text-slate-800 text-xl">OP ${op} - Detalhamento por Turno</h2>
                         <button onclick="fecharDetalhesOP()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
                     </div>
-                    
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead>
-                                <tr class="text-[10px] uppercase text-slate-400 border-b">
-                                    <th class="pb-4">DATA</th>
-                                    <th class="pb-4">TURNO</th>
-                                    <th class="pb-4">OP</th>
-                                    <th class="pb-4">CLIENTE/PRODUTO</th>
-                                    <th class="pb-4 text-center">INÍCIO</th>
-                                    <th class="pb-4 text-center">FIM</th>
-                                    <th class="pb-4 text-center">DURAÇÃO</th>
-                                    <th class="pb-4 text-center">SETUP</th>
-                                    <th class="pb-4 text-center">PARADAS</th>
-                                    <th class="pb-4 text-center">DISP</th>
-                                    <th class="pb-4 text-center">DISP.TURNO</th>
-                                    <th class="pb-4 text-center">PERDA</th>
-                                    <th class="pb-4 text-center">EST.</th>
-                                    <th class="pb-4 text-center">REAL</th>
-                                    <th class="pb-4 text-center">PERF</th>
-                                    <th class="pb-4 text-center">QUAL</th>
-                                    <th class="pb-4 text-center">OEE</th>
-                                    <th class="pb-4 text-center">MOTIVO PERDA</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-50">
-                                ${rowsHTML}
-                            </tbody>
+                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','TURNO','OP','CLIENTE/PRODUTO','INÍCIO','FIM','DURAÇÃO','SETUP','PARADAS','DISP','DISP.TURNO','PERDA','EST.','REAL','PERF','QUAL','OEE','MOTIVO PERDA'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
+                            <tbody class="divide-y divide-slate-50">${rows}</tbody>
                         </table>
                     </div>
-                    
-                    <div class="mt-6 flex justify-end">
-                        <button onclick="fecharDetalhesOP()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300 transition-colors">
-                            Fechar
-                        </button>
-                    </div>
+                    <div class="mt-6 flex justify-end"><button onclick="fecharDetalhesOP()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">Fechar</button></div>
                 </div>
             </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        `);
     }
 
     function fecharDetalhesOP() {
-        const modal = document.getElementById('detalhesOPModal');
-        if (modal) modal.remove();
+        const m = document.getElementById('detalhesOPModal');
+        if (m) m.remove();
     }
 
-    // ============================================
-    // FUNÇÃO renderClientsView
-    // ============================================
     function renderClientsView(data) {
-        const clientesData = {};
+        const cd = {};
+        data.forEach(r => { const c = r.cliente||'Sem cliente'; if (!cd[c]) cd[c] = []; cd[c].push(r); });
         
-        data.forEach(reg => {
-            const cliente = reg.cliente || 'Sem cliente';
-            if (!clientesData[cliente]) {
-                clientesData[cliente] = [];
-            }
-            clientesData[cliente].push(reg);
-        });
+        const list = document.getElementById('client-performance-list');
+        list.innerHTML = '';
         
-        const perfList = document.getElementById('client-performance-list');
-        perfList.innerHTML = '';
-        
-        const clientesOrdenados = Object.keys(clientesData).sort();
-        
-        clientesOrdenados.forEach(cliente => {
-            const registros = clientesData[cliente];
-            
-            let totalProduzido = 0;
-            let somaDisp = 0;
-            let somaPerf = 0;
-            let somaQual = 0;
-            let totalHoras = 0;
-            let datas = [];
-            
-            registros.forEach(reg => {
-                totalProduzido += reg.produzido || 0;
-                somaDisp += reg.disp || 0;
-                somaPerf += reg.perf || 0;
-                somaQual += reg.qual || 0;
-                datas.push(reg.date);
-                
-                const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
-                totalHoras += horas;
+        Object.keys(cd).sort().forEach(c => {
+            const rs = cd[c];
+            let total=0, sD=0, sP=0, sQ=0, horas=0, datas=[];
+            rs.forEach(r => {
+                total += r.produzido||0;
+                sD += r.disp||0;
+                sP += r.perf||0;
+                sQ += r.qual||0;
+                datas.push(r.date);
+                horas += calcularDuracaoHoras(r.inicio,r.fim);
             });
-            
-            const mediaDisp = Math.round(somaDisp / registros.length);
-            const mediaPerf = Math.round(somaPerf / registros.length);
-            const mediaQual = Math.round(somaQual / registros.length);
-            const mediaOEE = calcularOEE(mediaDisp, mediaPerf, mediaQual);
-            
+            const mD = Math.round(sD/rs.length), mP = Math.round(sP/rs.length), mQ = Math.round(sQ/rs.length), mO = calcularOEE(mD,mP,mQ);
             datas.sort();
-            const primeiraData = datas[0]?.split('-').reverse().join('/') || '';
-            const ultimaData = datas[datas.length - 1]?.split('-').reverse().join('/') || '';
-            const periodo = primeiraData === ultimaData ? primeiraData : `${primeiraData} a ${ultimaData}`;
+            const p = datas[0]?.split('-').reverse().join('/')||'', u = datas[datas.length-1]?.split('-').reverse().join('/')||'', per = p===u?p:`${p} a ${u}`;
             
-            const clienteEscapado = cliente.replace(/'/g, "\\'");
-            
-            perfList.innerHTML += `
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md transition-all hover:border-green-600 op-card" 
-                     onclick="abrirDetalhesCliente('${clienteEscapado}')">
-                    
+            list.innerHTML += `
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesCliente('${c.replace(/'/g,"\\'")}')">
                     <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <span class="font-black text-xl text-green-700">${cliente}</span>
-                        </div>
-                        <span class="text-sm font-bold px-3 py-1 rounded-full ${mediaOEE >= 85 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                            ${mediaOEE >= 85 ? '✅ ACIMA DA META' : '⚠️ ABAIXO DA META'}
-                        </span>
+                        <div><span class="font-black text-xl text-green-700">${c}</span></div>
+                        <span class="text-sm font-bold px-3 py-1 rounded-full ${mO>=85?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${mO>=85?'✅ ACIMA DA META':'⚠️ ABAIXO DA META'}</span>
                     </div>
-                    
                     <div class="grid grid-cols-4 gap-4 mb-4">
-                        <div class="bg-slate-50 p-3 rounded-xl text-center">
-                            <span class="text-xs font-bold uppercase text-slate-400">DISP</span>
-                            <div class="text-2xl font-black ${mediaDisp >= 85 ? 'text-green-600' : 'text-red-600'}">${mediaDisp}%</div>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center">
-                            <span class="text-xs font-bold uppercase text-slate-400">PERF</span>
-                            <div class="text-2xl font-black ${mediaPerf >= 90 ? 'text-green-600' : 'text-yellow-600'}">${mediaPerf}%</div>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center">
-                            <span class="text-xs font-bold uppercase text-slate-400">QUAL</span>
-                            <div class="text-2xl font-black ${mediaQual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${mediaQual}%</div>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center">
-                            <span class="text-xs font-bold uppercase text-slate-400">OEE</span>
-                            <div class="text-2xl font-black ${mediaOEE >= 85 ? 'text-green-600' : 'text-red-600'}">${mediaOEE}%</div>
-                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">DISP</span><div class="text-2xl font-black ${mD>=85?'text-green-600':'text-red-600'}">${mD}%</div></div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">PERF</span><div class="text-2xl font-black ${mP>=90?'text-green-600':'text-yellow-600'}">${mP}%</div></div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">QUAL</span><div class="text-2xl font-black ${mQ>=98?'text-green-600':'text-yellow-600'}">${mQ}%</div></div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">OEE</span><div class="text-2xl font-black ${mO>=85?'text-green-600':'text-red-600'}">${mO}%</div></div>
                     </div>
-                    
                     <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
-                        <div>
-                            <span class="font-medium">📦 ${totalProduzido.toFixed(0)} kg</span>
-                            <span class="mx-2">•</span>
-                            <span>📋 ${registros.length} registros</span>
-                            <span class="mx-2">•</span>
-                            <span>🕒 ${totalHoras.toFixed(1)}h</span>
-                        </div>
-                        <div>
-                            <span>📅 ${periodo}</span>
-                            <span class="ml-4 text-blue-600 font-medium">👆 Clique para detalhes</span>
-                        </div>
+                        <div><span class="font-medium">📦 ${total.toFixed(0)} kg</span><span class="mx-2">•</span><span>📋 ${rs.length} registros</span><span class="mx-2">•</span><span>🕒 ${horas.toFixed(1)}h</span></div>
+                        <div><span>📅 ${per}</span><span class="ml-4 text-blue-600 font-medium">👆 Clique para detalhes</span></div>
                     </div>
                 </div>
             `;
         });
         
-        if (Object.keys(clientesData).length === 0) {
-            perfList.innerHTML = '<p class="text-center text-slate-400 py-8">Nenhum registro encontrado no período.</p>';
-            return;
+        if (!Object.keys(cd).length) list.innerHTML = '<p class="text-center text-slate-400 py-8">Nenhum registro encontrado no período.</p>';
+        
+        const opp = document.getElementById('opportunities-list');
+        if (opp) {
+            opp.innerHTML = '';
+            const cOEE = Object.entries(cd).map(([c,rs])=>{
+                const so = rs.reduce((s,r)=>s+calcularOEE(r.disp,r.perf,r.qual),0);
+                const mo = Math.round(so/rs.length);
+                const kg = rs.reduce((s,r)=>s+(r.produzido||0),0);
+                return {c,mo,kg,cnt:rs.length};
+            }).sort((a,b)=>a.mo-b.mo);
+            
+            let cnt=0;
+            cOEE.filter(x=>x.mo<85).forEach(x=>{ cnt++; opp.innerHTML+=`
+                <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                    <div><span class="font-bold">${x.c}</span><p class="text-xs text-slate-500">OEE atual: ${x.mo}%</p><p class="text-xs font-bold text-green-600">Potencial: +${(85-x.mo).toFixed(1)}%</p></div>
+                    <div class="text-right"><span class="text-sm font-bold text-green-600">${(x.mo+(85-x.mo)).toFixed(0)}%</span><p class="text-xs text-slate-500">meta 85%</p></div>
+                </div>
+            `; });
+            if (!cnt) opp.innerHTML = '<p class="text-center text-green-600 font-bold py-4">✅ Todos os clientes estão acima da meta!</p>';
         }
         
-        const oppList = document.getElementById('opportunities-list');
-        if (oppList) {
-            oppList.innerHTML = '';
+        const top = document.getElementById('top-clients-list');
+        if (top) {
+            top.innerHTML = '';
+            const melhores = [...Object.entries(cd).map(([c,rs])=>{
+                const so = rs.reduce((s,r)=>s+calcularOEE(r.disp,r.perf,r.qual),0);
+                const mo = Math.round(so/rs.length);
+                const kg = rs.reduce((s,r)=>s+(r.produzido||0),0);
+                return {c,mo,kg,cnt:rs.length};
+            })].sort((a,b)=>b.mo-a.mo).slice(0,5);
             
-            const clientesComOEE = [];
-            Object.entries(clientesData).forEach(([cliente, registros]) => {
-                const somaOEE = registros.reduce((sum, r) => sum + calcularOEE(r.disp, r.perf, r.qual), 0);
-                const mediaOEE = Math.round(somaOEE / registros.length);
-                const totalKg = registros.reduce((sum, r) => sum + (r.produzido || 0), 0);
-                clientesComOEE.push({ cliente, mediaOEE, totalKg, registros: registros.length });
-            });
-            
-            clientesComOEE.sort((a, b) => a.mediaOEE - b.mediaOEE);
-            
-            let oportunidadesCount = 0;
-            clientesComOEE.filter(c => c.mediaOEE < 85).forEach(c => {
-                oportunidadesCount++;
-                const potencial = (85 - c.mediaOEE).toFixed(1);
-                oppList.innerHTML += `
-                    <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                        <div>
-                            <span class="font-bold">${c.cliente}</span>
-                            <p class="text-xs text-slate-500">OEE atual: ${c.mediaOEE}%</p>
-                            <p class="text-xs font-bold text-green-600">Potencial: +${potencial}%</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-sm font-bold text-green-600">${(c.mediaOEE + parseFloat(potencial)).toFixed(0)}%</span>
-                            <p class="text-xs text-slate-500">meta 85%</p>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            if (oportunidadesCount === 0) {
-                oppList.innerHTML = '<p class="text-center text-green-600 font-bold py-4">✅ Todos os clientes estão acima da meta!</p>';
-            }
-        }
-        
-        const topClientsList = document.getElementById('top-clients-list');
-        if (topClientsList) {
-            topClientsList.innerHTML = '';
-            
-            const melhoresClientes = [...clientesComOEE].sort((a, b) => b.mediaOEE - a.mediaOEE).slice(0, 5);
-            
-            melhoresClientes.forEach((c, index) => {
-                topClientsList.innerHTML += `
+            melhores.forEach((x,i)=>{
+                top.innerHTML += `
                     <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <div>
-                            <span class="font-bold">${index + 1}. ${c.cliente}</span>
-                            <p class="text-xs text-slate-500">${c.registros} pedidos • ${c.totalKg} kg</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-lg font-black text-green-600">${c.mediaOEE}%</span>
-                        </div>
+                        <div><span class="font-bold">${i+1}. ${x.c}</span><p class="text-xs text-slate-500">${x.cnt} pedidos • ${x.kg} kg</p></div>
+                        <div class="text-right"><span class="text-lg font-black text-green-600">${x.mo}%</span></div>
                     </div>
                 `;
             });
         }
     }
 
-    // ============================================
-    // FUNÇÃO abrirDetalhesCliente
-    // ============================================
     function abrirDetalhesCliente(cliente) {
         console.log("🔍 Abrindo detalhes do cliente:", cliente);
+        const rs = historico.filter(r => r.cliente === cliente);
+        if (!rs.length) { console.error("Nenhum registro"); return; }
+        console.log(`📊 Encontrados ${rs.length} registros`);
         
-        const registros = historico.filter(reg => reg.cliente === cliente);
+        rs.sort((a,b)=>new Date(b.date)-new Date(a.date));
+        let rows = '', tD=0, tP=0, tQ=0, tO=0;
         
-        if (registros.length === 0) {
-            console.error("Nenhum registro encontrado para cliente:", cliente);
-            return;
-        }
-        
-        console.log(`📊 Encontrados ${registros.length} registros`);
-        
-        registros.sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        let rowsHTML = '';
-        let totalDisp = 0, totalPerf = 0, totalQual = 0, totalOEE = 0;
-        
-        registros.forEach((reg, index) => {
-            const oee = calcularOEE(reg.disp, reg.perf, reg.qual);
-            const variacao = reg.realKgH && reg.est ? ((reg.realKgH - reg.est) / reg.est * 100).toFixed(1) : 0;
+        rs.forEach((r,i) => {
+            const o = calcularOEE(r.disp,r.perf,r.qual);
+            const variacao = r.realKgH && r.est ? ((r.realKgH - r.est) / r.est * 100).toFixed(1) : 0;
             const perfClass = variacao >= 5 ? 'text-green-600' : variacao >= -5 ? 'text-blue-600' : 'text-red-600';
             
-            totalDisp += reg.disp || 0;
-            totalPerf += reg.perf || 0;
-            totalQual += reg.qual || 0;
-            totalOEE += oee;
+            tD += r.disp || 0;
+            tP += r.perf || 0;
+            tQ += r.qual || 0;
+            tO += o;
             
-            rowsHTML += `
-                <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-                    <td class="py-3">${reg.date.split('-').reverse().join('/')}</td>
-                    <td class="py-3">${reg.machine}</td>
-                    <td class="py-3">${reg.turno}</td>
-                    <td class="py-3 font-bold">${reg.op}</td>
-                    <td class="py-3 max-w-xs truncate">${reg.produto || '-'}</td>
-                    <td class="py-3 text-center">${reg.est || 0}</td>
-                    <td class="py-3 text-center">${reg.realKgH || 0}</td>
-                    <td class="py-3 text-center font-bold">${reg.disp || 0}%</td>
-                    <td class="py-3 text-center font-bold ${reg.perf >= 90 ? 'text-green-600' : 'text-yellow-600'}">${reg.perf || 0}%</td>
-                    <td class="py-3 text-center font-bold ${reg.qual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${reg.qual || 0}%</td>
+            rows += `
+                <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+                    <td class="py-3">${r.date.split('-').reverse().join('/')}</td>
+                    <td class="py-3">${r.machine}</td>
+                    <td class="py-3">${r.turno}</td>
+                    <td class="py-3 font-bold">${r.op}</td>
+                    <td class="py-3 max-w-xs truncate">${r.produto || '-'}</td>
+                    <td class="py-3 text-center">${r.est || 0}</td>
+                    <td class="py-3 text-center">${r.realKgH || 0}</td>
+                    <td class="py-3 text-center font-bold">${r.disp || 0}%</td>
+                    <td class="py-3 text-center font-bold ${r.perf >= 90 ? 'text-green-600' : 'text-yellow-600'}">${r.perf || 0}%</td>
+                    <td class="py-3 text-center font-bold ${r.qual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${r.qual || 0}%</td>
                     <td class="py-3 text-center ${perfClass}">${variacao > 0 ? '+' : ''}${variacao}%</td>
-                    <td class="py-3 text-center font-bold ${oee >= 85 ? 'text-green-600' : 'text-red-600'}">${oee}%</td>
+                    <td class="py-3 text-center font-bold ${o >= 85 ? 'text-green-600' : 'text-red-600'}">${o}%</td>
                 </tr>
             `;
         });
         
-        const mediaDisp = Math.round(totalDisp / registros.length);
-        const mediaPerf = Math.round(totalPerf / registros.length);
-        const mediaQual = Math.round(totalQual / registros.length);
-        const mediaOEE = Math.round(totalOEE / registros.length);
+        const mDisp = Math.round(tD / rs.length);
+        const mPerf = Math.round(tP / rs.length);
+        const mQual = Math.round(tQ / rs.length);
+        const mOEE = Math.round(tO / rs.length);
         
-        rowsHTML += `
+        rows += `
             <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
                 <td colspan="5" class="py-3 text-blue-800">📊 MÉDIA DO CLIENTE</td>
                 <td colspan="2" class="py-3 text-center"></td>
-                <td class="py-3 text-center text-blue-800">${mediaDisp}%</td>
-                <td class="py-3 text-center text-blue-800">${mediaPerf}%</td>
-                <td class="py-3 text-center text-blue-800">${mediaQual}%</td>
+                <td class="py-3 text-center text-blue-800">${mDisp}%</td>
+                <td class="py-3 text-center text-blue-800">${mPerf}%</td>
+                <td class="py-3 text-center text-blue-800">${mQual}%</td>
                 <td class="py-3 text-center"></td>
-                <td class="py-3 text-center text-blue-800 font-black text-base">${mediaOEE}%</td>
+                <td class="py-3 text-center text-blue-800 font-black text-base">${mOEE}%</td>
             </tr>
         `;
         
-        const modalExistente = document.getElementById('detalhesClienteModal');
-        if (modalExistente) modalExistente.remove();
+        const existente = document.getElementById('detalhesClienteModal');
+        if (existente) existente.remove();
         
-        const modalHTML = `
+        document.body.insertAdjacentHTML('beforeend', `
             <div id="detalhesClienteModal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[200]" style="display: flex;">
                 <div class="bg-white rounded-3xl shadow-2xl w-full max-w-7xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
                     <div class="flex justify-between items-center mb-6 border-b pb-4">
-                        <h2 class="font-black uppercase text-slate-800 text-xl">
-                            ${cliente} - Histórico de Pedidos
-                        </h2>
+                        <h2 class="font-black uppercase text-slate-800 text-xl">${cliente} - Histórico de Pedidos</h2>
                         <button onclick="fecharDetalhesCliente()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
                     </div>
-                    
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
                             <thead>
                                 <tr class="text-[10px] uppercase text-slate-400 border-b">
-                                    <th class="pb-4">DATA</th>
-                                    <th class="pb-4">MÁQ</th>
-                                    <th class="pb-4">TURNO</th>
-                                    <th class="pb-4">OP</th>
-                                    <th class="pb-4">PRODUTO</th>
-                                    <th class="pb-4 text-center">EST.</th>
-                                    <th class="pb-4 text-center">REAL</th>
-                                    <th class="pb-4 text-center">DISP</th>
-                                    <th class="pb-4 text-center">PERF</th>
-                                    <th class="pb-4 text-center">QUAL</th>
-                                    <th class="pb-4 text-center">VARIAÇÃO</th>
-                                    <th class="pb-4 text-center">OEE</th>
+                                    ${['DATA','MÁQ','TURNO','OP','PRODUTO','EST.','REAL','DISP','PERF','QUAL','VARIAÇÃO','OEE'].map(c => `<th class="pb-4 text-center">${c}</th>`).join('')}
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-50">
-                                ${rowsHTML}
-                            </tbody>
+                            <tbody class="divide-y divide-slate-50">${rows}</tbody>
                         </table>
                     </div>
-                    
                     <div class="mt-6 flex justify-end">
-                        <button onclick="fecharDetalhesCliente()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300 transition-colors">
-                            Fechar
-                        </button>
+                        <button onclick="fecharDetalhesCliente()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">Fechar</button>
                     </div>
                 </div>
             </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        `);
     }
 
     function fecharDetalhesCliente() {
-        const modal = document.getElementById('detalhesClienteModal');
-        if (modal) modal.remove();
+        const m = document.getElementById('detalhesClienteModal');
+        if (m) m.remove();
     }
 
     function renderHistoryView(data) {
         const tbody = document.getElementById('history-rows');
         tbody.innerHTML = '';
         
-        data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(reg => {
-            const oee = calcularOEE(reg.disp, reg.perf, reg.qual);
-            const statusClass = oee >= META ? 'text-green-600' : 'text-red-600';
-            const statusText = oee >= META ? '✅ Meta' : '⚠️ Abaixo';
-            
+        data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(r => {
+            const o = calcularOEE(r.disp, r.perf, r.qual);
             tbody.innerHTML += `
                 <tr>
-                    <td class="py-2">${reg.date.split('-').reverse().join('/')}</td>
-                    <td class="py-2">${reg.machine}</td>
-                    <td class="py-2">${reg.turno}</td>
-                    <td class="py-2">${reg.op}</td>
-                    <td class="py-2">${reg.produto || '-'}</td>
-                    <td class="py-2 text-center">${reg.est || 0}</td>
-                    <td class="py-2 text-center">${reg.realKgH || 0}</td>
-                    <td class="py-2 text-center">${reg.disp || 0}%</td>
-                    <td class="py-2 text-center">${reg.dispTurno || 0}%</td>
-                    <td class="py-2 text-center">${reg.perf || 0}%</td>
-                    <td class="py-2 text-center">${reg.qual || 0}%</td>
-                    <td class="py-2 text-right font-bold ${statusClass}">${oee}%</td>
+                    <td class="py-2">${r.date.split('-').reverse().join('/')}</td>
+                    <td class="py-2">${r.machine}</td>
+                    <td class="py-2">${r.turno}</td>
+                    <td class="py-2">${r.op}</td>
+                    <td class="py-2">${r.produto || '-'}</td>
+                    <td class="py-2 text-center">${r.est || 0}</td>
+                    <td class="py-2 text-center">${r.realKgH || 0}</td>
+                    <td class="py-2 text-center">${r.disp || 0}%</td>
+                    <td class="py-2 text-center">${r.dispTurno || 0}%</td>
+                    <td class="py-2 text-center">${r.perf || 0}%</td>
+                    <td class="py-2 text-center">${r.qual || 0}%</td>
+                    <td class="py-2 text-right font-bold ${o >= META ? 'text-green-600' : 'text-red-600'}">${o}%</td>
                     <td class="py-2 text-center">
-                        <span class="inline-block px-2 py-1 rounded-full text-[8px] font-bold uppercase ${oee >= META ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                            ${statusText}
+                        <span class="inline-block px-2 py-1 rounded-full text-[8px] font-bold uppercase ${o >= META ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                            ${o >= META ? '✅ Meta' : '⚠️ Abaixo'}
                         </span>
                     </td>
                     <td class="py-2 text-center">
-                        <button onclick="openEditModal(${reg.id})" class="edit-btn mx-1">
+                        <button onclick="openEditModal(${r.id})" class="edit-btn mx-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
                         </button>
-                        <button onclick="apagarRegistro(${reg.id})" class="text-red-500 hover:text-red-700 mx-1">
+                        <button onclick="apagarRegistro(${r.id})" class="text-red-500 hover:text-red-700 mx-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>

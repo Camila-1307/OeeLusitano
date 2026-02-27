@@ -1363,7 +1363,6 @@
     const SUPABASE_URL = "https://qyozqutvlppmgrmxcjit.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5b3pxdXR2bHBwbWdybXhjaml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MjE1ODIsImV4cCI6MjA4NzQ5NzU4Mn0.n2TmDlJQ5EkLyRXQHcrHZ6FP5SR8ja3NxSzP-oZjpo0";
 
-    // Criar cliente Supabase e guardar globalmente
     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         auth: { persistSession: true, autoRefreshToken: true }
     });
@@ -1380,7 +1379,7 @@
     let autoSaveTimer = null;
     let dadosPendentes = false;
     
-    // CLIENTES REAIS
+    // CLIENTES REAIS COMPLETOS
     let clientes = [
         "VINIPLAST", "NEOVIA NUTRIÇÃO", "TCHÊ PACK EMBALAGENS", "FLEXFILMS FLEXIBLE", 
         "TEXTIL TRES ELLOS", "AÇO CEARENSE", "TAKFILMS DISTRIBUIDORA", "LUSITANO IND E COM",
@@ -1393,13 +1392,19 @@
         "APARECIDO DONIZETE", "MARELLI", "QUALITY CENTRAL", "C.VALE"
     ];
 
-    // PRODUTOS REAIS (amostra)
+    // PRODUTOS REAIS COMPLETOS
     let produtos = [
         {
             cliente: "VINIPLAST",
             nome: "1500X150 50KG SHRINK ENVOLVEDORA",
             est: 140,
             displayName: "VINIPLAST - 1500X150 50KG SHRINK ENVOLVEDORA (140 kg/h)"
+        },
+        {
+            cliente: "VINIPLAST",
+            nome: "500X10025KG ENVOLVEDORA",
+            est: 90,
+            displayName: "VINIPLAST - 500X10025KG ENVOLVEDORA (90 kg/h)"
         },
         {
             cliente: "VINIPLAST",
@@ -1414,10 +1419,322 @@
             displayName: "NEOVIA NUTRIÇÃO - 500X25 16KG PIG VERDE (90 kg/h)"
         },
         {
+            cliente: "TCHÊ PACK EMBALAGENS",
+            nome: "500X25 40KG PIG LARANJA",
+            est: 90,
+            displayName: "TCHÊ PACK EMBALAGENS - 500X25 40KG PIG LARANJA (90 kg/h)"
+        },
+        {
+            cliente: "FLEXFILMS FLEXIBLE",
+            nome: "500x25 50KG PIG PRETO",
+            est: 140,
+            displayName: "FLEXFILMS FLEXIBLE - 500x25 50KG PIG PRETO (140 kg/h)"
+        },
+        {
+            cliente: "TEXTIL TRES ELLOS",
+            nome: "2000X25 35KG",
+            est: 190,
+            displayName: "TEXTIL TRES ELLOS - 2000X25 35KG (190 kg/h)"
+        },
+        {
+            cliente: "AÇO CEARENSE",
+            nome: "1400X50 20KG",
+            est: 140,
+            displayName: "AÇO CEARENSE - 1400X50 20KG (140 kg/h)"
+        },
+        {
+            cliente: "TAKFILMS DISTRIBUIDORA",
+            nome: "500X25 50KG PIG VERDE",
+            est: 90,
+            displayName: "TAKFILMS DISTRIBUIDORA - 500X25 50KG PIG VERDE (90 kg/h)"
+        },
+        {
+            cliente: "LUSITANO IND E COM",
+            nome: "500X25 PIG VERMELHO",
+            est: 90,
+            displayName: "LUSITANO IND E COM - 500X25 PIG VERMELHO (90 kg/h)"
+        },
+        {
+            cliente: "LUSITANO IND E COM",
+            nome: "480X40 SHRINK COBERTURA",
+            est: 120,
+            displayName: "LUSITANO IND E COM - 480X40 SHRINK COBERTURA (120 kg/h)"
+        },
+        {
+            cliente: "LUSITANO IND E COM",
+            nome: "460X40 12KG",
+            est: 130,
+            displayName: "LUSITANO IND E COM - 460X40 12KG (130 kg/h)"
+        },
+        {
+            cliente: "LUSITANO IND E COM",
+            nome: "400X140 TUBULAR",
+            est: 140,
+            displayName: "LUSITANO IND E COM - 400X140 TUBULAR (140 kg/h)"
+        },
+        {
+            cliente: "LUSITANO IND E COM",
+            nome: "400X200 SANFONA 100",
+            est: 90,
+            displayName: "LUSITANO IND E COM - 400X200 SANFONA 100 (90 kg/h)"
+        },
+        {
+            cliente: "BB EMBALAGENS",
+            nome: "540X60 85KG SHRINK",
+            est: 120,
+            displayName: "BB EMBALAGENS - 540X60 85KG SHRINK (120 kg/h)"
+        },
+        {
+            cliente: "BB EMBALAGENS",
+            nome: "620X60 80KG SHRINK",
+            est: 120,
+            displayName: "BB EMBALAGENS - 620X60 80KG SHRINK (120 kg/h)"
+        },
+        {
+            cliente: "BB EMBALAGENS",
+            nome: "500X55 80KG SHRINK BRANCO",
+            est: 90,
+            displayName: "BB EMBALAGENS - 500X55 80KG SHRINK BRANCO (90 kg/h)"
+        },
+        {
+            cliente: "BB EMBALAGENS",
+            nome: "500X55 80KG SHRINK",
+            est: 120,
+            displayName: "BB EMBALAGENS - 500X55 80KG SHRINK (120 kg/h)"
+        },
+        {
+            cliente: "AGRINDUS S/A",
+            nome: "500X60 24KG SHRINK SELADORA",
+            est: 130,
+            displayName: "AGRINDUS S/A - 500X60 24KG SHRINK SELADORA (130 kg/h)"
+        },
+        {
+            cliente: "KITCHENS IND.",
+            nome: "950X100 30KG SHRINK SELADORA",
+            est: 130,
+            displayName: "KITCHENS IND. - 950X100 30KG SHRINK SELADORA (130 kg/h)"
+        },
+        {
+            cliente: "KITCHENS IND.",
+            nome: "1250X100 30KG SELADORA",
+            est: 140,
+            displayName: "KITCHENS IND. - 1250X100 30KG SELADORA (140 kg/h)"
+        },
+        {
+            cliente: "PEIXES MEGGS",
+            nome: "730X30 30KG SHRINK SELADORA",
+            est: 130,
+            displayName: "PEIXES MEGGS - 730X30 30KG SHRINK SELADORA (130 kg/h)"
+        },
+        {
+            cliente: "RALPLAST FILME",
+            nome: "500X25 50KG PIG AZUL",
+            est: 90,
+            displayName: "RALPLAST FILME - 500X25 50KG PIG AZUL (90 kg/h)"
+        },
+        {
+            cliente: "PH7 DISTR.",
+            nome: "420X60 25KG SHRINK SELADORA",
+            est: 150,
+            displayName: "PH7 DISTR. - 420X60 25KG SHRINK SELADORA (150 kg/h)"
+        },
+        {
+            cliente: "REFRIX ENVASADORA",
+            nome: "490X55 30KG SHRINK ENVOLVEDORA",
+            est: 120,
+            displayName: "REFRIX ENVASADORA - 490X55 30KG SHRINK ENVOLVEDORA (120 kg/h)"
+        },
+        {
+            cliente: "KEG IND.",
+            nome: "500X25 15KG",
+            est: 120,
+            displayName: "KEG IND. - 500X25 15KG (120 kg/h)"
+        },
+        {
+            cliente: "BRAND TEXTIL",
+            nome: "1900X80 25KG SHRINK ENVOLVEDORA",
+            est: 140,
+            displayName: "BRAND TEXTIL - 1900X80 25KG SHRINK ENVOLVEDORA (140 kg/h)"
+        },
+        {
             cliente: "POLIPISO DO BRASIL",
             nome: "500X20 16KG",
             est: 120,
             displayName: "POLIPISO DO BRASIL - 500X20 16KG (120 kg/h)"
+        },
+        {
+            cliente: "FAREVA DES.",
+            nome: "500X25 15KG",
+            est: 120,
+            displayName: "FAREVA DES. - 500X25 15KG (120 kg/h)"
+        },
+        {
+            cliente: "FAREVA DES.",
+            nome: "240X50 15KG SHRINK SELADORA",
+            est: 90,
+            displayName: "FAREVA DES. - 240X50 15KG SHRINK SELADORA (90 kg/h)"
+        },
+        {
+            cliente: "ERIPACK EMBALAGENS",
+            nome: "500X25 50KG PIG PRETO",
+            est: 90,
+            displayName: "ERIPACK EMBALAGENS - 500X25 50KG PIG PRETO (90 kg/h)"
+        },
+        {
+            cliente: "IBÉRICA CONDUTORES",
+            nome: "500X25 PIG BRANCO",
+            est: 90,
+            displayName: "IBÉRICA CONDUTORES - 500X25 PIG BRANCO (90 kg/h)"
+        },
+        {
+            cliente: "DMZ PLAST",
+            nome: "500X25 50KG PIG PRETO",
+            est: 90,
+            displayName: "DMZ PLAST - 500X25 50KG PIG PRETO (90 kg/h)"
+        },
+        {
+            cliente: "MASTER DO BRASIL",
+            nome: "500X25 50KG PIG PRETO",
+            est: 90,
+            displayName: "MASTER DO BRASIL - 500X25 50KG PIG PRETO (90 kg/h)"
+        },
+        {
+            cliente: "STEELPACK GROUP",
+            nome: "500X25 50KG PIG BRANCO",
+            est: 90,
+            displayName: "STEELPACK GROUP - 500X25 50KG PIG BRANCO (90 kg/h)"
+        },
+        {
+            cliente: "STEELPACK GROUP",
+            nome: "500X25 50KG PIG PRETO",
+            est: 90,
+            displayName: "STEELPACK GROUP - 500X25 50KG PIG PRETO (90 kg/h)"
+        },
+        {
+            cliente: "EKS ADM",
+            nome: "500X25 50KG PIG VERMELHO",
+            est: 90,
+            displayName: "EKS ADM - 500X25 50KG PIG VERMELHO (90 kg/h)"
+        },
+        {
+            cliente: "EKS ADM",
+            nome: "500X25 50KG PIG. BRANCO",
+            est: 90,
+            displayName: "EKS ADM - 500X25 50KG PIG. BRANCO (90 kg/h)"
+        },
+        {
+            cliente: "EKS ADM",
+            nome: "500X25 50KG PIG PRETO",
+            est: 90,
+            displayName: "EKS ADM - 500X25 50KG PIG PRETO (90 kg/h)"
+        },
+        {
+            cliente: "CORR PLASTIK",
+            nome: "498X30 PIG AZUL",
+            est: 90,
+            displayName: "CORR PLASTIK - 498X30 PIG AZUL (90 kg/h)"
+        },
+        {
+            cliente: "IBILUX ILUMINAÇÃO",
+            nome: "180X160 15KG SHRINK TUBULAR",
+            est: 90,
+            displayName: "IBILUX ILUMINAÇÃO - 180X160 15KG SHRINK TUBULAR (90 kg/h)"
+        },
+        {
+            cliente: "R2 PLAST",
+            nome: "500X25 50KG PIG PRETO",
+            est: 90,
+            displayName: "R2 PLAST - 500X25 50KG PIG PRETO (90 kg/h)"
+        },
+        {
+            cliente: "TINTURARIA UNIVERSO",
+            nome: "550X70 25KG TUBULAR",
+            est: 120,
+            displayName: "TINTURARIA UNIVERSO - 550X70 25KG TUBULAR (120 kg/h)"
+        },
+        {
+            cliente: "TINTURARIA UNIVERSO",
+            nome: "650X70 25KG TUBULAR",
+            est: 130,
+            displayName: "TINTURARIA UNIVERSO - 650X70 25KG TUBULAR (130 kg/h)"
+        },
+        {
+            cliente: "TINTURARIA UNIVERSO",
+            nome: "450X70 25KG TUBULAR",
+            est: 120,
+            displayName: "TINTURARIA UNIVERSO - 450X70 25KG TUBULAR (120 kg/h)"
+        },
+        {
+            cliente: "CPIC BRASIL",
+            nome: "430X40 10KG PIG VERDE",
+            est: 140,
+            displayName: "CPIC BRASIL - 430X40 10KG PIG VERDE (140 kg/h)"
+        },
+        {
+            cliente: "NOVA RENKO IND.",
+            nome: "400X60 20KG SHRINK SELADORA",
+            est: 150,
+            displayName: "NOVA RENKO IND. - 400X60 20KG SHRINK SELADORA (150 kg/h)"
+        },
+        {
+            cliente: "SOLAR MINAS",
+            nome: "1250X160 25KG ENFESTADO",
+            est: 140,
+            displayName: "SOLAR MINAS - 1250X160 25KG ENFESTADO (140 kg/h)"
+        },
+        {
+            cliente: "MAXIBELL PORTAS",
+            nome: "1200X25 13KG",
+            est: 90,
+            displayName: "MAXIBELL PORTAS - 1200X25 13KG (90 kg/h)"
+        },
+        {
+            cliente: "BRAZIL GR",
+            nome: "460X40 12KG",
+            est: 130,
+            displayName: "BRAZIL GR - 460X40 12KG (130 kg/h)"
+        },
+        {
+            cliente: "CARGILL AGRICOLA",
+            nome: "1320X23 40KG",
+            est: 140,
+            displayName: "CARGILL AGRICOLA - 1320X23 40KG (140 kg/h)"
+        },
+        {
+            cliente: "CARGILL AGRICOLA",
+            nome: "750X30 28KG PIG BRANCO",
+            est: 140,
+            displayName: "CARGILL AGRICOLA - 750X30 28KG PIG BRANCO (140 kg/h)"
+        },
+        {
+            cliente: "TERMOMECANICA",
+            nome: "600X80 PIG BRANCO",
+            est: 120,
+            displayName: "TERMOMECANICA - 600X80 PIG BRANCO (120 kg/h)"
+        },
+        {
+            cliente: "APARECIDO DONIZETE",
+            nome: "600X12",
+            est: 90,
+            displayName: "APARECIDO DONIZETE - 600X12 (90 kg/h)"
+        },
+        {
+            cliente: "MARELLI",
+            nome: "500X40",
+            est: 140,
+            displayName: "MARELLI - 500X40 (140 kg/h)"
+        },
+        {
+            cliente: "QUALITY CENTRAL",
+            nome: "500X17",
+            est: 110,
+            displayName: "QUALITY CENTRAL - 500X17 (110 kg/h)"
+        },
+        {
+            cliente: "C.VALE",
+            nome: "515X15 PIG AZUL",
+            est: 90,
+            displayName: "C.VALE - 515X15 PIG AZUL (90 kg/h)"
         }
     ];
 
@@ -1519,7 +1836,6 @@
     function marcarDadosPendentes() {
         dadosPendentes = true;
         
-        // Mostrar indicador visual
         let indicador = document.getElementById('autosave-indicator');
         if (!indicador) {
             const btnSalvar = document.querySelector('button[onclick="calcularESalvar()"]');
@@ -1535,7 +1851,6 @@
             indicador.className = 'ml-3 text-xs text-orange-500 font-bold';
         }
         
-        // Reiniciar timer de autosave
         if (autoSaveTimer) clearTimeout(autoSaveTimer);
         autoSaveTimer = setTimeout(() => {
             if (dadosPendentes) {
@@ -3222,43 +3537,36 @@
             const variacao = r.realKgH && r.est ? ((r.realKgH - r.est) / r.est * 100).toFixed(1) : 0;
             const perfClass = variacao >= 5 ? 'text-green-600' : variacao >= -5 ? 'text-blue-600' : 'text-red-600';
             
-            tD += r.disp || 0;
-            tP += r.perf || 0;
-            tQ += r.qual || 0;
-            tO += o;
+            tD += r.disp||0; tP += r.perf||0; tQ += r.qual||0; tO += o;
             
             rows += `
-                <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+                <tr class="${i%2===0?'bg-white':'bg-slate-50'}">
                     <td class="py-3">${r.date.split('-').reverse().join('/')}</td>
                     <td class="py-3">${r.machine}</td>
                     <td class="py-3">${r.turno}</td>
                     <td class="py-3 font-bold">${r.op}</td>
-                    <td class="py-3 max-w-xs truncate">${r.produto || '-'}</td>
-                    <td class="py-3 text-center">${r.est || 0}</td>
-                    <td class="py-3 text-center">${r.realKgH || 0}</td>
-                    <td class="py-3 text-center font-bold">${r.disp || 0}%</td>
-                    <td class="py-3 text-center font-bold ${r.perf >= 90 ? 'text-green-600' : 'text-yellow-600'}">${r.perf || 0}%</td>
-                    <td class="py-3 text-center font-bold ${r.qual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${r.qual || 0}%</td>
-                    <td class="py-3 text-center ${perfClass}">${variacao > 0 ? '+' : ''}${variacao}%</td>
-                    <td class="py-3 text-center font-bold ${o >= 85 ? 'text-green-600' : 'text-red-600'}">${o}%</td>
+                    <td class="py-3 max-w-xs truncate">${r.produto||'-'}</td>
+                    <td class="py-3 text-center">${r.est||0}</td>
+                    <td class="py-3 text-center">${r.realKgH||0}</td>
+                    <td class="py-3 text-center font-bold">${r.disp||0}%</td>
+                    <td class="py-3 text-center font-bold ${r.perf>=90?'text-green-600':'text-yellow-600'}">${r.perf||0}%</td>
+                    <td class="py-3 text-center font-bold ${r.qual>=98?'text-green-600':'text-yellow-600'}">${r.qual||0}%</td>
+                    <td class="py-3 text-center ${perfClass}">${variacao>0?'+':''}${variacao}%</td>
+                    <td class="py-3 text-center font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%</td>
                 </tr>
             `;
         });
         
-        const mDisp = Math.round(tD / rs.length);
-        const mPerf = Math.round(tP / rs.length);
-        const mQual = Math.round(tQ / rs.length);
-        const mOEE = Math.round(tO / rs.length);
-        
+        const mD = Math.round(tD/rs.length), mP = Math.round(tP/rs.length), mQ = Math.round(tQ/rs.length), mO = Math.round(tO/rs.length);
         rows += `
             <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
                 <td colspan="5" class="py-3 text-blue-800">📊 MÉDIA DO CLIENTE</td>
                 <td colspan="2" class="py-3 text-center"></td>
-                <td class="py-3 text-center text-blue-800">${mDisp}%</td>
-                <td class="py-3 text-center text-blue-800">${mPerf}%</td>
-                <td class="py-3 text-center text-blue-800">${mQual}%</td>
+                <td class="py-3 text-center text-blue-800">${mD}%</td>
+                <td class="py-3 text-center text-blue-800">${mP}%</td>
+                <td class="py-3 text-center text-blue-800">${mQ}%</td>
                 <td class="py-3 text-center"></td>
-                <td class="py-3 text-center text-blue-800 font-black text-base">${mOEE}%</td>
+                <td class="py-3 text-center text-blue-800 font-black text-base">${mO}%</td>
             </tr>
         `;
         
@@ -3274,17 +3582,11 @@
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead>
-                                <tr class="text-[10px] uppercase text-slate-400 border-b">
-                                    ${['DATA','MÁQ','TURNO','OP','PRODUTO','EST.','REAL','DISP','PERF','QUAL','VARIAÇÃO','OEE'].map(c => `<th class="pb-4 text-center">${c}</th>`).join('')}
-                                </tr>
-                            </thead>
+                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','MÁQ','TURNO','OP','PRODUTO','EST.','REAL','DISP','PERF','QUAL','VARIAÇÃO','OEE'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
                             <tbody class="divide-y divide-slate-50">${rows}</tbody>
                         </table>
                     </div>
-                    <div class="mt-6 flex justify-end">
-                        <button onclick="fecharDetalhesCliente()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">Fechar</button>
-                    </div>
+                    <div class="mt-6 flex justify-end"><button onclick="fecharDetalhesCliente()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">Fechar</button></div>
                 </div>
             </div>
         `);

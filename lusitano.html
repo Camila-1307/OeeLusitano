@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF--8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lusitano - OEE Extrusoras</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -935,7 +935,7 @@
                                 <th class="py-2">Cliente/Produto</th>
                                 <th class="py-2 text-right">Est.</th>
                                 <th class="py-2 text-right">Real</th>
-                                <th class="py-2 text-right">Disp</th>
+                                <th class="py-2 text-right">Disp OP</th>
                                 <th class="py-2 text-right">Disp.Turno</th>
                                 <th class="py-2 text-right">Perf</th>
                                 <th class="py-2 text-right">Qual</th>
@@ -971,7 +971,7 @@
                                 <th class="pb-4">Cliente/Produto</th>
                                 <th class="pb-4 text-center">Est.</th>
                                 <th class="pb-4 text-center">Real</th>
-                                <th class="pb-4 text-center">Disp</th>
+                                <th class="pb-4 text-center">Disp OP</th>
                                 <th class="pb-4 text-center">Disp.Turno</th>
                                 <th class="pb-4 text-center">Perf</th>
                                 <th class="pb-4 text-center">Qual</th>
@@ -1141,7 +1141,7 @@
                     <h3 class="text-xs font-black uppercase opacity-60 tracking-widest mb-3">PRÉ-VISUALIZAÇÃO DO OEE</h3>
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
-                            <p class="text-[9px] uppercase opacity-50">Disp</p>
+                            <p class="text-[9px] uppercase opacity-50">Disp OP</p>
                             <p id="previewDispOP" class="text-2xl font-black">0%</p>
                         </div>
                         <div>
@@ -2021,12 +2021,17 @@
         const duracaoTurno = minutosFimTurno - minutosInicioTurno;
         if (duracaoTurno <= 0) return 0;
         
-        let tempoPerdas = 0;
+        // Calcular tempo produtivo REAL (soma dos tempos produtivos de cada OP)
+        let tempoProdutivoTotal = 0;
         opsDoTurno.forEach(op => {
-            tempoPerdas += safeNumber(op.setup) + safeNumber(op.avaria);
+            const duracaoOP = horaParaMinutos(op.fim) - horaParaMinutos(op.inicio);
+            if (duracaoOP > 0) {
+                const tempoProdutivoOP = duracaoOP - safeNumber(op.setup) - safeNumber(op.avaria);
+                tempoProdutivoTotal += Math.max(0, tempoProdutivoOP);
+            }
         });
         
-        return Math.min(100, Math.max(0, Math.round(((duracaoTurno - tempoPerdas) / duracaoTurno) * 100)));
+        return Math.min(100, Math.max(0, Math.round((tempoProdutivoTotal / duracaoTurno) * 100)));
     }
 
     function calcularRealKgH(produzido, inicio, fim) {
@@ -3005,7 +3010,7 @@
                         <span class="meta-indicator ${atingida ? 'atingida' : 'nao-atingida'}">${atingida ? '✓ META' : '✗ META'}</span>
                     </div>
                     <div class="space-y-3">
-                        ${renderBar('DISP', avg.disp)}
+                        ${renderBar('DISP OP', avg.disp)}
                         ${renderBar('PERF', avg.perf)}
                         ${renderBar('QUAL', avg.qual)}
                     </div>
@@ -3273,7 +3278,7 @@
                 data: {
                     labels: machineAvg.map(m => m.id),
                     datasets: [
-                        { label: 'Disp', data: machineAvg.map(m => m.disp || 0), backgroundColor: '#005a2b' },
+                        { label: 'Disp OP', data: machineAvg.map(m => m.disp || 0), backgroundColor: '#005a2b' },
                         { label: 'Perf', data: machineAvg.map(m => m.perf || 0), backgroundColor: '#c4121a' },
                         { label: 'Qual', data: machineAvg.map(m => m.qual || 0), backgroundColor: '#FFD700' }
                     ]
@@ -3353,7 +3358,7 @@
                     <p class="text-xs font-bold uppercase text-slate-400 mb-2">Turno ${t}</p>
                     <div class="text-3xl font-black mb-3 ${o>=85?'text-green-600':'text-red-600'}">${o}%</div>
                     <div class="space-y-2">
-                        <div><span class="text-xs text-slate-400">Disponibilidade:</span> <span class="font-bold">${d}%</span></div>
+                        <div><span class="text-xs text-slate-400">Disp OP:</span> <span class="font-bold">${d}%</span></div>
                         <div><span class="text-xs text-slate-400">Performance:</span> <span class="font-bold">${p}%</span></div>
                         <div><span class="text-xs text-slate-400">Qualidade:</span> <span class="font-bold">${q}%</span></div>
                         <div><span class="text-xs text-slate-400">Registros:</span> <span class="font-bold">${td.length}</span></div>
@@ -3420,7 +3425,7 @@
                         <span class="text-sm font-bold px-3 py-1 rounded-full ${meta?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${meta?'✅ META':'⚠️ META NÃO ATINGIDA'}</span>
                     </div>
                     <div class="grid grid-cols-4 gap-4 mb-4">
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">DISP</span><div class="text-2xl font-black ${mDisp>=85?'text-green-600':'text-red-600'}">${mDisp}%</div></div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">DISP OP</span><div class="text-2xl font-black ${mDisp>=85?'text-green-600':'text-red-600'}">${mDisp}%</div></div>
                         <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">PERF</span><div class="text-2xl font-black ${mPerf>=90?'text-green-600':'text-yellow-600'}">${mPerf}%</div></div>
                         <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">QUAL</span><div class="text-2xl font-black ${mQual>=98?'text-green-600':'text-yellow-600'}">${mQual}%</div></div>
                         <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">OEE</span><div class="text-2xl font-black ${mOEE>=85?'text-green-600':'text-red-600'}">${mOEE}%</div></div>
@@ -3500,7 +3505,7 @@
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','TURNO','OP','CLIENTE/PRODUTO','INÍCIO','FIM','DURAÇÃO','SETUP','PARADAS','DISP','DISP.TURNO','PERDA','EST.','REAL','PERF','QUAL','OEE','MOTIVO PERDA'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
+                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','TURNO','OP','CLIENTE/PRODUTO','INÍCIO','FIM','DURAÇÃO','SETUP','PARADAS','DISP OP','DISP.TURNO','PERDA','EST.','REAL','PERF','QUAL','OEE','MOTIVO PERDA'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
                             <tbody class="divide-y divide-slate-50">${rows}</tbody>
                         </table>
                     </div>
@@ -3544,7 +3549,7 @@
                         <span class="text-sm font-bold px-3 py-1 rounded-full ${mO>=85?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${mO>=85?'✅ ACIMA DA META':'⚠️ ABAIXO DA META'}</span>
                     </div>
                     <div class="grid grid-cols-4 gap-4 mb-4">
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">DISP</span><div class="text-2xl font-black ${mD>=85?'text-green-600':'text-red-600'}">${mD}%</div></div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">DISP OP</span><div class="text-2xl font-black ${mD>=85?'text-green-600':'text-red-600'}">${mD}%</div></div>
                         <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">PERF</span><div class="text-2xl font-black ${mP>=90?'text-green-600':'text-yellow-600'}">${mP}%</div></div>
                         <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">QUAL</span><div class="text-2xl font-black ${mQ>=98?'text-green-600':'text-yellow-600'}">${mQ}%</div></div>
                         <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">OEE</span><div class="text-2xl font-black ${mO>=85?'text-green-600':'text-red-600'}">${mO}%</div></div>
@@ -3659,7 +3664,7 @@
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','MÁQ','TURNO','OP','PRODUTO','EST.','REAL','DISP','PERF','QUAL','VARIAÇÃO','OEE'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
+                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','MÁQ','TURNO','OP','PRODUTO','EST.','REAL','DISP OP','PERF','QUAL','VARIAÇÃO','OEE'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
                             <tbody class="divide-y divide-slate-50">${rows}</tbody>
                         </table>
                     </div>

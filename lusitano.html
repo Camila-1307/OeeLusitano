@@ -338,6 +338,16 @@
             animation: fadein 0.5s, fadeout 0.5s 2.5s;
         }
 
+        .warning-toast {
+            background-color: #f59e0b !important;
+            border-color: #b45309 !important;
+        }
+
+        .error-toast {
+            background-color: #dc2626 !important;
+            border-color: #b91c1c !important;
+        }
+
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
@@ -350,11 +360,6 @@
             border-radius: 1rem;
             border: 1px solid #e2e8f0;
             height: 350px;
-        }
-
-        .error-toast {
-            background-color: #dc2626 !important;
-            border-color: #b91c1c !important;
         }
 
         @media print {
@@ -882,7 +887,7 @@
                 </div>
             </div>
             
-            <!-- Tabela Detalhada de Perdas - MODIFICADO: Só mostra registros com perda -->
+            <!-- Tabela Detalhada de Perdas -->
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                 <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Detalhamento de Perdas por Registro</h3>
                 <div class="overflow-x-auto">
@@ -1912,6 +1917,13 @@
         setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
     }
 
+    function showWarningToast(mensagem) {
+        const toast = document.getElementById("toast");
+        toast.innerHTML = "⚠️ " + mensagem;
+        toast.className = "show warning-toast";
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
+    }
+
     function showToast(mensagem) {
         const toast = document.getElementById("toast");
         toast.innerHTML = "✅ " + mensagem;
@@ -2013,6 +2025,7 @@
         let minutosInicioTurno = horaParaMinutos(turnoInfo.inicio);
         let minutosFimTurno = horaParaMinutos(turnoInfo.fim);
         
+        // Ajuste para turno C (atravessa meia-noite)
         if (turno === 'C' && minutosFimTurno < minutosInicioTurno) {
             minutosFimTurno += 24 * 60;
         }
@@ -2023,7 +2036,15 @@
         // Calcular tempo produtivo REAL (soma dos tempos produtivos de cada OP)
         let tempoProdutivoTotal = 0;
         opsDoTurno.forEach(op => {
-            const duracaoOP = horaParaMinutos(op.fim) - horaParaMinutos(op.inicio);
+            let minutosInicioOP = horaParaMinutos(op.inicio);
+            let minutosFimOP = horaParaMinutos(op.fim);
+            
+            // Ajuste para OPs que atravessam meia-noite
+            if (minutosFimOP < minutosInicioOP) {
+                minutosFimOP += 24 * 60;
+            }
+            
+            const duracaoOP = minutosFimOP - minutosInicioOP;
             if (duracaoOP > 0) {
                 const tempoProdutivoOP = duracaoOP - safeNumber(op.setup) - safeNumber(op.avaria);
                 tempoProdutivoTotal += Math.max(0, tempoProdutivoOP);
@@ -2056,6 +2077,10 @@
 
     function calcularOEE(disp, perf, qual) {
         return Math.round((safeNumber(disp) * safeNumber(perf) * safeNumber(qual)) / 10000);
+    }
+
+    function calcularDispMedia(dispOP, dispTurno) {
+        return Math.round((dispOP + dispTurno) / 2);
     }
 
     function atualizarPreview() {
@@ -2117,8 +2142,9 @@
             return;
         }
         
+        // Verificar se já existe o mesmo turno (independente da data, pois a data é fixa no modal)
         if (turnosTemp.find(t => t.turno === turno)) {
-            showErrorToast('Este turno já foi adicionado!');
+            showErrorToast('Este turno já foi adicionado para esta data!');
             return;
         }
         
@@ -2744,10 +2770,12 @@
                 atualizarListaTurnos();
                 closeModal();
                 filterByRange();
+            } else {
+                showErrorToast('Erro ao salvar dados. Tente novamente.');
             }
         } else {
             // ============================================
-            // SALVAR MÚLTIPLOS TURNOS (CORRIGIDO - FINAL)
+            // SALVAR MÚLTIPLOS TURNOS (CORRIGIDO)
             // ============================================
             console.log("🔄 Salvando múltiplos turnos:", turnosTemp);
             
@@ -2801,11 +2829,11 @@
                 }
             }
             
-            // Mostrar resultado final e SEMPRE fechar o modal
+            // Mostrar resultado final com cores diferentes
             if (registrosSalvos === turnosTemp.length) {
                 showToast(`${registrosSalvos} turnos salvos com sucesso!`);
             } else if (registrosSalvos > 0) {
-                showToast(`⚠️ ${registrosSalvos} de ${turnosTemp.length} turnos salvos.`);
+                showWarningToast(`${registrosSalvos} de ${turnosTemp.length} turnos salvos.`);
             } else {
                 showErrorToast(`Erro ao salvar os turnos.`);
             }
@@ -2978,22 +3006,27 @@
         
         ['M1', 'M2', 'M3'].forEach(mId => {
             const machineData = data.filter(d => d.machine === mId);
-            let avg = { disp: 0, perf: 0, qual: 0, oee: 0 };
+            let avg = { disp: 0, perf: 0, qual: 0, oee: 0, dispTurno: 0 };
             
             if (machineData.length > 0) {
-                let totalDisp = 0, totalPerf = 0, totalQual = 0;
-                let countDisp = 0, countPerf = 0, countQual = 0;
+                let totalDisp = 0, totalPerf = 0, totalQual = 0, totalDispTurno = 0;
+                let countDisp = 0, countPerf = 0, countQual = 0, countDispTurno = 0;
                 
                 machineData.forEach(d => {
                     if (d.disp > 0) { totalDisp += d.disp; countDisp++; }
                     if (d.perf > 0) { totalPerf += d.perf; countPerf++; }
                     if (d.qual > 0) { totalQual += d.qual; countQual++; }
+                    if (d.dispTurno > 0) { totalDispTurno += d.dispTurno; countDispTurno++; }
                 });
                 
                 avg.disp = countDisp > 0 ? Math.round(totalDisp / countDisp) : 0;
                 avg.perf = countPerf > 0 ? Math.round(totalPerf / countPerf) : 0;
                 avg.qual = countQual > 0 ? Math.round(totalQual / countQual) : 0;
-                avg.oee = calcularOEE(avg.disp, avg.perf, avg.qual);
+                avg.dispTurno = countDispTurno > 0 ? Math.round(totalDispTurno / countDispTurno) : 0;
+                
+                // Média simples entre DISP OP e DISP.TURNO para o dashboard
+                const dispMedia = calcularDispMedia(avg.disp, avg.dispTurno);
+                avg.oee = calcularOEE(dispMedia, avg.perf, avg.qual);
             }
             
             machinesMetrics.push({ id: mId, ...avg });
@@ -3009,7 +3042,7 @@
                         <span class="meta-indicator ${atingida ? 'atingida' : 'nao-atingida'}">${atingida ? '✓ META' : '✗ META'}</span>
                     </div>
                     <div class="space-y-3">
-                        ${renderBar('DISP OP', avg.disp)}
+                        ${renderBar('DISP MÉDIA', calcularDispMedia(avg.disp, avg.dispTurno))}
                         ${renderBar('PERF', avg.perf)}
                         ${renderBar('QUAL', avg.qual)}
                     </div>
@@ -3020,19 +3053,22 @@
         const validMachines = machinesMetrics.filter(m => m.oee > 0);
         const topMachine = validMachines.length > 0 ? validMachines.sort((a,b) => b.oee - a.oee)[0] : { id: '--', oee: 0 };
         
-        let global = { disp: 0, perf: 0, qual: 0 };
+        let global = { disp: 0, perf: 0, qual: 0, dispTurno: 0 };
         if (data.length > 0) {
             data.forEach(d => {
                 global.disp += d.disp || 0;
                 global.perf += d.perf || 0;
                 global.qual += d.qual || 0;
+                global.dispTurno += d.dispTurno || 0;
             });
             global.disp = Math.round(global.disp / data.length);
             global.perf = Math.round(global.perf / data.length);
             global.qual = Math.round(global.qual / data.length);
+            global.dispTurno = Math.round(global.dispTurno / data.length);
         }
         
-        const globalOee = calcularOEE(global.disp, global.perf, global.qual);
+        const dispMediaGlobal = calcularDispMedia(global.disp, global.dispTurno);
+        const globalOee = calcularOEE(dispMediaGlobal, global.perf, global.qual);
 
         document.getElementById('topMachineName').innerText = topMachine.id;
         document.getElementById('topMachineValue').innerText = (topMachine.oee > 0 ? topMachine.oee : 0) + '%';
@@ -3215,12 +3251,20 @@
             const dates = [...new Set(data.map(d => d.data))].sort();
             const trendVals = dates.map(d => {
                 const day = data.filter(h => h.data === d);
-                let avg = { disp: 0, perf: 0, qual: 0 };
-                day.forEach(h => { avg.disp += h.disp || 0; avg.perf += h.perf || 0; avg.qual += h.qual || 0; });
+                let avg = { disp: 0, perf: 0, qual: 0, dispTurno: 0 };
+                day.forEach(h => { 
+                    avg.disp += h.disp || 0; 
+                    avg.perf += h.perf || 0; 
+                    avg.qual += h.qual || 0;
+                    avg.dispTurno += h.dispTurno || 0;
+                });
                 avg.disp = day.length ? avg.disp / day.length : 0;
                 avg.perf = day.length ? avg.perf / day.length : 0;
                 avg.qual = day.length ? avg.qual / day.length : 0;
-                return calcularOEE(avg.disp, avg.perf, avg.qual);
+                avg.dispTurno = day.length ? avg.dispTurno / day.length : 0;
+                
+                const dispMedia = calcularDispMedia(avg.disp, avg.dispTurno);
+                return calcularOEE(dispMedia, avg.perf, avg.qual);
             });
             
             if (trendChart) trendChart.destroy();
@@ -3277,7 +3321,7 @@
                 data: {
                     labels: machineAvg.map(m => m.id),
                     datasets: [
-                        { label: 'Disp OP', data: machineAvg.map(m => m.disp || 0), backgroundColor: '#005a2b' },
+                        { label: 'Disp Média', data: machineAvg.map(m => calcularDispMedia(m.disp, m.dispTurno)), backgroundColor: '#005a2b' },
                         { label: 'Perf', data: machineAvg.map(m => m.perf || 0), backgroundColor: '#c4121a' },
                         { label: 'Qual', data: machineAvg.map(m => m.qual || 0), backgroundColor: '#FFD700' }
                     ]
@@ -3304,10 +3348,20 @@
             const shiftVals = ['A','B','C'].map(s => {
                 const sd = data.filter(d => d.turno === s);
                 if (!sd.length) return 0;
-                let avg = { disp: 0, perf: 0, qual: 0 };
-                sd.forEach(h => { avg.disp += h.disp || 0; avg.perf += h.perf || 0; avg.qual += h.qual || 0; });
-                avg.disp /= sd.length; avg.perf /= sd.length; avg.qual /= sd.length;
-                return calcularOEE(avg.disp, avg.perf, avg.qual);
+                let avg = { disp: 0, perf: 0, qual: 0, dispTurno: 0 };
+                sd.forEach(h => { 
+                    avg.disp += h.disp || 0; 
+                    avg.perf += h.perf || 0; 
+                    avg.qual += h.qual || 0;
+                    avg.dispTurno += h.dispTurno || 0;
+                });
+                avg.disp /= sd.length; 
+                avg.perf /= sd.length; 
+                avg.qual /= sd.length;
+                avg.dispTurno /= sd.length;
+                
+                const dispMedia = calcularDispMedia(avg.disp, avg.dispTurno);
+                return calcularOEE(dispMedia, avg.perf, avg.qual);
             });
             
             if (shiftChart) shiftChart.destroy();
@@ -3347,10 +3401,10 @@
                 return;
             }
             
-            // Calcular médias do TURNO (usando dispTurno, não disp)
+            // Calcular médias do TURNO (usando dispTurno)
             let dispTurno = 0, perf = 0, qual = 0;
             td.forEach(r => { 
-                dispTurno += r.dispTurno || 0;  // USA dispTurno (disponibilidade do turno)
+                dispTurno += r.dispTurno || 0;
                 perf += r.perf || 0; 
                 qual += r.qual || 0; 
             });
@@ -3378,9 +3432,8 @@
         const tbody = document.getElementById('efficiency-selection-rows');
         tbody.innerHTML = '';
         data.sort((a,b)=>new Date(b.data)-new Date(a.data)).forEach(r => {
-            // OEE da linha individual também deve usar DISP.TURNO?
-            // Mantive como estava (usando r.disp) para não quebrar, mas podemos ajustar se quiser
-            const o = calcularOEE(r.disp, r.perf, r.qual);
+            // OEE da linha individual usando DISP.TURNO
+            const o = calcularOEE(r.dispTurno, r.perf, r.qual);
             tbody.innerHTML += `
                 <tr>
                     <td class="py-2">${r.data.split('-').reverse().join('/')}</td>
@@ -3417,7 +3470,7 @@
             rs.forEach(r => {
                 totalProd += r.produzido||0;
                 totalPed = r.pedido||totalPed;
-                sDisp += r.disp||0;  // Mantém DISP OP para análise por OP
+                sDisp += r.disp||0;
                 sPerf += r.perf||0;
                 sQual += r.qual||0;
                 totalH += calcularDuracaoHoras(r.inicio,r.fim);
@@ -3461,7 +3514,7 @@
         
         rs.forEach((r,i) => {
             const h = calcularDuracaoHoras(r.inicio,r.fim).toFixed(1);
-            const perda = ((r.dispTurno||0)-(r.disp||0)).toFixed(1);
+            const perda = r.dispTurno ? ((r.dispTurno - r.disp) / r.dispTurno * 100).toFixed(1) : 0;
             const mc = r.motivoPerda ? `perda-${r.motivoPerda.toLowerCase().replace(/ /g,'-')}` : '';
             const o = calcularOEE(r.disp,r.perf,r.qual);
             tDisp += r.disp||0; tPerf += r.perf||0; tQual += r.qual||0; tOEE += o;
@@ -3541,7 +3594,7 @@
             let total=0, sD=0, sP=0, sQ=0, horas=0, datas=[];
             rs.forEach(r => {
                 total += r.produzido||0;
-                sD += r.disp||0;  // Mantém DISP OP para análise por cliente
+                sD += r.disp||0;
                 sP += r.perf||0;
                 sQ += r.qual||0;
                 datas.push(r.data);

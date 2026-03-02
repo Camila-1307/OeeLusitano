@@ -2548,29 +2548,28 @@
 
     async function inserirRegistro(novo) {
         try {
-            // Mapear os nomes das colunas para o que existe no banco
             const registroParaBanco = {
                 data: novo.data,
-                maquina: novo.machine,              // machine → maquina
+                maquina: novo.machine,
                 turno: novo.turno,
                 op: novo.op,
                 produto: novo.produto,
                 cliente: novo.cliente,
-                disponibilidade: novo.disp,          // disp → disponibilidade
-                performance: novo.perf,               // perf → performance
-                qualidade: novo.qual,                 // qual → qualidade
+                disponibilidade: novo.disp,
+                performance: novo.perf,
+                qualidade: novo.qual,
                 pedido: novo.pedido,
                 inicio: novo.inicio,
                 fim: novo.fim,
                 setup: novo.setup,
-                paradas: novo.avaria,                 // avaria → paradas
-                motivo_perda: novo.motivoPerda,       // motivoPerda → motivo_perda
+                paradas: novo.avaria,
+                motivo_perda: novo.motivoPerda,
                 est: novo.est,
-                real_kgh: novo.realKgH,               // realKgH → real_kgh
+                real_kgh: novo.realKgH,
                 produzido: novo.produzido,
                 rejeicao: novo.rejeicao,
                 aparas: novo.aparas,
-                criado_em: novo.timestamp             // timestamp → criado_em
+                criado_em: novo.timestamp
             };
             
             console.log("📤 Enviando para o banco:", registroParaBanco);
@@ -2580,15 +2579,14 @@
                 .insert([registroParaBanco]);
 
             if (error) {
-                console.error("❌ Erro ao inserir no banco:", error);
-                showErrorToast("Erro ao salvar: " + error.message);
+                console.error("❌ Erro no Supabase:", error);
                 return null;
             }
-            console.log("✅ Registro inserido no banco:", data);
+            
+            console.log("✅ Registro inserido:", data);
             return data;
         } catch (error) {
-            console.error("❌ Erro ao inserir registro:", error);
-            showErrorToast("Erro ao conectar com o banco");
+            console.error("❌ Erro inesperado:", error);
             return null;
         }
     }
@@ -2622,35 +2620,33 @@
         const registrosBanco = await listarRegistros();
         
         if (registrosBanco && registrosBanco.length > 0) {
-            // MAPEAR CORRETAMENTE: colunas do banco → campos do código
             historico = registrosBanco.map(reg => {
                 const registroMapeado = {
                     id: reg.id,
                     data: reg.data,
-                    machine: reg.maquina || 'M1',            // maquina → machine
+                    machine: reg.maquina || 'M1',
                     turno: reg.turno || 'A',
                     op: reg.op || '---',
                     produto: reg.produto || '---',
                     cliente: reg.cliente || '---',
-                    disp: reg.disponibilidade || 0,          // disponibilidade → disp
-                    perf: reg.performance || 0,               // performance → perf
-                    qual: reg.qualidade || 0,                 // qualidade → qual
+                    disp: reg.disponibilidade || 0,
+                    perf: reg.performance || 0,
+                    qual: reg.qualidade || 0,
                     pedido: reg.pedido || 0,
                     inicio: reg.inicio || '00:00',
                     fim: reg.fim || '00:00',
                     setup: reg.setup || 0,
-                    avaria: reg.paradas || 0,                 // paradas → avaria
-                    motivoPerda: reg.motivo_perda || '',      // motivo_perda → motivoPerda
+                    avaria: reg.paradas || 0,
+                    motivoPerda: reg.motivo_perda || '',
                     est: reg.est || 0,
-                    realKgH: reg.real_kgh || 0,               // real_kgh → realKgH
+                    realKgH: reg.real_kgh || 0,
                     produzido: reg.produzido || 0,
                     rejeicao: reg.rejeicao || 0,
                     aparas: reg.aparas || 0,
-                    timestamp: reg.criado_em || new Date().toISOString(), // criado_em → timestamp
+                    timestamp: reg.criado_em || new Date().toISOString(),
                     dispTurno: 0
                 };
                 
-                // Garantir que valores numéricos são números
                 registroMapeado.disp = safeNumber(registroMapeado.disp);
                 registroMapeado.perf = safeNumber(registroMapeado.perf);
                 registroMapeado.qual = safeNumber(registroMapeado.qual);
@@ -2659,13 +2655,11 @@
             });
             
             console.log(`✅ Carregados ${historico.length} registros do banco`);
-            console.log("📋 Primeiro registro mapeado:", historico[0]);
         } else {
             historico = [];
             console.log("📭 Nenhum registro encontrado no banco");
         }
         
-        // Recalcular disponibilidades
         const grupos = {};
         historico.forEach(reg => {
             const key = `${reg.data}-${reg.machine}-${reg.turno}`;
@@ -2737,7 +2731,6 @@
             const perf = calcularPerformance(est, realKgH);
             const qual = calcularQualidade(produzido, rejeicao, aparas);
             
-            // Preparar objeto com nomes internos do código
             const novoRegistro = {
                 data: date,
                 machine: machine,
@@ -2762,7 +2755,6 @@
                 timestamp: new Date().toISOString()
             };
             
-            // Inserir (a função inserirRegistro faz o mapeamento)
             historico.push(novoRegistro);
             const resultado = await inserirRegistro(novoRegistro);
             
@@ -2780,12 +2772,8 @@
                 showErrorToast('Erro ao salvar dados. Tente novamente.');
             }
         } else {
-            // ============================================
-            // SALVAR MÚLTIPLOS TURNOS (CORRIGIDO)
-            // ============================================
             console.log("🔄 Salvando múltiplos turnos:", turnosTemp);
             
-            // Verificar conflitos para cada turno
             for (let t of turnosTemp) {
                 const conflitos = verificarSobreposicao(date, machine, t.inicio, t.fim);
                 if (conflitos.length > 0) {
@@ -2796,7 +2784,6 @@
             
             let registrosSalvos = 0;
             
-            // Salvar cada turno individualmente
             for (let t of turnosTemp) {
                 const realKgH = calcularRealKgH(t.produzido, t.inicio, t.fim);
                 const perf = calcularPerformance(est, realKgH);
@@ -2835,13 +2822,13 @@
                 }
             }
             
-            // Mostrar resultado final com cores diferentes
             if (registrosSalvos === turnosTemp.length) {
                 showToast(`${registrosSalvos} turnos salvos com sucesso!`);
             } else if (registrosSalvos > 0) {
                 showWarningToast(`${registrosSalvos} de ${turnosTemp.length} turnos salvos.`);
             } else {
                 showErrorToast(`Erro ao salvar os turnos.`);
+                return;
             }
             
             limparIndicadorAutosave();
@@ -3030,7 +3017,6 @@
                 avg.qual = countQual > 0 ? Math.round(totalQual / countQual) : 0;
                 avg.dispTurno = countDispTurno > 0 ? Math.round(totalDispTurno / countDispTurno) : 0;
                 
-                // Média simples entre DISP OP e DISP.TURNO para o dashboard
                 const dispMedia = calcularDispMedia(avg.disp, avg.dispTurno);
                 avg.oee = calcularOEE(dispMedia, avg.perf, avg.qual);
             }
@@ -3407,7 +3393,6 @@
                 return;
             }
             
-            // Calcular médias do TURNO (usando dispTurno)
             let dispTurno = 0, perf = 0, qual = 0;
             td.forEach(r => { 
                 dispTurno += r.dispTurno || 0;
@@ -3418,7 +3403,6 @@
             perf = Math.round(perf / td.length);
             qual = Math.round(qual / td.length);
             
-            // OEE calculado com DISP.TURNO
             const o = calcularOEE(dispTurno, perf, qual);
             
             cards.innerHTML += `
@@ -3438,7 +3422,6 @@
         const tbody = document.getElementById('efficiency-selection-rows');
         tbody.innerHTML = '';
         data.sort((a,b)=>new Date(b.data)-new Date(a.data)).forEach(r => {
-            // OEE da linha individual usando DISP.TURNO
             const o = calcularOEE(r.dispTurno, r.perf, r.qual);
             tbody.innerHTML += `
                 <tr>
@@ -3520,7 +3503,6 @@
         
         rs.forEach((r,i) => {
             const h = calcularDuracaoHoras(r.inicio,r.fim).toFixed(1);
-            const mc = r.motivoPerda ? `perda-${r.motivoPerda.toLowerCase().replace(/ /g,'-')}` : '';
             const o = calcularOEE(r.disp,r.perf,r.qual);
             tDisp += r.disp||0; tPerf += r.perf||0; tQual += r.qual||0; tOEE += o;
             
@@ -3554,7 +3536,7 @@
                 <td class="py-3 text-center text-blue-800">${mDisp}%</td><td class="py-3 text-center"></td>
                 <td class="py-3 text-center"></td><td class="py-3 text-center"></td>
                 <td class="py-3 text-center text-blue-800">${mPerf}%</td><td class="py-3 text-center text-blue-800">${mQual}%</td>
-                <td class="py-3 text-center text-blue-800 font-black text-base">${mOEE}%</td><td class="py-3 text-center"></td>
+                <td class="py-3 text-center text-blue-800 font-black text-base">${mOEE}%</td>
             </tr>
         `;
         
@@ -3570,7 +3552,7 @@
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','TURNO','OP','CLIENTE/PRODUTO','INÍCIO','FIM','DURAÇÃO','SETUP','PARADAS','DISP OP','DISP.TURNO','EST.','REAL','PERF','QUAL','OEE','MOTIVO PERDA'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
+                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','TURNO','OP','CLIENTE/PRODUTO','INÍCIO','FIM','DURAÇÃO','SETUP','PARADAS','DISP OP','DISP.TURNO','EST.','REAL','PERF','QUAL','OEE'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
                             <tbody class="divide-y divide-slate-50">${rows}</tbody>
                         </table>
                     </div>
@@ -3685,6 +3667,7 @@
         
         rs.forEach((r,i) => {
             const o = calcularOEE(r.disp,r.perf,r.qual);
+            const statusPerf = getPerformanceStatus(r.perf);
             tD += r.disp||0; tP += r.perf||0; tQ += r.qual||0; tO += o;
             
             rows += `
@@ -3697,7 +3680,7 @@
                     <td class="py-3 text-center">${r.est||0}</td>
                     <td class="py-3 text-center">${r.realKgH||0}</td>
                     <td class="py-3 text-center font-bold">${r.disp||0}%</td>
-                    <td class="py-3 text-center font-bold">${r.perf||0}%</td>
+                    <td class="py-3 text-center font-bold ${statusPerf.cor}">${r.perf||0}%</td>
                     <td class="py-3 text-center font-bold ${r.qual>=98?'text-green-600':'text-yellow-600'}">${r.qual||0}%</td>
                     <td class="py-3 text-center font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%</td>
                 </tr>
@@ -3705,13 +3688,14 @@
         });
         
         const mD = Math.round(tD/rs.length), mP = Math.round(tP/rs.length), mQ = Math.round(tQ/rs.length), mO = Math.round(tO/rs.length);
+        const statusPerfMedia = getPerformanceStatus(mP);
         rows += `
             <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
                 <td colspan="5" class="py-3 text-blue-800">📊 MÉDIA DO CLIENTE</td>
                 <td colspan="2" class="py-3 text-center"></td>
-                <td class="py-3 text-center text-blue-800">${mD}%</td>
-                <td class="py-3 text-center text-blue-800">${mP}%</td>
-                <td class="py-3 text-center text-blue-800">${mQ}%</td>
+                <td class="py-3 text-center text-blue-800 font-bold">${mD}%</td>
+                <td class="py-3 text-center text-blue-800 font-bold ${statusPerfMedia.cor}">${mP}%</td>
+                <td class="py-3 text-center text-blue-800 font-bold">${mQ}%</td>
                 <td class="py-3 text-center text-blue-800 font-black text-base">${mO}%</td>
             </tr>
         `;

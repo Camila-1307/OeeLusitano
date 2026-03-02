@@ -1944,7 +1944,12 @@
         return (minutosFim - minutosInicio) / 60;
     }
 
+    // ============================================
+    // FUNÇÃO VERIFICAR SOBREPOSIÇÃO CORRIGIDA
+    // ============================================
     function verificarSobreposicao(data, maquina, inicio, fim, idIgnorar = null) {
+        console.log(`🔍 Verificando sobreposição: ${data} - ${maquina} - ${inicio} às ${fim}`);
+        
         const novoInicio = horaParaMinutos(inicio);
         let novoFim = horaParaMinutos(fim);
         
@@ -1952,8 +1957,12 @@
             novoFim += 24 * 60;
         }
         
-        return historico.filter(reg => {
+        // Filtrar apenas registros da MESMA DATA e MESMA MÁQUINA
+        const conflitos = historico.filter(reg => {
+            // Ignorar o próprio registro se for edição
             if (reg.id === idIgnorar) return false;
+            
+            // Só conflita se for mesma data e mesma máquina
             if (reg.data !== data) return false;
             if (reg.machine !== maquina) return false;
             
@@ -1964,8 +1973,14 @@
                 regFim += 24 * 60;
             }
             
-            return (novoInicio < regFim && novoFim > regInicio);
+            const conflita = (novoInicio < regFim && novoFim > regInicio);
+            if (conflita) {
+                console.log(`⚠️ Conflito com registro: ${reg.op} (${reg.inicio}-${reg.fim})`);
+            }
+            return conflita;
         });
+        
+        return conflitos;
     }
 
     function safeNumber(value, defaultValue = 0) {
@@ -2080,10 +2095,34 @@
         return Math.round((dispOP + dispTurno) / 2);
     }
 
-    function getPerformanceStatus(perf) {
-        if (perf > 100) return { texto: "📈 OPORTUNIDADE DE MELHORIA", cor: "text-blue-600" };
-        if (perf === 100) return { texto: "✓ DENTRO DO ESTIMADO", cor: "text-green-600" };
-        return { texto: "📉 ABAIXO DO ESTIMADO", cor: "text-red-600" };
+    // ============================================
+    // NOVA FUNÇÃO: getPerformanceStatusWithMargin()
+    // Análise por Cliente com margem de 10%
+    // ============================================
+    function getPerformanceStatusWithMargin(est, real) {
+        if (!est || est <= 0) return { texto: "📊 SEM ESTIMATIVA", cor: "text-gray-500" };
+        
+        const diferencaPercentual = ((real - est) / est) * 100;
+        
+        // Margem de 10% para mais ou para menos
+        if (diferencaPercentual > 10) {
+            return { 
+                texto: "📈 ACIMA DO ESTIMADO (+" + diferencaPercentual.toFixed(1) + "%)", 
+                cor: "text-blue-600" 
+            };
+        }
+        else if (diferencaPercentual < -10) {
+            return { 
+                texto: "📉 ABAIXO DO ESTIMADO (" + diferencaPercentual.toFixed(1) + "%)", 
+                cor: "text-red-600" 
+            };
+        }
+        else {
+            return { 
+                texto: "✓ DENTRO DO ESTIMADO (margem 10%)", 
+                cor: "text-green-600" 
+            };
+        }
     }
 
     function atualizarPreview() {
@@ -2543,7 +2582,7 @@
     }
 
     // ============================================
-    // FUNÇÃO INSERIR REGISTRO CORRIGIDA
+    // FUNÇÃO INSERIR REGISTRO CORRIGIDA (COM SELECT)
     // ============================================
     async function inserirRegistro(novo) {
         try {
@@ -2576,15 +2615,15 @@
             const { data, error } = await window.supabase
                 .from("oee_registros")
                 .insert([registroParaBanco])
-                .select();
+                .select(); // ESSENCIAL: retorna os dados inseridos com ID
 
             if (error) {
                 console.error("❌ Erro no Supabase:", error);
                 return null;
             }
             
-            console.log("✅ Registro inserido:", data);
-            return data;
+            console.log("✅ Registro inserido com ID:", data?.[0]?.id);
+            return data; // Retorna array com o registro inserido
         } catch (error) {
             console.error("❌ Erro inesperado:", error);
             return null;
@@ -2688,27 +2727,33 @@
     }
 
     // ============================================
-    // FUNÇÃO CALCULAR E SALVAR CORRIGIDA
+    // FUNÇÃO CALCULAR E SALVAR CORRIGIDA (COM TOASTS)
     // ============================================
     async function calcularESalvar() {
+        console.log("🟢 Iniciando cálculo e salvamento...");
+        
         const date = document.getElementById('regDate').value;
         const machine = document.getElementById('regMachine').value;
         const op = document.getElementById('regOP').value;
         const produtoDisplay = document.getElementById('regProduto').value;
         const pedido = safeNumber(document.getElementById('regPedido').value);
         
+        // Validações básicas
         if (!date || !machine || !op || !produtoDisplay) {
             showErrorToast('Preencha todos os campos obrigatórios!');
             return;
         }
         
         const produtoInfo = produtos.find(p => p.displayName === produtoDisplay);
-        if (!produtoInfo) return;
+        if (!produtoInfo) {
+            showErrorToast('Produto não encontrado!');
+            return;
+        }
         
         const est = safeNumber(document.getElementById('regEst').value) || produtoInfo.est;
         
+        // CASO 1: TURNO ÚNICO
         if (turnosTemp.length === 0) {
-            // TURNO ÚNICO
             const turno = document.getElementById('regTurno').value;
             const inicio = document.getElementById('regInicio').value;
             const fim = document.getElementById('regFim').value;
@@ -2718,12 +2763,14 @@
                 return;
             }
             
+            // Verificar conflito de horário na MESMA DATA
             const conflitos = verificarSobreposicao(date, machine, inicio, fim);
             if (conflitos.length > 0) {
-                showErrorToast(`Conflito de horário! Já existe um pedido (${conflitos[0].op}) das ${conflitos[0].inicio} às ${conflitos[0].fim} na máquina ${machine}.`);
+                showErrorToast(`Conflito! Já existe um pedido (${conflitos[0].op}) na mesma data/horário.`);
                 return;
             }
             
+            // Coletar dados
             const setup = safeNumber(document.getElementById('regSetup').value);
             const avaria = safeNumber(document.getElementById('regAvaria').value);
             const motivoPerda = document.getElementById('regMotivoPerda').value;
@@ -2731,10 +2778,12 @@
             const rejeicao = safeNumber(document.getElementById('regRejeicao').value);
             const aparas = safeNumber(document.getElementById('regAparas').value);
             
+            // Calcular métricas
             const realKgH = calcularRealKgH(produzido, inicio, fim);
             const perf = calcularPerformance(est, realKgH);
             const qual = calcularQualidade(produzido, rejeicao, aparas);
             
+            // Criar objeto do registro
             const novoRegistro = {
                 data: date,
                 machine: machine,
@@ -2759,41 +2808,51 @@
                 timestamp: new Date().toISOString()
             };
             
-            // Inserir no banco PRIMEIRO
+            console.log("📝 Salvando turno único:", novoRegistro);
+            
+            // INSERIR NO BANCO PRIMEIRO
             const resultado = await inserirRegistro(novoRegistro);
             
             if (resultado && resultado.length > 0) {
-                // Só adiciona ao histórico se salvou no banco
+                // Adicionar ID ao registro e salvar no histórico
                 novoRegistro.id = resultado[0].id;
                 historico.push(novoRegistro);
                 
+                // Recalcular disponibilidades
                 recalcularDisponibilidadesTurno(date, machine, turno);
+                
+                // ✅ TOAST VERDE DE SUCESSO
                 showToast('Dados salvos com sucesso!');
                 limparIndicadorAutosave();
                 
+                // Limpar formulário e fechar modal
                 document.getElementById('regForm').reset();
                 turnosTemp = [];
                 atualizarListaTurnos();
                 closeModal();
                 filterByRange();
             } else {
+                // 🔴 TOAST VERMELHO DE ERRO
                 showErrorToast('Erro ao salvar dados. Tente novamente.');
             }
-        } else {
-            // MÚLTIPLOS TURNOS
+        } 
+        // CASO 2: MÚLTIPLOS TURNOS
+        else {
             console.log("🔄 Salvando múltiplos turnos:", turnosTemp);
             
-            // Verificar conflitos primeiro
+            // Verificar conflitos PRIMEIRO
             for (let t of turnosTemp) {
                 const conflitos = verificarSobreposicao(date, machine, t.inicio, t.fim);
                 if (conflitos.length > 0) {
-                    showErrorToast(`Conflito no Turno ${t.turno}! Já existe um pedido (${conflitos[0].op}) das ${conflitos[0].inicio} às ${conflitos[0].fim} na máquina ${machine}.`);
+                    showErrorToast(`Conflito no Turno ${t.turno}! Já existe um pedido na mesma data/horário.`);
                     return;
                 }
             }
             
             let registrosSalvos = 0;
+            let erros = 0;
             
+            // Salvar cada turno
             for (let t of turnosTemp) {
                 const realKgH = calcularRealKgH(t.produzido, t.inicio, t.fim);
                 const perf = calcularPerformance(est, realKgH);
@@ -2823,7 +2882,7 @@
                     timestamp: new Date().toISOString()
                 };
                 
-                // Inserir no banco PRIMEIRO
+                // Inserir no banco
                 const resultado = await inserirRegistro(novoRegistro);
                 
                 if (resultado && resultado.length > 0) {
@@ -2831,11 +2890,14 @@
                     historico.push(novoRegistro);
                     registrosSalvos++;
                     recalcularDisponibilidadesTurno(date, machine, t.turno);
+                } else {
+                    erros++;
                 }
             }
             
-            // Mostrar toast baseado no resultado
+            // ✅ DECISÃO DO TOAST BASEADO NO RESULTADO
             if (registrosSalvos === turnosTemp.length) {
+                // TODOS SALVOS - VERDE
                 showToast(`${registrosSalvos} turnos salvos com sucesso!`);
                 limparIndicadorAutosave();
                 document.getElementById('regForm').reset();
@@ -2843,7 +2905,9 @@
                 atualizarListaTurnos();
                 closeModal();
                 filterByRange();
-            } else if (registrosSalvos > 0) {
+            } 
+            else if (registrosSalvos > 0) {
+                // PARCIAL - AMARELO
                 showWarningToast(`${registrosSalvos} de ${turnosTemp.length} turnos salvos.`);
                 limparIndicadorAutosave();
                 document.getElementById('regForm').reset();
@@ -2851,9 +2915,11 @@
                 atualizarListaTurnos();
                 closeModal();
                 filterByRange();
-            } else {
+            } 
+            else {
+                // NENHUM SALVO - VERMELHO (NÃO FECHA MODAL)
                 showErrorToast('Erro ao salvar turnos.');
-                // NÃO fecha o modal
+                // NÃO chama closeModal() aqui
             }
         }
     }
@@ -3587,86 +3653,144 @@
 
     function renderClientsView(data) {
         const cd = {};
-        data.forEach(r => { const c = r.cliente||'Sem cliente'; if (!cd[c]) cd[c] = []; cd[c].push(r); });
+        data.forEach(r => { 
+            const c = r.cliente || 'Sem cliente'; 
+            if (!cd[c]) cd[c] = []; 
+            cd[c].push(r); 
+        });
         
         const list = document.getElementById('client-performance-list');
         list.innerHTML = '';
         
         Object.keys(cd).sort().forEach(c => {
             const rs = cd[c];
-            let total=0, sD=0, sP=0, sQ=0, horas=0, datas=[];
+            let total = 0, sD = 0, sP = 0, sQ = 0, horas = 0, datas = [];
+            let totalEst = 0, totalReal = 0;
+            
             rs.forEach(r => {
-                total += r.produzido||0;
-                sD += r.disp||0;
-                sP += r.perf||0;
-                sQ += r.qual||0;
+                total += r.produzido || 0;
+                sD += r.disp || 0;
+                sP += r.perf || 0;
+                sQ += r.qual || 0;
                 datas.push(r.data);
-                horas += calcularDuracaoHoras(r.inicio,r.fim);
+                horas += calcularDuracaoHoras(r.inicio, r.fim);
+                
+                // Para análise de performance com margem
+                totalEst += (r.est || 0) * calcularDuracaoHoras(r.inicio, r.fim);
+                totalReal += (r.realKgH || 0) * calcularDuracaoHoras(r.inicio, r.fim);
             });
-            const mD = Math.round(sD/rs.length), mP = Math.round(sP/rs.length), mQ = Math.round(sQ/rs.length), mO = calcularOEE(mD,mP,mQ);
-            const statusPerf = getPerformanceStatus(mP);
+            
+            const mD = Math.round(sD / rs.length);
+            const mP = Math.round(sP / rs.length);
+            const mQ = Math.round(sQ / rs.length);
+            const mO = calcularOEE(mD, mP, mQ);
+            
+            // Usar a NOVA função com margem de 10%
+            const estMedio = horas > 0 ? totalEst / horas : 0;
+            const realMedio = horas > 0 ? totalReal / horas : 0;
+            const statusPerf = getPerformanceStatusWithMargin(estMedio, realMedio);
+            
             datas.sort();
-            const p = datas[0]?.split('-').reverse().join('/')||'', u = datas[datas.length-1]?.split('-').reverse().join('/')||'', per = p===u?p:`${p} a ${u}`;
+            const p = datas[0]?.split('-').reverse().join('/') || '';
+            const u = datas[datas.length - 1]?.split('-').reverse().join('/') || '';
+            const per = p === u ? p : `${p} a ${u}`;
             
             list.innerHTML += `
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesCliente('${c.replace(/'/g,"\\'")}')">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesCliente('${c.replace(/'/g, "\\'")}')">
                     <div class="flex justify-between items-start mb-3">
                         <div><span class="font-black text-xl text-green-700">${c}</span></div>
-                        <span class="text-sm font-bold px-3 py-1 rounded-full ${mO>=85?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${mO>=85?'✅ ACIMA DA META':'⚠️ ABAIXO DA META'}</span>
+                        <span class="text-sm font-bold px-3 py-1 rounded-full ${mO >= 85 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                            ${mO >= 85 ? '✅ ACIMA DA META' : '⚠️ ABAIXO DA META'}
+                        </span>
                     </div>
                     <div class="grid grid-cols-4 gap-4 mb-4">
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">DISP OP</span><div class="text-2xl font-black ${mD>=85?'text-green-600':'text-red-600'}">${mD}%</div></div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">PERF</span><div class="text-2xl font-black ${statusPerf.cor}">${mP}%</div></div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">QUAL</span><div class="text-2xl font-black ${mQ>=98?'text-green-600':'text-yellow-600'}">${mQ}%</div></div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">OEE</span><div class="text-2xl font-black ${mO>=85?'text-green-600':'text-red-600'}">${mO}%</div></div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center">
+                            <span class="text-xs font-bold uppercase text-slate-400">DISP OP</span>
+                            <div class="text-2xl font-black ${mD >= 85 ? 'text-green-600' : 'text-red-600'}">${mD}%</div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center">
+                            <span class="text-xs font-bold uppercase text-slate-400">PERF</span>
+                            <div class="text-2xl font-black ${statusPerf.cor}">${mP}%</div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center">
+                            <span class="text-xs font-bold uppercase text-slate-400">QUAL</span>
+                            <div class="text-2xl font-black ${mQ >= 98 ? 'text-green-600' : 'text-yellow-600'}">${mQ}%</div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center">
+                            <span class="text-xs font-bold uppercase text-slate-400">OEE</span>
+                            <div class="text-2xl font-black ${mO >= 85 ? 'text-green-600' : 'text-red-600'}">${mO}%</div>
+                        </div>
                     </div>
                     <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
-                        <div><span class="font-medium">📦 ${total.toFixed(0)} kg</span><span class="mx-2">•</span><span>📋 ${rs.length} registros</span><span class="mx-2">•</span><span>🕒 ${horas.toFixed(1)}h</span></div>
+                        <div>
+                            <span class="font-medium">📦 ${total.toFixed(0)} kg</span>
+                            <span class="mx-2">•</span>
+                            <span>📋 ${rs.length} registros</span>
+                            <span class="mx-2">•</span>
+                            <span>🕒 ${horas.toFixed(1)}h</span>
+                        </div>
                         <div><span>📅 ${per}</span></div>
                     </div>
                     <div class="mt-2 ${statusPerf.cor} font-bold text-sm text-right">
-                        ${statusPerf.texto}
+                        ${statusPerf.texto} (Est: ${estMedio.toFixed(1)} kg/h | Real: ${realMedio.toFixed(1)} kg/h)
                     </div>
                 </div>
             `;
         });
         
-        if (!Object.keys(cd).length) list.innerHTML = '<p class="text-center text-slate-400 py-8">Nenhum registro encontrado no período.</p>';
+        if (!Object.keys(cd).length) {
+            list.innerHTML = '<p class="text-center text-slate-400 py-8">Nenhum registro encontrado no período.</p>';
+        }
         
+        // Oportunidades de Melhoria
         const opp = document.getElementById('opportunities-list');
         if (opp) {
             opp.innerHTML = '';
-            const cOEE = Object.entries(cd).map(([c,rs])=>{
-                const so = rs.reduce((s,r)=>s+calcularOEE(r.disp,r.perf,r.qual),0);
-                const mo = Math.round(so/rs.length);
-                const kg = rs.reduce((s,r)=>s+(r.produzido||0),0);
-                return {c,mo,kg,cnt:rs.length};
-            }).sort((a,b)=>a.mo-b.mo);
+            const cOEE = Object.entries(cd).map(([c, rs]) => {
+                const so = rs.reduce((s, r) => s + calcularOEE(r.disp, r.perf, r.qual), 0);
+                const mo = Math.round(so / rs.length);
+                const kg = rs.reduce((s, r) => s + (r.produzido || 0), 0);
+                return { c, mo, kg, cnt: rs.length };
+            }).sort((a, b) => a.mo - b.mo);
             
-            let cnt=0;
-            cOEE.filter(x=>x.mo<85).forEach(x=>{ cnt++; opp.innerHTML+=`
-                <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                    <div><span class="font-bold">${x.c}</span><p class="text-xs text-slate-500">OEE atual: ${x.mo}%</p><p class="text-xs font-bold text-green-600">Potencial: +${(85-x.mo).toFixed(1)}%</p></div>
-                    <div class="text-right"><span class="text-sm font-bold text-green-600">${(x.mo+(85-x.mo)).toFixed(0)}%</span><p class="text-xs text-slate-500">meta 85%</p></div>
-                </div>
-            `; });
+            let cnt = 0;
+            cOEE.filter(x => x.mo < 85).forEach(x => {
+                cnt++;
+                opp.innerHTML += `
+                    <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                        <div>
+                            <span class="font-bold">${x.c}</span>
+                            <p class="text-xs text-slate-500">OEE atual: ${x.mo}%</p>
+                            <p class="text-xs font-bold text-green-600">Potencial: +${(85 - x.mo).toFixed(1)}%</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-bold text-green-600">${(x.mo + (85 - x.mo)).toFixed(0)}%</span>
+                            <p class="text-xs text-slate-500">meta 85%</p>
+                        </div>
+                    </div>
+                `;
+            });
             if (!cnt) opp.innerHTML = '<p class="text-center text-green-600 font-bold py-4">✅ Todos os clientes estão acima da meta!</p>';
         }
         
+        // Top Clientes
         const top = document.getElementById('top-clients-list');
         if (top) {
             top.innerHTML = '';
-            const melhores = [...Object.entries(cd).map(([c,rs])=>{
-                const so = rs.reduce((s,r)=>s+calcularOEE(r.disp,r.perf,r.qual),0);
-                const mo = Math.round(so/rs.length);
-                const kg = rs.reduce((s,r)=>s+(r.produzido||0),0);
-                return {c,mo,kg,cnt:rs.length};
-            })].sort((a,b)=>b.mo-a.mo).slice(0,5);
+            const melhores = [...Object.entries(cd).map(([c, rs]) => {
+                const so = rs.reduce((s, r) => s + calcularOEE(r.disp, r.perf, r.qual), 0);
+                const mo = Math.round(so / rs.length);
+                const kg = rs.reduce((s, r) => s + (r.produzido || 0), 0);
+                return { c, mo, kg, cnt: rs.length };
+            })].sort((a, b) => b.mo - a.mo).slice(0, 5);
             
-            melhores.forEach((x,i)=>{
+            melhores.forEach((x, i) => {
                 top.innerHTML += `
                     <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <div><span class="font-bold">${i+1}. ${x.c}</span><p class="text-xs text-slate-500">${x.cnt} pedidos • ${x.kg} kg</p></div>
+                        <div>
+                            <span class="font-bold">${i + 1}. ${x.c}</span>
+                            <p class="text-xs text-slate-500">${x.cnt} pedidos • ${x.kg} kg</p>
+                        </div>
                         <div class="text-right"><span class="text-lg font-black text-green-600">${x.mo}%</span></div>
                     </div>
                 `;
@@ -3677,44 +3801,68 @@
     function abrirDetalhesCliente(cliente) {
         console.log("🔍 Abrindo detalhes do cliente:", cliente);
         const rs = historico.filter(r => r.cliente === cliente);
-        if (!rs.length) { console.error("Nenhum registro"); return; }
+        if (!rs.length) { 
+            console.error("Nenhum registro"); 
+            return; 
+        }
         console.log(`📊 Encontrados ${rs.length} registros`);
         
-        rs.sort((a,b)=>new Date(b.data)-new Date(a.data));
-        let rows = '', tD=0, tP=0, tQ=0, tO=0;
+        rs.sort((a, b) => new Date(b.data) - new Date(a.data));
+        let rows = '', tD = 0, tP = 0, tQ = 0, tO = 0;
+        let totalEst = 0, totalReal = 0, totalHoras = 0;
         
-        rs.forEach((r,i) => {
-            const o = calcularOEE(r.disp,r.perf,r.qual);
-            const statusPerf = getPerformanceStatus(r.perf);
-            tD += r.disp||0; tP += r.perf||0; tQ += r.qual||0; tO += o;
+        rs.forEach((r, i) => {
+            const o = calcularOEE(r.disp, r.perf, r.qual);
+            const horas = calcularDuracaoHoras(r.inicio, r.fim);
+            const statusPerf = getPerformanceStatusWithMargin(r.est, r.realKgH);
+            
+            tD += r.disp || 0;
+            tP += r.perf || 0;
+            tQ += r.qual || 0;
+            tO += o;
+            totalEst += (r.est || 0) * horas;
+            totalReal += (r.realKgH || 0) * horas;
+            totalHoras += horas;
             
             rows += `
-                <tr class="${i%2===0?'bg-white':'bg-slate-50'}">
+                <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
                     <td class="py-3">${r.data.split('-').reverse().join('/')}</td>
                     <td class="py-3">${r.machine}</td>
                     <td class="py-3">${r.turno}</td>
                     <td class="py-3 font-bold">${r.op}</td>
-                    <td class="py-3 max-w-xs truncate">${r.produto||'-'}</td>
-                    <td class="py-3 text-center">${r.est||0}</td>
-                    <td class="py-3 text-center">${r.realKgH||0}</td>
-                    <td class="py-3 text-center font-bold">${r.disp||0}%</td>
-                    <td class="py-3 text-center font-bold ${statusPerf.cor}">${r.perf||0}%</td>
-                    <td class="py-3 text-center font-bold ${r.qual>=98?'text-green-600':'text-yellow-600'}">${r.qual||0}%</td>
-                    <td class="py-3 text-center font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%</td>
+                    <td class="py-3 max-w-xs truncate">${r.produto || '-'}</td>
+                    <td class="py-3 text-center">${r.est || 0}</td>
+                    <td class="py-3 text-center">${r.realKgH || 0}</td>
+                    <td class="py-3 text-center font-bold">${r.disp || 0}%</td>
+                    <td class="py-3 text-center font-bold ${statusPerf.cor}">${r.perf || 0}%</td>
+                    <td class="py-3 text-center font-bold ${r.qual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${r.qual || 0}%</td>
+                    <td class="py-3 text-center font-bold ${o >= 85 ? 'text-green-600' : 'text-red-600'}">${o}%</td>
                 </tr>
             `;
         });
         
-        const mD = Math.round(tD/rs.length), mP = Math.round(tP/rs.length), mQ = Math.round(tQ/rs.length), mO = Math.round(tO/rs.length);
-        const statusPerfMedia = getPerformanceStatus(mP);
+        const mD = Math.round(tD / rs.length);
+        const mP = Math.round(tP / rs.length);
+        const mQ = Math.round(tQ / rs.length);
+        const mO = Math.round(tO / rs.length);
+        
+        const estMedio = totalHoras > 0 ? totalEst / totalHoras : 0;
+        const realMedio = totalHoras > 0 ? totalReal / totalHoras : 0;
+        const statusPerfMedia = getPerformanceStatusWithMargin(estMedio, realMedio);
+        
         rows += `
             <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
                 <td colspan="5" class="py-3 text-blue-800">📊 MÉDIA DO CLIENTE</td>
-                <td colspan="2" class="py-3 text-center"></td>
+                <td colspan="2" class="py-3 text-center text-blue-800">${estMedio.toFixed(1)} / ${realMedio.toFixed(1)}</td>
                 <td class="py-3 text-center text-blue-800 font-bold">${mD}%</td>
                 <td class="py-3 text-center text-blue-800 font-bold ${statusPerfMedia.cor}">${mP}%</td>
                 <td class="py-3 text-center text-blue-800 font-bold">${mQ}%</td>
                 <td class="py-3 text-center text-blue-800 font-black text-base">${mO}%</td>
+            </tr>
+            <tr class="bg-blue-50 border-b-2 border-blue-200">
+                <td colspan="11" class="py-2 text-center ${statusPerfMedia.cor} font-bold">
+                    ${statusPerfMedia.texto} (Est médio: ${estMedio.toFixed(1)} kg/h | Real médio: ${realMedio.toFixed(1)} kg/h)
+                </td>
             </tr>
         `;
         
@@ -3730,11 +3878,19 @@
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','MÁQ','TURNO','OP','PRODUTO','EST.','REAL','DISP OP','PERF','QUAL','OEE'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
+                            <thead>
+                                <tr class="text-[10px] uppercase text-slate-400 border-b">
+                                    ${['DATA', 'MÁQ', 'TURNO', 'OP', 'PRODUTO', 'EST.', 'REAL', 'DISP OP', 'PERF', 'QUAL', 'OEE'].map(c => `<th class="pb-4 text-center">${c}</th>`).join('')}
+                                </tr>
+                            </thead>
                             <tbody class="divide-y divide-slate-50">${rows}</tbody>
                         </table>
                     </div>
-                    <div class="mt-6 flex justify-end"><button onclick="fecharDetalhesCliente()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">Fechar</button></div>
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="fecharDetalhesCliente()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">
+                            Fechar
+                        </button>
+                    </div>
                 </div>
             </div>
         `);

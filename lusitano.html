@@ -1963,7 +1963,9 @@
             if (reg.id === idIgnorar) return false;
             
             // Só conflita se for mesma data e mesma máquina
-            if (reg.data !== data) return false;
+            if (reg.data !== data) {
+                return false;
+            }
             if (reg.machine !== maquina) return false;
             
             const regInicio = horaParaMinutos(reg.inicio);
@@ -2171,6 +2173,9 @@
         });
     }
 
+    // ============================================
+    // FUNÇÃO ADICIONAR TURNO MODAL CORRIGIDA
+    // ============================================
     function adicionarTurnoModal() {
         const turno = document.getElementById('regTurno').value;
         const inicio = document.getElementById('regInicio').value;
@@ -2181,16 +2186,21 @@
         const rejeicao = document.getElementById('regRejeicao').value;
         const aparas = document.getElementById('regAparas').value;
         const motivoPerda = document.getElementById('regMotivoPerda').value;
+        const data = document.getElementById('regDate').value;
         
         if (!turno || !inicio || !fim) {
             showErrorToast('Preencha os dados do turno antes de adicionar!');
             return;
         }
         
+        // Verificar se já existe o mesmo turno na LISTA TEMPORÁRIA (turnosTemp)
         if (turnosTemp.find(t => t.turno === turno)) {
             showErrorToast('Este turno já foi adicionado para esta data!');
             return;
         }
+        
+        // NÃO verificar conflito com o histórico aqui!
+        // A verificação de conflito será feita apenas no momento de salvar
         
         turnosTemp.push({
             turno,
@@ -2207,6 +2217,7 @@
         atualizarListaTurnos();
         marcarDadosPendentes();
         
+        // Limpar campos para próximo turno
         document.getElementById('regTurno').value = '';
         document.getElementById('regInicio').value = '';
         document.getElementById('regFim').value = '';
@@ -2216,6 +2227,8 @@
         document.getElementById('regRejeicao').value = '0';
         document.getElementById('regAparas').value = '0';
         document.getElementById('regMotivoPerda').value = '';
+        
+        showToast(`Turno ${turno} adicionado à lista!`);
     }
 
     function atualizarListaTurnos() {
@@ -2853,7 +2866,6 @@
             }
             
             let registrosSalvos = 0;
-            let erros = 0;
             
             // Salvar cada turno
             for (let t of turnosTemp) {
@@ -2893,8 +2905,6 @@
                     historico.push(novoRegistro);
                     registrosSalvos++;
                     recalcularDisponibilidadesTurno(date, machine, t.turno);
-                } else {
-                    erros++;
                 }
             }
             

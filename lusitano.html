@@ -1945,42 +1945,75 @@
     }
 
     // ============================================
-    // FUNÇÃO VERIFICAR SOBREPOSIÇÃO CORRIGIDA
+    // FUNÇÃO VERIFICAR SOBREPOSIÇÃO CORRIGIDA - VERSÃO FINAL
     // ============================================
     function verificarSobreposicao(data, maquina, inicio, fim, idIgnorar = null) {
-        console.log(`🔍 Verificando sobreposição: ${data} - ${maquina} - ${inicio} às ${fim}`);
+        console.log(`🔍 Verificando sobreposição para: Data=${data}, Máquina=${maquina}, Horário=${inicio}-${fim}`);
         
         const novoInicio = horaParaMinutos(inicio);
         let novoFim = horaParaMinutos(fim);
         
+        // Ajuste para turno que passa da meia-noite
         if (novoFim < novoInicio) {
             novoFim += 24 * 60;
+            console.log(`🕛 Horário cruza meia-noite: ajustado para ${novoInicio}-${novoFim}`);
         }
         
         // Filtrar apenas registros da MESMA DATA e MESMA MÁQUINA
         const conflitos = historico.filter(reg => {
             // Ignorar o próprio registro se for edição
-            if (reg.id === idIgnorar) return false;
+            if (reg.id === idIgnorar) {
+                console.log(`📝 Ignorando próprio registro ID ${reg.id}`);
+                return false;
+            }
             
             // Só conflita se for mesma data e mesma máquina
             if (reg.data !== data) {
+                console.log(`📅 Data diferente: Registro ${reg.data} vs Novo ${data} - ignorando`);
                 return false;
             }
-            if (reg.machine !== maquina) return false;
             
+            if (reg.machine !== maquina) {
+                console.log(`🔧 Máquina diferente: Registro ${reg.machine} vs Novo ${maquina} - ignorando`);
+                return false;
+            }
+            
+            console.log(`🔎 Analisando registro: OP ${reg.op}, Data ${reg.data}, Máquina ${reg.machine}, Horário ${reg.inicio}-${reg.fim}`);
+            
+            // Converter horários do registro
             const regInicio = horaParaMinutos(reg.inicio);
             let regFim = horaParaMinutos(reg.fim);
             
+            // Ajuste para turno que passa da meia-noite
             if (regFim < regInicio) {
                 regFim += 24 * 60;
+                console.log(`   Registro cruza meia-noite: ajustado para ${regInicio}-${regFim}`);
             }
             
-            const conflita = (novoInicio < regFim && novoFim > regInicio);
+            // Verificar se há sobreposição REAL (não apenas toque)
+            // Margem de 1 minuto para evitar falsos positivos
+            const conflita = (novoInicio < regFim - 1 && novoFim - 1 > regInicio);
+            
             if (conflita) {
-                console.log(`⚠️ Conflito com registro: ${reg.op} (${reg.inicio}-${reg.fim})`);
+                console.log(`❌ CONFLITO DETECTADO!`);
+                console.log(`   Novo: ${inicio}-${fim} (${novoInicio}-${novoFim})`);
+                console.log(`   Registro: ${reg.inicio}-${reg.fim} (${regInicio}-${regFim})`);
+                console.log(`   OP: ${reg.op}, Turno: ${reg.turno}`);
+            } else {
+                console.log(`✅ Sem conflito: ${novoInicio}-${novoFim} vs ${regInicio}-${regFim}`);
             }
+            
             return conflita;
         });
+        
+        if (conflitos.length > 0) {
+            console.log(`🔍 Total de ${conflitos.length} conflitos encontrados:`);
+            conflitos.forEach((c, i) => {
+                console.log(`   ${i+1}. OP ${c.op} - ${c.data} ${c.inicio}-${c.fim} (Turno ${c.turno})`);
+            });
+        } else {
+            console.log(`✅ Nenhum conflito encontrado - horário disponível!`);
+        }
         
         return conflitos;
     }
@@ -2199,6 +2232,18 @@
             return;
         }
         
+        // Verificar se o horário é válido (início < fim, considerando turno C)
+        const minutosInicio = horaParaMinutos(inicio);
+        let minutosFim = horaParaMinutos(fim);
+        
+        if (turno === 'C' && minutosFim < minutosInicio) {
+            // Turno C normal (passa da meia-noite)
+            minutosFim += 24 * 60;
+        } else if (minutosFim <= minutosInicio && turno !== 'C') {
+            showErrorToast('Horário inválido! O fim deve ser após o início.');
+            return;
+        }
+        
         // NÃO verificar conflito com o histórico aqui!
         // A verificação de conflito será feita apenas no momento de salvar
         
@@ -2345,7 +2390,11 @@
         
         const conflitos = verificarSobreposicao(date, machine, inicio, fim, id);
         if (conflitos.length > 0) {
-            showErrorToast(`Conflito de horário! Já existe um pedido (${conflitos[0].op}) das ${conflitos[0].inicio} às ${conflitos[0].fim} na máquina ${machine}.`);
+            const conflito = conflitos[0];
+            const dataFormatada = conflito.data.split('-').reverse().join('/');
+            const mensagem = `⚠️ CONFLITO! A OP ${conflito.op} já está ocupando este horário no dia ${dataFormatada} das ${conflito.inicio} às ${conflito.fim} (Turno ${conflito.turno}) na máquina ${conflito.machine}.`;
+            
+            showErrorToast(mensagem);
             return;
         }
         
@@ -2743,7 +2792,7 @@
     }
 
     // ============================================
-    // FUNÇÃO CALCULAR E SALVAR CORRIGIDA (COM TOASTS)
+    // FUNÇÃO CALCULAR E SALVAR CORRIGIDA (COM TOASTS E MENSAGENS DETALHADAS)
     // ============================================
     async function calcularESalvar() {
         console.log("🟢 Iniciando cálculo e salvamento...");
@@ -2782,7 +2831,11 @@
             // Verificar conflito de horário na MESMA DATA
             const conflitos = verificarSobreposicao(date, machine, inicio, fim);
             if (conflitos.length > 0) {
-                showErrorToast(`Conflito! Já existe um pedido (${conflitos[0].op}) na mesma data/horário.`);
+                const conflito = conflitos[0];
+                const dataFormatada = conflito.data.split('-').reverse().join('/');
+                const mensagem = `⚠️ CONFLITO! A OP ${conflito.op} já está ocupando este horário no dia ${dataFormatada} das ${conflito.inicio} às ${conflito.fim} (Turno ${conflito.turno}) na máquina ${conflito.machine}.`;
+                
+                showErrorToast(mensagem);
                 return;
             }
             
@@ -2860,7 +2913,11 @@
             for (let t of turnosTemp) {
                 const conflitos = verificarSobreposicao(date, machine, t.inicio, t.fim);
                 if (conflitos.length > 0) {
-                    showErrorToast(`Conflito no Turno ${t.turno}! Já existe um pedido na mesma data/horário.`);
+                    const conflito = conflitos[0];
+                    const dataFormatada = conflito.data.split('-').reverse().join('/');
+                    const mensagem = `⚠️ CONFLITO no Turno ${t.turno}! A OP ${conflito.op} já está ocupando este horário no dia ${dataFormatada} das ${conflito.inicio} às ${conflito.fim} (Turno ${conflito.turno}) na máquina ${conflito.machine}.`;
+                    
+                    showErrorToast(mensagem);
                     return;
                 }
             }

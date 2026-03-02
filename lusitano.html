@@ -2083,11 +2083,6 @@
         return Math.round((dispOP + dispTurno) / 2);
     }
 
-    function calcularPerdaPedido(est, realKgH) {
-        if (est <= 0 || realKgH <= 0) return 0;
-        return ((est - realKgH) / est * 100).toFixed(1);
-    }
-
     function getPerformanceStatus(perf) {
         if (perf > 100) return { texto: "📈 OPORTUNIDADE DE MELHORIA", cor: "text-blue-600" };
         if (perf === 100) return { texto: "✓ DENTRO DO ESTIMADO", cor: "text-green-600" };
@@ -3525,8 +3520,6 @@
         
         rs.forEach((r,i) => {
             const h = calcularDuracaoHoras(r.inicio,r.fim).toFixed(1);
-            const perdaPedido = calcularPerdaPedido(r.est, r.realKgH);
-            const perdaTurno = (r.disp - r.dispTurno).toFixed(1);
             const mc = r.motivoPerda ? `perda-${r.motivoPerda.toLowerCase().replace(/ /g,'-')}` : '';
             const o = calcularOEE(r.disp,r.perf,r.qual);
             tDisp += r.disp||0; tPerf += r.perf||0; tQual += r.qual||0; tOEE += o;
@@ -3544,8 +3537,6 @@
                     <td class="py-3 text-center ${r.avaria>0?'text-red-600 font-bold':''}">${r.avaria||0}</td>
                     <td class="py-3 text-center font-bold">${r.disp||0}%</td>
                     <td class="py-3 text-center">${r.dispTurno||0}%</td>
-                    <td class="py-3 text-center ${perdaTurno > 0 ? 'text-orange-600' : 'text-green-600'} font-bold">${perdaTurno}%</td>
-                    <td class="py-3 text-center ${perdaPedido > 0 ? 'text-red-600' : 'text-green-600'} font-bold">${perdaPedido}%</td>
                     <td class="py-3 text-center">${r.est||0}</td>
                     <td class="py-3 text-center">${r.realKgH||0}</td>
                     <td class="py-3 text-center font-bold ${r.perf>=90?'text-green-600':'text-yellow-600'}">${r.perf||0}%</td>
@@ -3561,7 +3552,7 @@
             <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
                 <td colspan="4" class="py-3 text-blue-800">📊 MÉDIA DA OP</td>
                 <td colspan="3" class="py-3 text-center"></td><td colspan="2" class="py-3 text-center"></td>
-                <td class="py-3 text-center text-blue-800">${mDisp}%</td><td class="py-3 text-center"></td><td class="py-3 text-center"></td><td class="py-3 text-center"></td>
+                <td class="py-3 text-center text-blue-800">${mDisp}%</td><td class="py-3 text-center"></td>
                 <td class="py-3 text-center"></td><td class="py-3 text-center"></td>
                 <td class="py-3 text-center text-blue-800">${mPerf}%</td><td class="py-3 text-center text-blue-800">${mQual}%</td>
                 <td class="py-3 text-center text-blue-800 font-black text-base">${mOEE}%</td><td class="py-3 text-center"></td>
@@ -3580,7 +3571,7 @@
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','TURNO','OP','CLIENTE/PRODUTO','INÍCIO','FIM','DURAÇÃO','SETUP','PARADAS','DISP OP','DISP.TURNO','PERDA TURNO','PERDA PEDIDO','EST.','REAL','PERF','QUAL','OEE','MOTIVO PERDA'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
+                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','TURNO','OP','CLIENTE/PRODUTO','INÍCIO','FIM','DURAÇÃO','SETUP','PARADAS','DISP OP','DISP.TURNO','EST.','REAL','PERF','QUAL','OEE','MOTIVO PERDA'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
                             <tbody class="divide-y divide-slate-50">${rows}</tbody>
                         </table>
                     </div>
@@ -3632,7 +3623,10 @@
                     </div>
                     <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
                         <div><span class="font-medium">📦 ${total.toFixed(0)} kg</span><span class="mx-2">•</span><span>📋 ${rs.length} registros</span><span class="mx-2">•</span><span>🕒 ${horas.toFixed(1)}h</span></div>
-                        <div><span>📅 ${per}</span><span class="ml-4 ${statusPerf.cor} font-medium">${statusPerf.texto}</span></div>
+                        <div><span>📅 ${per}</span></div>
+                    </div>
+                    <div class="mt-2 ${statusPerf.cor} font-bold text-sm text-right">
+                        ${statusPerf.texto}
                     </div>
                 </div>
             `;
@@ -3692,9 +3686,6 @@
         
         rs.forEach((r,i) => {
             const o = calcularOEE(r.disp,r.perf,r.qual);
-            const variacao = r.realKgH && r.est ? ((r.realKgH - r.est) / r.est * 100).toFixed(1) : 0;
-            const statusPerf = getPerformanceStatus(r.perf);
-            
             tD += r.disp||0; tP += r.perf||0; tQ += r.qual||0; tO += o;
             
             rows += `
@@ -3707,16 +3698,14 @@
                     <td class="py-3 text-center">${r.est||0}</td>
                     <td class="py-3 text-center">${r.realKgH||0}</td>
                     <td class="py-3 text-center font-bold">${r.disp||0}%</td>
-                    <td class="py-3 text-center font-bold ${statusPerf.cor}">${r.perf||0}%</td>
+                    <td class="py-3 text-center font-bold">${r.perf||0}%</td>
                     <td class="py-3 text-center font-bold ${r.qual>=98?'text-green-600':'text-yellow-600'}">${r.qual||0}%</td>
-                    <td class="py-3 text-center ${statusPerf.cor}">${statusPerf.texto}</td>
                     <td class="py-3 text-center font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%</td>
                 </tr>
             `;
         });
         
         const mD = Math.round(tD/rs.length), mP = Math.round(tP/rs.length), mQ = Math.round(tQ/rs.length), mO = Math.round(tO/rs.length);
-        const statusPerfMedia = getPerformanceStatus(mP);
         rows += `
             <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
                 <td colspan="5" class="py-3 text-blue-800">📊 MÉDIA DO CLIENTE</td>
@@ -3724,7 +3713,6 @@
                 <td class="py-3 text-center text-blue-800">${mD}%</td>
                 <td class="py-3 text-center text-blue-800">${mP}%</td>
                 <td class="py-3 text-center text-blue-800">${mQ}%</td>
-                <td class="py-3 text-center text-blue-800">${statusPerfMedia.texto}</td>
                 <td class="py-3 text-center text-blue-800 font-black text-base">${mO}%</td>
             </tr>
         `;
@@ -3741,7 +3729,7 @@
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','MÁQ','TURNO','OP','PRODUTO','EST.','REAL','DISP OP','PERF','QUAL','STATUS','OEE'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
+                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','MÁQ','TURNO','OP','PRODUTO','EST.','REAL','DISP OP','PERF','QUAL','OEE'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
                             <tbody class="divide-y divide-slate-50">${rows}</tbody>
                         </table>
                     </div>

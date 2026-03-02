@@ -2025,7 +2025,6 @@
         let minutosInicioTurno = horaParaMinutos(turnoInfo.inicio);
         let minutosFimTurno = horaParaMinutos(turnoInfo.fim);
         
-        // Ajuste para turno C (atravessa meia-noite)
         if (turno === 'C' && minutosFimTurno < minutosInicioTurno) {
             minutosFimTurno += 24 * 60;
         }
@@ -2033,13 +2032,11 @@
         const duracaoTurno = minutosFimTurno - minutosInicioTurno;
         if (duracaoTurno <= 0) return 0;
         
-        // Calcular tempo produtivo REAL (soma dos tempos produtivos de cada OP)
         let tempoProdutivoTotal = 0;
         opsDoTurno.forEach(op => {
             let minutosInicioOP = horaParaMinutos(op.inicio);
             let minutosFimOP = horaParaMinutos(op.fim);
             
-            // Ajuste para OPs que atravessam meia-noite
             if (minutosFimOP < minutosInicioOP) {
                 minutosFimOP += 24 * 60;
             }
@@ -2148,7 +2145,6 @@
             return;
         }
         
-        // Verificar se já existe o mesmo turno (independente da data, pois a data é fixa no modal)
         if (turnosTemp.find(t => t.turno === turno)) {
             showErrorToast('Este turno já foi adicionado para esta data!');
             return;
@@ -2546,6 +2542,9 @@
         }
     }
 
+    // ============================================
+    // FUNÇÃO INSERIR REGISTRO CORRIGIDA
+    // ============================================
     async function inserirRegistro(novo) {
         try {
             const registroParaBanco = {
@@ -2576,7 +2575,8 @@
             
             const { data, error } = await window.supabase
                 .from("oee_registros")
-                .insert([registroParaBanco]);
+                .insert([registroParaBanco])
+                .select();
 
             if (error) {
                 console.error("❌ Erro no Supabase:", error);
@@ -2687,6 +2687,9 @@
         filterByRange();
     }
 
+    // ============================================
+    // FUNÇÃO CALCULAR E SALVAR CORRIGIDA
+    // ============================================
     async function calcularESalvar() {
         const date = document.getElementById('regDate').value;
         const machine = document.getElementById('regMachine').value;
@@ -2705,6 +2708,7 @@
         const est = safeNumber(document.getElementById('regEst').value) || produtoInfo.est;
         
         if (turnosTemp.length === 0) {
+            // TURNO ÚNICO
             const turno = document.getElementById('regTurno').value;
             const inicio = document.getElementById('regInicio').value;
             const fim = document.getElementById('regFim').value;
@@ -2755,10 +2759,14 @@
                 timestamp: new Date().toISOString()
             };
             
-            historico.push(novoRegistro);
+            // Inserir no banco PRIMEIRO
             const resultado = await inserirRegistro(novoRegistro);
             
-            if (resultado) {
+            if (resultado && resultado.length > 0) {
+                // Só adiciona ao histórico se salvou no banco
+                novoRegistro.id = resultado[0].id;
+                historico.push(novoRegistro);
+                
                 recalcularDisponibilidadesTurno(date, machine, turno);
                 showToast('Dados salvos com sucesso!');
                 limparIndicadorAutosave();
@@ -2772,8 +2780,10 @@
                 showErrorToast('Erro ao salvar dados. Tente novamente.');
             }
         } else {
+            // MÚLTIPLOS TURNOS
             console.log("🔄 Salvando múltiplos turnos:", turnosTemp);
             
+            // Verificar conflitos primeiro
             for (let t of turnosTemp) {
                 const conflitos = verificarSobreposicao(date, machine, t.inicio, t.fim);
                 if (conflitos.length > 0) {
@@ -2813,30 +2823,38 @@
                     timestamp: new Date().toISOString()
                 };
                 
-                historico.push(novoRegistro);
+                // Inserir no banco PRIMEIRO
                 const resultado = await inserirRegistro(novoRegistro);
                 
-                if (resultado) {
+                if (resultado && resultado.length > 0) {
+                    novoRegistro.id = resultado[0].id;
+                    historico.push(novoRegistro);
                     registrosSalvos++;
                     recalcularDisponibilidadesTurno(date, machine, t.turno);
                 }
             }
             
+            // Mostrar toast baseado no resultado
             if (registrosSalvos === turnosTemp.length) {
                 showToast(`${registrosSalvos} turnos salvos com sucesso!`);
+                limparIndicadorAutosave();
+                document.getElementById('regForm').reset();
+                turnosTemp = [];
+                atualizarListaTurnos();
+                closeModal();
+                filterByRange();
             } else if (registrosSalvos > 0) {
                 showWarningToast(`${registrosSalvos} de ${turnosTemp.length} turnos salvos.`);
+                limparIndicadorAutosave();
+                document.getElementById('regForm').reset();
+                turnosTemp = [];
+                atualizarListaTurnos();
+                closeModal();
+                filterByRange();
             } else {
-                showErrorToast(`Erro ao salvar os turnos.`);
-                return;
+                showErrorToast('Erro ao salvar turnos.');
+                // NÃO fecha o modal
             }
-            
-            limparIndicadorAutosave();
-            document.getElementById('regForm').reset();
-            turnosTemp = [];
-            atualizarListaTurnos();
-            closeModal();
-            filterByRange();
         }
     }
 

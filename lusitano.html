@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
 <head>
-    <meta charset="UTF--8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lusitano - OEE Extrusoras</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -935,7 +935,6 @@
                                 <th class="py-2">Cliente/Produto</th>
                                 <th class="py-2 text-right">Est.</th>
                                 <th class="py-2 text-right">Real</th>
-                                <th class="py-2 text-right">Disp OP</th>
                                 <th class="py-2 text-right">Disp.Turno</th>
                                 <th class="py-2 text-right">Perf</th>
                                 <th class="py-2 text-right">Qual</th>
@@ -3348,19 +3347,28 @@
                 return;
             }
             
-            let d=0,p=0,q=0;
-            td.forEach(r => { d += r.disp||0; p += r.perf||0; q += r.qual||0; });
-            d = Math.round(d/td.length); p = Math.round(p/td.length); q = Math.round(q/td.length);
-            const o = calcularOEE(d,p,q);
+            // Calcular médias do TURNO (usando dispTurno, não disp)
+            let dispTurno = 0, perf = 0, qual = 0;
+            td.forEach(r => { 
+                dispTurno += r.dispTurno || 0;  // USA dispTurno (disponibilidade do turno)
+                perf += r.perf || 0; 
+                qual += r.qual || 0; 
+            });
+            dispTurno = Math.round(dispTurno / td.length);
+            perf = Math.round(perf / td.length);
+            qual = Math.round(qual / td.length);
+            
+            // OEE calculado com DISP.TURNO
+            const o = calcularOEE(dispTurno, perf, qual);
             
             cards.innerHTML += `
                 <div class="bg-white p-6 rounded-xl border border-slate-200">
                     <p class="text-xs font-bold uppercase text-slate-400 mb-2">Turno ${t}</p>
-                    <div class="text-3xl font-black mb-3 ${o>=85?'text-green-600':'text-red-600'}">${o}%</div>
+                    <div class="text-3xl font-black mb-3 ${o >= 85 ? 'text-green-600' : 'text-red-600'}">${o}%</div>
                     <div class="space-y-2">
-                        <div><span class="text-xs text-slate-400">Disp OP:</span> <span class="font-bold">${d}%</span></div>
-                        <div><span class="text-xs text-slate-400">Performance:</span> <span class="font-bold">${p}%</span></div>
-                        <div><span class="text-xs text-slate-400">Qualidade:</span> <span class="font-bold">${q}%</span></div>
+                        <div><span class="text-xs text-slate-400">Disp.Turno:</span> <span class="font-bold">${dispTurno}%</span></div>
+                        <div><span class="text-xs text-slate-400">Performance:</span> <span class="font-bold">${perf}%</span></div>
+                        <div><span class="text-xs text-slate-400">Qualidade:</span> <span class="font-bold">${qual}%</span></div>
                         <div><span class="text-xs text-slate-400">Registros:</span> <span class="font-bold">${td.length}</span></div>
                     </div>
                 </div>
@@ -3370,7 +3378,9 @@
         const tbody = document.getElementById('efficiency-selection-rows');
         tbody.innerHTML = '';
         data.sort((a,b)=>new Date(b.data)-new Date(a.data)).forEach(r => {
-            const o = calcularOEE(r.disp,r.perf,r.qual);
+            // OEE da linha individual também deve usar DISP.TURNO?
+            // Mantive como estava (usando r.disp) para não quebrar, mas podemos ajustar se quiser
+            const o = calcularOEE(r.disp, r.perf, r.qual);
             tbody.innerHTML += `
                 <tr>
                     <td class="py-2">${r.data.split('-').reverse().join('/')}</td>
@@ -3380,7 +3390,6 @@
                     <td class="py-2">${r.produto||'-'}</td>
                     <td class="py-2 text-right">${r.est||0}</td>
                     <td class="py-2 text-right">${r.realKgH||0}</td>
-                    <td class="py-2 text-right">${r.disp||0}%</td>
                     <td class="py-2 text-right">${r.dispTurno||0}%</td>
                     <td class="py-2 text-right">${r.perf||0}%</td>
                     <td class="py-2 text-right">${r.qual||0}%</td>
@@ -3408,7 +3417,7 @@
             rs.forEach(r => {
                 totalProd += r.produzido||0;
                 totalPed = r.pedido||totalPed;
-                sDisp += r.disp||0;
+                sDisp += r.disp||0;  // Mantém DISP OP para análise por OP
                 sPerf += r.perf||0;
                 sQual += r.qual||0;
                 totalH += calcularDuracaoHoras(r.inicio,r.fim);
@@ -3532,7 +3541,7 @@
             let total=0, sD=0, sP=0, sQ=0, horas=0, datas=[];
             rs.forEach(r => {
                 total += r.produzido||0;
-                sD += r.disp||0;
+                sD += r.disp||0;  // Mantém DISP OP para análise por cliente
                 sP += r.perf||0;
                 sQ += r.qual||0;
                 datas.push(r.data);

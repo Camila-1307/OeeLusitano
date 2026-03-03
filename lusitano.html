@@ -3600,51 +3600,53 @@
         });
     }
 
-    function renderOPView(data) {
-        const ops = {};
-        data.forEach(r => { if (!ops[r.op]) ops[r.op] = []; ops[r.op].push(r); });
-        
-        const container = document.getElementById('opTimelineContainer');
-        container.innerHTML = '';
-        
-        Object.entries(ops).forEach(([op, rs]) => {
-            rs.sort((a,b)=>new Date(a.data+' '+a.inicio)-new Date(b.data+' '+b.inicio));
-            let totalProd = 0, totalPed = 0, sDisp=0, sPerf=0, sQual=0, totalH=0;
-            rs.forEach(r => {
-                totalProd += r.produzido||0;
-                totalPed = r.pedido||totalPed;
-                sDisp += r.disp||0;
-                sPerf += r.perf||0;
-                sQual += r.qual||0;
-                totalH += calcularDuracaoHoras(r.inicio,r.fim);
-            });
-            const mDisp = Math.round(sDisp/rs.length), mPerf = Math.round(sPerf/rs.length), mQual = Math.round(sQual/rs.length), mOEE = calcularOEE(mDisp,mPerf,mQual);
-            const meta = totalProd >= totalPed;
-            const p = rs[0];
-            const per = p.data===rs[rs.length-1].data ? p.data.split('-').reverse().join('/') : `${p.data.split('-').reverse().join('/')} a ${rs[rs.length-1].data.split('-').reverse().join('/')}`;
-            
-            container.innerHTML += `
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesOP('${op}')">
-                    <div class="flex justify-between items-start mb-3">
-                        <div><span class="font-black text-xl text-green-700">OP ${op}</span><span class="ml-3 text-sm font-medium text-slate-500">${p.produto||'-'}</span></div>
-                        <span class="text-sm font-bold px-3 py-1 rounded-full ${meta?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${meta?'✅ META':'⚠️ META NÃO ATINGIDA'}</span>
-                    </div>
-                    <div class="grid grid-cols-4 gap-4 mb-4">
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">DISP OP</span><div class="text-2xl font-black ${mDisp>=85?'text-green-600':'text-red-600'}">${mDisp}%</div></div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">PERF</span><div class="text-2xl font-black ${mPerf>=90?'text-green-600':'text-yellow-600'}">${mPerf}%</div></div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">QUAL</span><div class="text-2xl font-black ${mQual>=98?'text-green-600':'text-yellow-600'}">${mQual}%</div></div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">OEE</span><div class="text-2xl font-black ${mOEE>=85?'text-green-600':'text-red-600'}">${mOEE}%</div></div>
-                    </div>
-                    <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
-                        <div><span class="font-medium">📦 ${totalProd.toFixed(0)} kg</span><span class="mx-2">•</span><span>🎯 ${totalPed} kg</span><span class="mx-2">•</span><span>🕒 ${totalH.toFixed(1)}h</span></div>
-                        <div><span>📅 ${per}</span><span class="ml-4 text-blue-600 font-medium">👆 Clique para detalhes</span></div>
-                    </div>
-                </div>
-            `;
+    // ============================================
+// FUNÇÃO renderOPView() - SEM BADGE DE META
+// ============================================
+function renderOPView(data) {
+    const ops = {};
+    data.forEach(r => { if (!ops[r.op]) ops[r.op] = []; ops[r.op].push(r); });
+    
+    const container = document.getElementById('opTimelineContainer');
+    container.innerHTML = '';
+    
+    Object.entries(ops).forEach(([op, rs]) => {
+        rs.sort((a,b)=>new Date(a.data+' '+a.inicio)-new Date(b.data+' '+b.inicio));
+        let totalProd = 0, totalPed = 0, sDisp=0, sPerf=0, sQual=0, totalH=0;
+        rs.forEach(r => {
+            totalProd += r.produzido||0;
+            totalPed = r.pedido||totalPed;
+            sDisp += r.disp||0;
+            sPerf += r.perf||0;
+            sQual += r.qual||0;
+            totalH += calcularDuracaoHoras(r.inicio,r.fim);
         });
+        const mDisp = Math.round(sDisp/rs.length), mPerf = Math.round(sPerf/rs.length), mQual = Math.round(sQual/rs.length), mOEE = calcularOEE(mDisp,mPerf,mQual);
+        const p = rs[0];
+        const per = p.data===rs[rs.length-1].data ? p.data.split('-').reverse().join('/') : `${p.data.split('-').reverse().join('/')} a ${rs[rs.length-1].data.split('-').reverse().join('/')}`;
         
-        if (!Object.keys(ops).length) container.innerHTML = '<p class="text-center text-slate-400 py-8">Nenhuma OP encontrada no período.</p>';
-    }
+        container.innerHTML += `
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesOP('${op}')">
+                <div class="flex justify-between items-start mb-3">
+                    <div><span class="font-black text-xl text-green-700">OP ${op}</span><span class="ml-3 text-sm font-medium text-slate-500">${p.produto||'-'}</span></div>
+                    <!-- BADGE DE META REMOVIDO -->
+                </div>
+                <div class="grid grid-cols-4 gap-4 mb-4">
+                    <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">DISP OP</span><div class="text-2xl font-black ${mDisp>=85?'text-green-600':'text-red-600'}">${mDisp}%</div></div>
+                    <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">PERF</span><div class="text-2xl font-black ${mPerf>=90?'text-green-600':'text-yellow-600'}">${mPerf}%</div></div>
+                    <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">QUAL</span><div class="text-2xl font-black ${mQual>=98?'text-green-600':'text-yellow-600'}">${mQual}%</div></div>
+                    <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">OEE</span><div class="text-2xl font-black ${mOEE>=85?'text-green-600':'text-red-600'}">${mOEE}%</div></div>
+                </div>
+                <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
+                    <div><span class="font-medium">📦 ${totalProd.toFixed(0)} kg</span><span class="mx-2">•</span><span>🎯 ${totalPed} kg</span><span class="mx-2">•</span><span>🕒 ${totalH.toFixed(1)}h</span></div>
+                    <div><span>📅 ${per}</span><span class="ml-4 text-blue-600 font-medium">👆 Clique para detalhes</span></div>
+                </div>
+            </div>
+        `;
+    });
+    
+    if (!Object.keys(ops).length) container.innerHTML = '<p class="text-center text-slate-400 py-8">Nenhuma OP encontrada no período.</p>';
+}
 
     function abrirDetalhesOP(op) {
         console.log("🔍 Abrindo detalhes da OP:", op);

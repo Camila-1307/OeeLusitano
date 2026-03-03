@@ -3567,171 +3567,200 @@
         });
     }
 
-    function renderPerdasView(data) {
-        const perdasMaq = { 
-            M1: { setup: 0, avaria: 0, aparas: 0 }, 
-            M2: { setup: 0, avaria: 0, aparas: 0 }, 
-            M3: { setup: 0, avaria: 0, aparas: 0 } 
-        };
-        const perdasMot = {};
-        const perdasDia = {};
+    // ============================================
+// FUNÇÃO renderPerdasView() - CORRIGIDA
+// Gráfico de motivos mostra apenas paradas (sem Setup e Aparas)
+// ============================================
+function renderPerdasView(data) {
+    const perdasMaq = { 
+        M1: { setup: 0, avaria: 0, aparas: 0 }, 
+        M2: { setup: 0, avaria: 0, aparas: 0 }, 
+        M3: { setup: 0, avaria: 0, aparas: 0 } 
+    };
+    const perdasMot = {}; // Apenas para paradas
+    const perdasDia = {};
+    
+    // Para cálculo de aparas em minutos
+    const perdasAparas = { M1: 0, M2: 0, M3: 0 };
+    
+    data.forEach(reg => {
+        const setup = reg.setup || 0;
+        const avaria = reg.avaria || 0;
+        const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
         
-        // Para cálculo de aparas em minutos
-        const perdasAparas = { M1: 0, M2: 0, M3: 0 };
+        // Calcular aparas em minutos
+        const aparasMin = calcularAparasEmMinutos(reg.aparas || 0, reg.realKgH, horas);
         
-        data.forEach(reg => {
-            const setup = reg.setup || 0;
-            const avaria = reg.avaria || 0;
-            const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
-            
-            // Calcular aparas em minutos
-            const aparasMin = calcularAparasEmMinutos(reg.aparas || 0, reg.realKgH, horas);
-            
-            if (reg.machine && perdasMaq.hasOwnProperty(reg.machine)) {
-                perdasMaq[reg.machine].setup += setup;
-                perdasMaq[reg.machine].avaria += avaria;
-                perdasMaq[reg.machine].aparas += aparasMin;
-                perdasAparas[reg.machine] += aparasMin;
+        if (reg.machine && perdasMaq.hasOwnProperty(reg.machine)) {
+            perdasMaq[reg.machine].setup += setup;
+            perdasMaq[reg.machine].avaria += avaria;
+            perdasMaq[reg.machine].aparas += aparasMin;
+            perdasAparas[reg.machine] += aparasMin;
+        }
+        
+        // Agrupar por motivo (apenas paradas - SEM SETUP E SEM APARAS)
+        if (reg.motivoPerda && avaria > 0) {
+            perdasMot[reg.motivoPerda] = (perdasMot[reg.motivoPerda] || 0) + avaria;
+        }
+        
+        // Perdas totais por dia (setup + avaria + aparas)
+        if (reg.data) {
+            perdasDia[reg.data] = (perdasDia[reg.data] || 0) + setup + avaria + aparasMin;
+        }
+    });
+    
+    // Top máquina (considerando total de perdas)
+    let topMaq = '--', topMaqVal = 0;
+    Object.entries(perdasMaq).forEach(([m, v]) => {
+        const total = v.setup + v.avaria + v.aparas;
+        if (total > topMaqVal) { 
+            topMaqVal = total; 
+            topMaq = m; 
+        }
+    });
+    document.getElementById('topMaquinaNome').innerText = topMaq;
+    document.getElementById('topMaquinaMinutos').innerText = topMaqVal + ' min';
+    
+    // Top motivo (apenas paradas)
+    let topMot = '--', topMotVal = 0;
+    Object.entries(perdasMot).forEach(([m, v]) => { 
+        if (v > topMotVal) { 
+            topMotVal = v; 
+            topMot = m; 
+        } 
+    });
+    document.getElementById('topMotivoNome').innerText = topMot;
+    document.getElementById('topMotivoMinutos').innerText = topMotVal + ' min';
+    
+    // Top dia
+    let topDia = '--', topDiaVal = 0;
+    Object.entries(perdasDia).forEach(([d, v]) => { 
+        if (v > topDiaVal) { 
+            topDiaVal = v; 
+            topDia = d.split('-').reverse().join('/'); 
+        } 
+    });
+    document.getElementById('topDiaData').innerText = topDia;
+    document.getElementById('topDiaMinutos').innerText = topDiaVal + ' min';
+    
+    // Gráfico detalhado por máquina (setup vs paradas)
+    const ctxMaq = document.getElementById('perdasMaquinaDetalheChart')?.getContext('2d');
+    if (ctxMaq) {
+        if (perdasMaquinaDetalheChart) perdasMaquinaDetalheChart.destroy();
+        perdasMaquinaDetalheChart = new Chart(ctxMaq, {
+            type: 'bar',
+            data: {
+                labels: ['M1', 'M2', 'M3'],
+                datasets: [
+                    { 
+                        label: 'Setup', 
+                        data: [perdasMaq.M1.setup, perdasMaq.M2.setup, perdasMaq.M3.setup], 
+                        backgroundColor: '#f59e0b' 
+                    },
+                    { 
+                        label: 'Paradas', 
+                        data: [perdasMaq.M1.avaria, perdasMaq.M2.avaria, perdasMaq.M3.avaria], 
+                        backgroundColor: '#ef4444' 
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    datalabels: { 
+                        anchor: 'end', 
+                        align: 'top', 
+                        formatter: val => val + ' min', 
+                        font: { weight: 'bold', size: 10 } 
+                    } 
+                },
+                scales: { y: { beginAtZero: true } }
             }
-            
-            // Agrupar por motivo (incluindo Setup e Aparas como motivos)
-            if (setup > 0) {
-                perdasMot['Setup'] = (perdasMot['Setup'] || 0) + setup;
+        });
+    }
+    
+    // NOVO GRÁFICO: Perdas por Tipo (Setup, Paradas, Aparas)
+    const ctxTipo = document.getElementById('perdasTipoChart')?.getContext('2d');
+    if (ctxTipo) {
+        if (perdasTipoChart) perdasTipoChart.destroy();
+        
+        perdasTipoChart = new Chart(ctxTipo, {
+            type: 'bar',
+            data: {
+                labels: ['M1', 'M2', 'M3'],
+                datasets: [
+                    { 
+                        label: 'Setup', 
+                        data: [perdasMaq.M1.setup, perdasMaq.M2.setup, perdasMaq.M3.setup], 
+                        backgroundColor: '#f59e0b' 
+                    },
+                    { 
+                        label: 'Paradas', 
+                        data: [perdasMaq.M1.avaria, perdasMaq.M2.avaria, perdasMaq.M3.avaria], 
+                        backgroundColor: '#ef4444' 
+                    },
+                    { 
+                        label: 'Aparas', 
+                        data: [perdasMaq.M1.aparas, perdasMaq.M2.aparas, perdasMaq.M3.aparas], 
+                        backgroundColor: '#10b981' 
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    datalabels: { 
+                        anchor: 'end', 
+                        align: 'top', 
+                        formatter: val => val + ' min', 
+                        font: { weight: 'bold', size: 10 } 
+                    } 
+                },
+                scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
             }
-            if (reg.motivoPerda && avaria > 0) {
-                perdasMot[reg.motivoPerda] = (perdasMot[reg.motivoPerda] || 0) + avaria;
-            }
-            if (aparasMin > 0) {
-                perdasMot['Aparas'] = (perdasMot['Aparas'] || 0) + aparasMin;
-            }
-            
-            // Perdas totais por dia (setup + avaria + aparas)
-            if (reg.data) {
-                perdasDia[reg.data] = (perdasDia[reg.data] || 0) + setup + avaria + aparasMin;
+        });
+    }
+    
+    // Gráfico de perdas por motivo (APENAS PARADAS - SEM SETUP E SEM APARAS)
+    const ctxMot = document.getElementById('perdasMotivoChart')?.getContext('2d');
+    if (ctxMot) {
+        if (perdasMotivoChart) perdasMotivoChart.destroy();
+        
+        // Filtrar apenas motivos de parada (remover Setup e Aparas se existirem)
+        const perdasMotFiltradas = {};
+        Object.entries(perdasMot).forEach(([motivo, valor]) => {
+            // Não incluir Setup e Aparas
+            if (motivo !== 'Setup' && motivo !== 'Aparas') {
+                perdasMotFiltradas[motivo] = valor;
             }
         });
         
-        // Top máquina (considerando total de perdas)
-        let topMaq = '--', topMaqVal = 0;
-        Object.entries(perdasMaq).forEach(([m, v]) => {
-            const total = v.setup + v.avaria + v.aparas;
-            if (total > topMaqVal) { 
-                topMaqVal = total; 
-                topMaq = m; 
-            }
-        });
-        document.getElementById('topMaquinaNome').innerText = topMaq;
-        document.getElementById('topMaquinaMinutos').innerText = topMaqVal + ' min';
-        
-        // Top motivo
-        let topMot = '--', topMotVal = 0;
-        Object.entries(perdasMot).forEach(([m, v]) => { 
-            if (v > topMotVal) { 
-                topMotVal = v; 
-                topMot = m; 
-            } 
-        });
-        document.getElementById('topMotivoNome').innerText = topMot;
-        document.getElementById('topMotivoMinutos').innerText = topMotVal + ' min';
-        
-        // Top dia
-        let topDia = '--', topDiaVal = 0;
-        Object.entries(perdasDia).forEach(([d, v]) => { 
-            if (v > topDiaVal) { 
-                topDiaVal = v; 
-                topDia = d.split('-').reverse().join('/'); 
-            } 
-        });
-        document.getElementById('topDiaData').innerText = topDia;
-        document.getElementById('topDiaMinutos').innerText = topDiaVal + ' min';
-        
-        // Gráfico detalhado por máquina (setup vs paradas)
-        const ctxMaq = document.getElementById('perdasMaquinaDetalheChart')?.getContext('2d');
-        if (ctxMaq) {
-            if (perdasMaquinaDetalheChart) perdasMaquinaDetalheChart.destroy();
-            perdasMaquinaDetalheChart = new Chart(ctxMaq, {
-                type: 'bar',
+        // Se não houver motivos, mostrar mensagem
+        if (Object.keys(perdasMotFiltradas).length === 0) {
+            // Criar um dataset vazio com mensagem
+            perdasMotivoChart = new Chart(ctxMot, {
+                type: 'pie',
                 data: {
-                    labels: ['M1', 'M2', 'M3'],
-                    datasets: [
-                        { 
-                            label: 'Setup', 
-                            data: [perdasMaq.M1.setup, perdasMaq.M2.setup, perdasMaq.M3.setup], 
-                            backgroundColor: '#f59e0b' 
-                        },
-                        { 
-                            label: 'Paradas', 
-                            data: [perdasMaq.M1.avaria, perdasMaq.M2.avaria, perdasMaq.M3.avaria], 
-                            backgroundColor: '#ef4444' 
-                        }
-                    ]
+                    labels: ['Sem dados'],
+                    datasets: [{ data: [1], backgroundColor: ['#e5e7eb'] }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { 
                         datalabels: { 
-                            anchor: 'end', 
-                            align: 'top', 
-                            formatter: val => val + ' min', 
-                            font: { weight: 'bold', size: 10 } 
+                            color: '#fff', 
+                            font: { weight: 'bold', size: 10 }, 
+                            formatter: () => 'Sem dados' 
                         } 
-                    },
-                    scales: { y: { beginAtZero: true } }
+                    }
                 }
             });
-        }
-        
-        // NOVO GRÁFICO: Perdas por Tipo (Setup, Paradas, Aparas)
-        const ctxTipo = document.getElementById('perdasTipoChart')?.getContext('2d');
-        if (ctxTipo) {
-            if (perdasTipoChart) perdasTipoChart.destroy();
-            
-            perdasTipoChart = new Chart(ctxTipo, {
-                type: 'bar',
-                data: {
-                    labels: ['M1', 'M2', 'M3'],
-                    datasets: [
-                        { 
-                            label: 'Setup', 
-                            data: [perdasMaq.M1.setup, perdasMaq.M2.setup, perdasMaq.M3.setup], 
-                            backgroundColor: '#f59e0b' 
-                        },
-                        { 
-                            label: 'Paradas', 
-                            data: [perdasMaq.M1.avaria, perdasMaq.M2.avaria, perdasMaq.M3.avaria], 
-                            backgroundColor: '#ef4444' 
-                        },
-                        { 
-                            label: 'Aparas', 
-                            data: [perdasMaq.M1.aparas, perdasMaq.M2.aparas, perdasMaq.M3.aparas], 
-                            backgroundColor: '#10b981' 
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        datalabels: { 
-                            anchor: 'end', 
-                            align: 'top', 
-                            formatter: val => val + ' min', 
-                            font: { weight: 'bold', size: 10 } 
-                        } 
-                    },
-                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
-                }
-            });
-        }
-        
-        // Gráfico de perdas por motivo (incluindo Setup e Aparas)
-        const ctxMot = document.getElementById('perdasMotivoChart')?.getContext('2d');
-        if (ctxMot) {
-            if (perdasMotivoChart) perdasMotivoChart.destroy();
-            
+        } else {
             // Ordenar por valor decrescente
-            const motivosOrdenados = Object.entries(perdasMot)
+            const motivosOrdenados = Object.entries(perdasMotFiltradas)
                 .sort((a, b) => b[1] - a[1])
                 .reduce((obj, [key, value]) => {
                     obj[key] = value;
@@ -3744,7 +3773,7 @@
                     labels: Object.keys(motivosOrdenados),
                     datasets: [{ 
                         data: Object.values(motivosOrdenados), 
-                        backgroundColor: ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#64748b', '#ec4899', '#14b8a6'] 
+                        backgroundColor: ['#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#64748b'] 
                     }]
                 },
                 options: {
@@ -3760,62 +3789,63 @@
                 }
             });
         }
-        
-        // Gráfico de evolução diária
-        const ctxEvol = document.getElementById('perdasEvolucaoChart')?.getContext('2d');
-        if (ctxEvol) {
-            const dias = Object.keys(perdasDia).sort();
-            if (perdasEvolucaoChart) perdasEvolucaoChart.destroy();
-            perdasEvolucaoChart = new Chart(ctxEvol, {
-                type: 'line',
-                data: {
-                    labels: dias.map(d => d.split('-').reverse().join('/')),
-                    datasets: [{
-                        label: 'Perdas Totais (min)',
-                        data: dias.map(d => perdasDia[d]),
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239,68,68,0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { datalabels: { display: false } }
-                }
-            });
-        }
-        
-        // Tabela detalhada
-        const tbody = document.getElementById('perdas-detail-rows');
-        tbody.innerHTML = '';
-        data.sort((a, b) => new Date(b.data) - new Date(a.data)).forEach(reg => {
-            const setup = reg.setup || 0;
-            const avaria = reg.avaria || 0;
-            const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
-            const aparasMin = calcularAparasEmMinutos(reg.aparas || 0, reg.realKgH, horas);
-            const total = setup + avaria + aparasMin;
-            
-            if (total > 0) {
-                const motivoClass = reg.motivoPerda ? `perda-${reg.motivoPerda.toLowerCase().replace(/ /g, '-')}` : '';
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="py-2">${reg.data.split('-').reverse().join('/')}</td>
-                        <td class="py-2">${reg.machine}</td>
-                        <td class="py-2">${reg.turno}</td>
-                        <td class="py-2">${reg.op || '-'}</td>
-                        <td class="py-2">${reg.produto || '-'}</td>
-                        <td class="py-2 text-center ${setup > 0 ? 'text-orange-600 font-bold' : ''}">${setup}</td>
-                        <td class="py-2 text-center ${avaria > 0 ? 'text-red-600 font-bold' : ''}">${avaria}</td>
-                        <td class="py-2 text-center ${aparasMin > 0 ? 'text-green-600 font-bold' : ''}">${aparasMin}</td>
-                        <td class="py-2 text-center font-bold text-red-600">${total}</td>
-                        <td class="py-2"><span class="perda-badge ${motivoClass}">${reg.motivoPerda || (setup > 0 ? 'Setup' : (aparasMin > 0 ? 'Aparas' : '-'))}</span></td>
-                    </tr>
-                `;
+    }
+    
+    // Gráfico de evolução diária
+    const ctxEvol = document.getElementById('perdasEvolucaoChart')?.getContext('2d');
+    if (ctxEvol) {
+        const dias = Object.keys(perdasDia).sort();
+        if (perdasEvolucaoChart) perdasEvolucaoChart.destroy();
+        perdasEvolucaoChart = new Chart(ctxEvol, {
+            type: 'line',
+            data: {
+                labels: dias.map(d => d.split('-').reverse().join('/')),
+                datasets: [{
+                    label: 'Perdas Totais (min)',
+                    data: dias.map(d => perdasDia[d]),
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239,68,68,0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { datalabels: { display: false } }
             }
         });
     }
+    
+    // Tabela detalhada
+    const tbody = document.getElementById('perdas-detail-rows');
+    tbody.innerHTML = '';
+    data.sort((a, b) => new Date(b.data) - new Date(a.data)).forEach(reg => {
+        const setup = reg.setup || 0;
+        const avaria = reg.avaria || 0;
+        const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
+        const aparasMin = calcularAparasEmMinutos(reg.aparas || 0, reg.realKgH, horas);
+        const total = setup + avaria + aparasMin;
+        
+        if (total > 0) {
+            const motivoClass = reg.motivoPerda ? `perda-${reg.motivoPerda.toLowerCase().replace(/ /g, '-')}` : '';
+            tbody.innerHTML += `
+                <tr>
+                    <td class="py-2">${reg.data.split('-').reverse().join('/')}</td>
+                    <td class="py-2">${reg.machine}</td>
+                    <td class="py-2">${reg.turno}</td>
+                    <td class="py-2">${reg.op || '-'}</td>
+                    <td class="py-2">${reg.produto || '-'}</td>
+                    <td class="py-2 text-center ${setup > 0 ? 'text-orange-600 font-bold' : ''}">${setup}</td>
+                    <td class="py-2 text-center ${avaria > 0 ? 'text-red-600 font-bold' : ''}">${avaria}</td>
+                    <td class="py-2 text-center ${aparasMin > 0 ? 'text-green-600 font-bold' : ''}">${aparasMin}</td>
+                    <td class="py-2 text-center font-bold text-red-600">${total}</td>
+                    <td class="py-2"><span class="perda-badge ${motivoClass}">${reg.motivoPerda || (setup > 0 ? 'Setup' : (aparasMin > 0 ? 'Aparas' : '-'))}</span></td>
+                </tr>
+            `;
+        }
+    });
+}
 
     function updateCharts(data, machineAvg) {
         const trendCtx = document.getElementById('weeklyChart')?.getContext('2d');

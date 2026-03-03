@@ -2477,9 +2477,9 @@
         });
     }
 
-    // ============================================
-// FUNÇÃO: gerarRelatorioPCP() - CABEÇALHO AJUSTADO
-// Fundo verde, título em amarelo, subtítulo pequeno embaixo
+   // ============================================
+// FUNÇÃO: gerarRelatorioPCP() - CABEÇALHO VERDE/VERMELHO
+// Esquerda vermelho, direita verde, título centralizado
 // ============================================
 function gerarRelatorioPCP() {
     const startDate = document.getElementById('startDate').value;
@@ -2521,19 +2521,25 @@ function gerarRelatorioPCP() {
     let conteudo = `
         <div style="font-family: 'Inter', Arial, sans-serif; max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
             
-            <!-- HEADER com fundo verde degradê -->
-            <div style="background: linear-gradient(135deg, #005a2b 0%, #00803d 100%); color: white; padding: 25px 20px; position: relative; min-height: 140px;">
-                <!-- LUSITANO e EMBALAGENS PLÁSTICAS em amarelo -->
-                <div style="font-size: 42px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; color: #FFD700; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">LUSITANO</div>
-                <div style="font-size: 16px; font-weight: 300; letter-spacing: 2px; color: #FFD700; margin-top: -5px;">EMBALAGENS PLÁSTICAS</div>
+            <!-- HEADER com fundo dividido: esquerda vermelho, direita verde -->
+            <div style="display: flex; height: 160px; position: relative;">
+                <!-- Lado esquerdo vermelho -->
+                <div style="flex: 1; background-color: #c4121a;"></div>
+                <!-- Lado direito verde -->
+                <div style="flex: 1; background-color: #005a2b;"></div>
                 
-                <!-- Linha decorativa amarela -->
-                <div style="width: 80px; height: 3px; background: #FFD700; margin: 15px 0;"></div>
+                <!-- Conteúdo centralizado sobre o fundo dividido -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                    <!-- LUSITANO em amarelo -->
+                    <div style="font-size: 48px; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; color: #FFD700; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 5px;">LUSITANO</div>
+                    <!-- EMBALAGENS PLÁSTICAS em amarelo -->
+                    <div style="font-size: 18px; font-weight: 300; letter-spacing: 3px; color: #FFD700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">EMBALAGENS PLÁSTICAS</div>
+                </div>
                 
-                <!-- RELATÓRIO PCP e subtítulo - FONTE BEM MENOR, ALINHADO EMBAIXO -->
-                <div style="position: absolute; bottom: 20px; right: 30px; text-align: right;">
-                    <div style="font-size: 20px; font-weight: 600; color: white; text-transform: uppercase; letter-spacing: 1px; opacity: 0.95;">RELATÓRIO PCP</div>
-                    <div style="font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.8); margin-top: 2px;">Pedidos fora da margem de ${MARGEM_PERFORMANCE}%</div>
+                <!-- RELATÓRIO PCP no canto inferior direito -->
+                <div style="position: absolute; bottom: 15px; right: 25px; text-align: right;">
+                    <div style="font-size: 18px; font-weight: 600; color: white; text-transform: uppercase; letter-spacing: 1px; opacity: 0.95;">RELATÓRIO PCP</div>
+                    <div style="font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.8); margin-top: 2px;">Pedidos fora da margem de ${MARGEM_PERFORMANCE}%</div>
                 </div>
             </div>
             

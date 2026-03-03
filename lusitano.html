@@ -2478,174 +2478,201 @@
     }
 
     // ============================================
-    // FUNÇÃO: gerarRelatorioPCP()
-    // Gera PDF com pedidos fora da margem para o PCP
-    // ============================================
-    function gerarRelatorioPCP() {
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
-        
-        if (!startDate || !endDate) {
-            showErrorToast('Selecione um período para gerar o relatório!');
-            return;
-        }
-        
-        // Filtrar registros no período
-        let registros = historico.filter(h => h.data >= startDate && h.data <= endDate);
-        
-        if (registros.length === 0) {
-            showErrorToast('Nenhum registro encontrado no período selecionado!');
-            return;
-        }
-        
-        // Filtrar apenas os que estão FORA da margem de 10%
-        const registrosForaMargem = registros.filter(r => {
-            if (!r.est || r.est <= 0) return false;
-            const diferencaPercentual = ((r.realKgH - r.est) / r.est) * 100;
-            return Math.abs(diferencaPercentual) > MARGEM_PERFORMANCE;
-        });
-        
-        if (registrosForaMargem.length === 0) {
-            showWarningToast('Nenhum pedido fora da margem de 10% no período selecionado!');
-            return;
-        }
-        
-        // Calcular estatísticas
-        const totalAcima = registrosForaMargem.filter(r => ((r.realKgH - r.est) / r.est) * 100 > MARGEM_PERFORMANCE).length;
-        const totalAbaixo = registrosForaMargem.filter(r => ((r.realKgH - r.est) / r.est) * 100 < -MARGEM_PERFORMANCE).length;
-        
-        // Criar conteúdo do relatório
-        const dataInicial = startDate.split('-').reverse().join('/');
-        const dataFinal = endDate.split('-').reverse().join('/');
-        
-        let conteudo = `
-            <div style="font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                
-                <!-- HEADER -->
-                <div style="background: linear-gradient(135deg, #005a2b 0%, #00803d 100%); color: white; padding: 30px 20px; text-align: center;">
-                    <div style="font-size: 40px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">LUSITANO</div>
-                    <div style="font-size: 18px; opacity: 0.9; font-weight: 300;">Embalagens Plásticas</div>
-                    <div style="font-size: 28px; font-weight: 700; margin-top: 20px; text-transform: uppercase;">RELATÓRIO PARA PCP</div>
-                    <div style="font-size: 16px; margin-top: 5px; opacity: 0.9;">Pedidos fora da margem de ${MARGEM_PERFORMANCE}%</div>
+// FUNÇÃO: gerarRelatorioPCP() - NOVO LAYOUT
+// Com as cores do sistema Lusitano
+// ============================================
+function gerarRelatorioPCP() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (!startDate || !endDate) {
+        showErrorToast('Selecione um período para gerar o relatório!');
+        return;
+    }
+    
+    // Filtrar registros no período
+    let registros = historico.filter(h => h.data >= startDate && h.data <= endDate);
+    
+    if (registros.length === 0) {
+        showErrorToast('Nenhum registro encontrado no período selecionado!');
+        return;
+    }
+    
+    // Filtrar apenas os que estão FORA da margem de 10%
+    const registrosForaMargem = registros.filter(r => {
+        if (!r.est || r.est <= 0) return false;
+        const diferencaPercentual = ((r.realKgH - r.est) / r.est) * 100;
+        return Math.abs(diferencaPercentual) > MARGEM_PERFORMANCE;
+    });
+    
+    if (registrosForaMargem.length === 0) {
+        showWarningToast('Nenhum pedido fora da margem de 10% no período selecionado!');
+        return;
+    }
+    
+    // Calcular estatísticas
+    const totalAcima = registrosForaMargem.filter(r => ((r.realKgH - r.est) / r.est) * 100 > MARGEM_PERFORMANCE).length;
+    const totalAbaixo = registrosForaMargem.filter(r => ((r.realKgH - r.est) / r.est) * 100 < -MARGEM_PERFORMANCE).length;
+    
+    // Criar conteúdo do relatório
+    const dataInicial = startDate.split('-').reverse().join('/');
+    const dataFinal = endDate.split('-').reverse().join('/');
+    
+    let conteudo = `
+        <div style="font-family: 'Inter', Arial, sans-serif; max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
+            
+            <!-- HEADER com gradiente verde -->
+            <div style="background: linear-gradient(135deg, #005a2b 0%, #00803d 100%); color: white; padding: 30px 20px; text-align: center; border-bottom: 4px solid #FFD700;">
+                <div style="font-size: 42px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">LUSITANO</div>
+                <div style="font-size: 16px; opacity: 0.9; font-weight: 300; letter-spacing: 1px;">EMBALAGENS PLÁSTICAS</div>
+                <div style="width: 100px; height: 3px; background: #FFD700; margin: 15px auto;"></div>
+                <div style="font-size: 28px; font-weight: 700; margin-top: 10px; text-transform: uppercase;">RELATÓRIO PCP</div>
+                <div style="font-size: 16px; margin-top: 5px; opacity: 0.9;">Pedidos fora da margem de ${MARGEM_PERFORMANCE}%</div>
+            </div>
+            
+            <!-- PERÍODO -->
+            <div style="background: #f8fafc; padding: 15px 20px; text-align: center; border-bottom: 2px solid #005a2b;">
+                <span style="font-size: 18px; font-weight: 700; color: #005a2b;">📅 PERÍODO: ${dataInicial} a ${dataFinal}</span>
+            </div>
+            
+            <!-- CARDS DE RESUMO -->
+            <div style="display: flex; justify-content: space-between; gap: 15px; margin: 25px 20px;">
+                <div style="flex: 1; background: linear-gradient(135deg, #005a2b 0%, #00803d 100%); border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div style="font-size: 36px; font-weight: 900; color: white;">${registrosForaMargem.length}</div>
+                    <div style="font-size: 14px; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 1px;">Total Fora da Margem</div>
                 </div>
-                
-                <!-- PERÍODO -->
-                <div style="background: #f3f4f6; padding: 15px; text-align: center; font-size: 18px; font-weight: 700; color: #1f2937; border-bottom: 3px solid #005a2b;">
-                    📅 Período: ${dataInicial} a ${dataFinal}
+                <div style="flex: 1; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div style="font-size: 36px; font-weight: 900; color: white;">${totalAcima}</div>
+                    <div style="font-size: 14px; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 1px;">Acima do Estimado</div>
                 </div>
-                
-                <!-- RESUMO -->
-                <div style="display: flex; justify-content: space-around; margin: 20px; padding: 20px; background: #f3f4f6; border-radius: 10px;">
-                    <div style="text-align: center;">
-                        <div style="font-size: 32px; font-weight: 900; color: #005a2b;">${registrosForaMargem.length}</div>
-                        <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Total Fora da Margem</div>
-                    </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 32px; font-weight: 900; color: #2563eb;">${totalAcima}</div>
-                        <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Acima do Estimado</div>
-                    </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 32px; font-weight: 900; color: #dc2626;">${totalAbaixo}</div>
-                        <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Abaixo do Estimado</div>
-                    </div>
+                <div style="flex: 1; background: linear-gradient(135deg, #c4121a 0%, #dc2626 100%); border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div style="font-size: 36px; font-weight: 900; color: white;">${totalAbaixo}</div>
+                    <div style="font-size: 14px; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 1px;">Abaixo do Estimado</div>
                 </div>
-                
-                <!-- TABELA -->
-                <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px;">
+            </div>
+            
+            <!-- TABELA -->
+            <div style="margin: 20px; overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
                     <thead>
                         <tr style="background-color: #005a2b; color: white;">
-                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: center;">OP</th>
-                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: center;">Data</th>
-                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: center;">Máq</th>
-                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: center;">Turno</th>
-                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: left;">Cliente</th>
-                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: right;">Estimado</th>
-                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: right;">Real</th>
-                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: right;">Diferença</th>
-                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: center;">Status</th>
+                            <th style="padding: 15px; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">OP</th>
+                            <th style="padding: 15px; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Data</th>
+                            <th style="padding: 15px; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Máq</th>
+                            <th style="padding: 15px; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Turno</th>
+                            <th style="padding: 15px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Cliente</th>
+                            <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Estimado</th>
+                            <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Real</th>
+                            <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Diferença</th>
+                            <th style="padding: 15px; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Status</th>
                         </tr>
                     </thead>
                     <tbody>
-        `;
+    `;
+    
+    registrosForaMargem.sort((a, b) => new Date(b.data) - new Date(a.data)).forEach((r, index) => {
+        const diferencaPercentual = ((r.realKgH - r.est) / r.est) * 100;
+        const status = getPerformanceStatus(r.est, r.realKgH);
+        const dataFormatada = r.data.split('-').reverse().join('/');
+        const cliente = r.produto ? r.produto.split(' - ')[0] : r.cliente;
         
-        registrosForaMargem.sort((a, b) => new Date(b.data) - new Date(a.data)).forEach(r => {
-            const diferencaPercentual = ((r.realKgH - r.est) / r.est) * 100;
-            const status = getPerformanceStatus(r.est, r.realKgH);
-            const dataFormatada = r.data.split('-').reverse().join('/');
-            const cliente = r.produto ? r.produto.split(' - ')[0] : r.cliente;
-            
-            let statusClass = '';
-            let statusBg = '';
-            if (diferencaPercentual > 0) {
-                statusClass = 'color: #2563eb;';
-                statusBg = 'background-color: #dbeafe;';
-            } else {
-                statusClass = 'color: #dc2626;';
-                statusBg = 'background-color: #fee2e2;';
-            }
-            
-            conteudo += `
-                <tr style="border: 1px solid #e5e7eb;">
-                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">${r.op}</td>
-                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">${dataFormatada}</td>
-                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">${r.machine}</td>
-                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">${r.turno}</td>
-                    <td style="padding: 10px; border: 1px solid #e5e7eb;">${cliente}</td>
-                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: right;">${r.est} kg/h</td>
-                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: right;">${r.realKgH} kg/h</td>
-                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: right; ${statusClass} font-weight: bold;">${diferencaPercentual > 0 ? '+' : ''}${diferencaPercentual.toFixed(1)}%</td>
-                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">
-                        <span style="display: inline-block; padding: 4px 8px; border-radius: 20px; ${statusBg} ${statusClass} font-weight: bold; font-size: 12px;">
-                            ${status.icone} ${status.texto}
-                        </span>
-                    </td>
-                </tr>
+        // Alternar cores das linhas
+        const bgColor = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+        
+        let statusBadge = '';
+        if (diferencaPercentual > 0) {
+            statusBadge = `
+                <span style="display: inline-block; padding: 6px 12px; background-color: #dbeafe; color: #2563eb; border-radius: 20px; font-weight: 700; font-size: 12px; border: 1px solid #2563eb;">
+                    📈 ACIMA
+                </span>
             `;
-        });
+        } else {
+            statusBadge = `
+                <span style="display: inline-block; padding: 6px 12px; background-color: #fee2e2; color: #c4121a; border-radius: 20px; font-weight: 700; font-size: 12px; border: 1px solid #c4121a;">
+                    📉 ABAIXO
+                </span>
+            `;
+        }
         
         conteudo += `
+            <tr style="background-color: ${bgColor}; border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px; text-align: center; font-weight: 700; color: #005a2b;">${r.op}</td>
+                <td style="padding: 12px; text-align: center;">${dataFormatada}</td>
+                <td style="padding: 12px; text-align: center; font-weight: 600;">${r.machine}</td>
+                <td style="padding: 12px; text-align: center;">${r.turno}</td>
+                <td style="padding: 12px; text-align: left;">${cliente}</td>
+                <td style="padding: 12px; text-align: right; font-weight: 600;">${r.est} kg/h</td>
+                <td style="padding: 12px; text-align: right; font-weight: 600;">${r.realKgH} kg/h</td>
+                <td style="padding: 12px; text-align: right; font-weight: 700; ${diferencaPercentual > 0 ? 'color: #2563eb;' : 'color: #c4121a;'}">${diferencaPercentual > 0 ? '+' : ''}${diferencaPercentual.toFixed(1)}%</td>
+                <td style="padding: 12px; text-align: center;">${statusBadge}</td>
+            </tr>
+        `;
+    });
+    
+    conteudo += `
                     </tbody>
                 </table>
-                
-                <!-- FOOTER -->
-                <div style="margin-top: 30px; padding: 20px; background-color: #f9fafb; border-radius: 0 0 15px 15px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
-                    <p style="margin: 5px 0;">Relatório gerado em ${new Date().toLocaleDateString('pt-PT')} às ${new Date().toLocaleTimeString('pt-PT')}</p>
-                    <p style="margin: 5px 0; font-weight: bold;">Total de pedidos fora da margem: ${registrosForaMargem.length}</p>
-                    <p style="margin: 5px 0; color: #9ca3af;">Este relatório deve ser enviado ao PCP para ajuste dos parâmetros de produção.</p>
+            </div>
+            
+            <!-- RODAPÉ -->
+            <div style="margin: 20px; padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 15px; border-top: 3px solid #005a2b;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <div style="font-size: 14px; color: #1f2937;">
+                            <span style="font-weight: 700;">📅 Período:</span> ${dataInicial} a ${dataFinal}
+                        </div>
+                        <div style="font-size: 14px; color: #1f2937; margin-top: 5px;">
+                            <span style="font-weight: 700;">📊 Total de pedidos:</span> ${registrosForaMargem.length}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 14px; color: #1f2937;">
+                            <span style="font-weight: 700;">🕒 Gerado em:</span> ${new Date().toLocaleDateString('pt-PT')} às ${new Date().toLocaleTimeString('pt-PT')}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">
+                            Relatório para PCP - Ajuste de parâmetros
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #cbd5e1; text-align: center;">
+                    <span style="display: inline-block; padding: 8px 20px; background-color: #005a2b; color: white; border-radius: 30px; font-size: 12px; font-weight: 700; letter-spacing: 1px;">
+                        LUSITANO - OEE EXTRUSORAS
+                    </span>
                 </div>
             </div>
-        `;
+        </div>
+    `;
+    
+    // Criar elemento temporário para capturar
+    const elementoRelatorio = document.createElement('div');
+    elementoRelatorio.innerHTML = conteudo;
+    elementoRelatorio.style.position = 'absolute';
+    elementoRelatorio.style.left = '-9999px';
+    elementoRelatorio.style.top = '-9999px';
+    elementoRelatorio.style.width = '1200px';
+    document.body.appendChild(elementoRelatorio);
+    
+    // Capturar como imagem
+    html2canvas(elementoRelatorio, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+        allowTaint: true,
+        useCORS: true
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `relatorio-pcp-${new Date().toISOString().split('T')[0]}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
         
-        // Criar elemento temporário para capturar
-        const elementoRelatorio = document.createElement('div');
-        elementoRelatorio.innerHTML = conteudo;
-        elementoRelatorio.style.position = 'absolute';
-        elementoRelatorio.style.left = '-9999px';
-        elementoRelatorio.style.top = '-9999px';
-        elementoRelatorio.style.width = '1200px';
-        document.body.appendChild(elementoRelatorio);
-        
-        // Capturar como imagem
-        html2canvas(elementoRelatorio, {
-            scale: 2,
-            backgroundColor: '#ffffff',
-            logging: false,
-            allowTaint: true,
-            useCORS: true
-        }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `relatorio-pcp-${new Date().toISOString().split('T')[0]}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            
-            document.body.removeChild(elementoRelatorio);
-            showToast(`📊 Relatório PCP gerado com ${registrosForaMargem.length} pedidos!`);
-        }).catch(error => {
-            console.error('Erro ao gerar relatório:', error);
-            showErrorToast('Erro ao gerar relatório PCP!');
-            document.body.removeChild(elementoRelatorio);
-        });
-    }
+        document.body.removeChild(elementoRelatorio);
+        showToast(`📊 Relatório PCP gerado com ${registrosForaMargem.length} pedidos!`);
+    }).catch(error => {
+        console.error('Erro ao gerar relatório:', error);
+        showErrorToast('Erro ao gerar relatório PCP!');
+        document.body.removeChild(elementoRelatorio);
+    });
+}
 
     function openEditModal(id) {
         const reg = historico.find(h => h.id === id);

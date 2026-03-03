@@ -747,6 +747,134 @@
             color: #dc2626;
             font-weight: 700;
         }
+        
+        /* Estilos para o relatório PCP */
+        .pcp-header {
+            background: linear-gradient(135deg, #005a2b 0%, #00803d 100%);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+        
+        .pcp-title {
+            font-size: 32px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .pcp-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .pcp-periodo {
+            background: #f3f4f6;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            border-bottom: 3px solid #005a2b;
+        }
+        
+        .pcp-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        
+        .pcp-table th {
+            background-color: #005a2b;
+            color: white;
+            font-weight: 700;
+            padding: 12px;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        
+        .pcp-table td {
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .pcp-table tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        
+        .pcp-table tr:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .pcp-status-acima {
+            color: #2563eb;
+            font-weight: 700;
+            background-color: #dbeafe;
+            padding: 4px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .pcp-status-dentro {
+            color: #059669;
+            font-weight: 700;
+            background-color: #d1fae5;
+            padding: 4px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .pcp-status-abaixo {
+            color: #dc2626;
+            font-weight: 700;
+            background-color: #fee2e2;
+            padding: 4px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .pcp-footer {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9fafb;
+            border-radius: 0 0 15px 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .pcp-resumo {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f3f4f6;
+            border-radius: 10px;
+        }
+        
+        .pcp-resumo-item {
+            text-align: center;
+        }
+        
+        .pcp-resumo-valor {
+            font-size: 28px;
+            font-weight: 900;
+            color: #005a2b;
+        }
+        
+        .pcp-resumo-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -895,12 +1023,20 @@
             <!-- Gráficos de Perdas -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <div class="chart-container">
-                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Perdas por Máquina - Detalhado (min)</h3>
+                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Perdas por Máquina - Setup vs Paradas</h3>
                     <div class="h-[250px]"><canvas id="perdasMaquinaDetalheChart"></canvas></div>
                 </div>
                 <div class="chart-container">
                     <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Perdas por Motivo (min)</h3>
                     <div class="h-[250px]"><canvas id="perdasMotivoChart"></canvas></div>
+                </div>
+            </div>
+            
+            <!-- NOVO GRÁFICO: Perdas por Tipo (Setup, Paradas, Aparas) -->
+            <div class="grid grid-cols-1 gap-8 mb-8">
+                <div class="chart-container">
+                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Perdas por Tipo - Setup, Paradas e Aparas (min)</h3>
+                    <div class="h-[300px]"><canvas id="perdasTipoChart"></canvas></div>
                 </div>
             </div>
             
@@ -925,7 +1061,7 @@
                                 <th class="pb-4">Cliente/Produto</th>
                                 <th class="pb-4 text-center">Setup (min)</th>
                                 <th class="pb-4 text-center">Paradas (min)</th>
-                                <th class="pb-4 text-center">Aparas (kg)</th>
+                                <th class="pb-4 text-center">Aparas (min)</th>
                                 <th class="pb-4 text-center">Total Perda</th>
                                 <th class="pb-4">Motivo Principal</th>
                             </tr>
@@ -1780,7 +1916,7 @@
     ];
 
     let trendChart, pillarChart, shiftChart, perdasMaquinaChart;
-    let perdasMaquinaDetalheChart, perdasMotivoChart, perdasEvolucaoChart;
+    let perdasMaquinaDetalheChart, perdasMotivoChart, perdasEvolucaoChart, perdasTipoChart;
     const META = 85;
     const MARGEM_PERFORMANCE = 10; // Margem de 10% para performance
     const TURNOS = {
@@ -2131,7 +2267,7 @@
     // Para análise por OP - com margem de 10%
     // ============================================
     function getPerformanceStatus(est, real) {
-        if (!est || est <= 0) return { texto: "SEM ESTIMATIVA", cor: "text-gray-500", icone: "📊" };
+        if (!est || est <= 0) return { texto: "SEM ESTIMATIVA", cor: "text-gray-500", icone: "📊", bgCor: "bg-gray-100" };
         
         const diferencaPercentual = ((real - est) / est) * 100;
         
@@ -2139,6 +2275,7 @@
             return { 
                 texto: "ACIMA DO ESTIMADO", 
                 cor: "text-blue-600",
+                bgCor: "bg-blue-100",
                 icone: "📈",
                 detalhe: `+${diferencaPercentual.toFixed(1)}%`
             };
@@ -2147,6 +2284,7 @@
             return { 
                 texto: "ABAIXO DO ESTIMADO", 
                 cor: "text-red-600",
+                bgCor: "bg-red-100",
                 icone: "📉",
                 detalhe: `${diferencaPercentual.toFixed(1)}%`
             };
@@ -2155,10 +2293,28 @@
             return { 
                 texto: "DENTRO DO ESTIMADO", 
                 cor: "text-green-600",
+                bgCor: "bg-green-100",
                 icone: "✓",
                 detalhe: "margem 10%"
             };
         }
+    }
+
+    // ============================================
+    // FUNÇÃO: calcularAparasEmMinutos()
+    // Converte kg de aparas para minutos de perda
+    // ============================================
+    function calcularAparasEmMinutos(aparasKg, realKgH, horas) {
+        if (!aparasKg || aparasKg <= 0 || !realKgH || realKgH <= 0) return 0;
+        
+        // Se não temos horas, estimamos 1 hora
+        const horasEfetivas = horas > 0 ? horas : 1;
+        
+        // Taxa de produção em kg/min
+        const kgPorMinuto = realKgH / 60;
+        
+        // Minutos perdidos com aparas
+        return Math.round(aparasKg / kgPorMinuto);
     }
 
     function atualizarPreview() {
@@ -2354,29 +2510,59 @@
             return;
         }
         
+        // Calcular estatísticas
+        const totalAcima = registrosForaMargem.filter(r => ((r.realKgH - r.est) / r.est) * 100 > MARGEM_PERFORMANCE).length;
+        const totalAbaixo = registrosForaMargem.filter(r => ((r.realKgH - r.est) / r.est) * 100 < -MARGEM_PERFORMANCE).length;
+        
         // Criar conteúdo do relatório
         const dataInicial = startDate.split('-').reverse().join('/');
         const dataFinal = endDate.split('-').reverse().join('/');
         
         let conteudo = `
-            <div style="font-family: Arial, sans-serif; padding: 20px;">
-                <h1 style="color: #005a2b; text-align: center;">RELATÓRIO PARA PCP</h1>
-                <h2 style="color: #333; text-align: center;">Pedidos fora da margem de ${MARGEM_PERFORMANCE}%</h2>
-                <p style="text-align: center; font-size: 14px; color: #666;">Período: ${dataInicial} a ${dataFinal}</p>
-                <hr style="border: 1px solid #005a2b; margin: 20px 0;">
+            <div style="font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
                 
-                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <!-- HEADER -->
+                <div style="background: linear-gradient(135deg, #005a2b 0%, #00803d 100%); color: white; padding: 30px 20px; text-align: center;">
+                    <div style="font-size: 40px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">LUSITANO</div>
+                    <div style="font-size: 18px; opacity: 0.9; font-weight: 300;">Embalagens Plásticas</div>
+                    <div style="font-size: 28px; font-weight: 700; margin-top: 20px; text-transform: uppercase;">RELATÓRIO PARA PCP</div>
+                    <div style="font-size: 16px; margin-top: 5px; opacity: 0.9;">Pedidos fora da margem de ${MARGEM_PERFORMANCE}%</div>
+                </div>
+                
+                <!-- PERÍODO -->
+                <div style="background: #f3f4f6; padding: 15px; text-align: center; font-size: 18px; font-weight: 700; color: #1f2937; border-bottom: 3px solid #005a2b;">
+                    📅 Período: ${dataInicial} a ${dataFinal}
+                </div>
+                
+                <!-- RESUMO -->
+                <div style="display: flex; justify-content: space-around; margin: 20px; padding: 20px; background: #f3f4f6; border-radius: 10px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 32px; font-weight: 900; color: #005a2b;">${registrosForaMargem.length}</div>
+                        <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Total Fora da Margem</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 32px; font-weight: 900; color: #2563eb;">${totalAcima}</div>
+                        <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Acima do Estimado</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 32px; font-weight: 900; color: #dc2626;">${totalAbaixo}</div>
+                        <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Abaixo do Estimado</div>
+                    </div>
+                </div>
+                
+                <!-- TABELA -->
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px;">
                     <thead>
                         <tr style="background-color: #005a2b; color: white;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">OP</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Data</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Máq</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Turno</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Cliente</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Estimado</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Real</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Diferença</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
+                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: center;">OP</th>
+                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: center;">Data</th>
+                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: center;">Máq</th>
+                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: center;">Turno</th>
+                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: left;">Cliente</th>
+                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: right;">Estimado</th>
+                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: right;">Real</th>
+                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: right;">Diferença</th>
+                            <th style="padding: 12px; border: 1px solid #005a2b; text-align: center;">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2389,20 +2575,30 @@
             const cliente = r.produto ? r.produto.split(' - ')[0] : r.cliente;
             
             let statusClass = '';
-            if (diferencaPercentual > 0) statusClass = 'color: #2563eb;';
-            else statusClass = 'color: #dc2626;';
+            let statusBg = '';
+            if (diferencaPercentual > 0) {
+                statusClass = 'color: #2563eb;';
+                statusBg = 'background-color: #dbeafe;';
+            } else {
+                statusClass = 'color: #dc2626;';
+                statusBg = 'background-color: #fee2e2;';
+            }
             
             conteudo += `
-                <tr style="border: 1px solid #ddd;">
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.op}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${dataFormatada}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.machine}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.turno}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd;">${cliente}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${r.est} kg/h</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${r.realKgH} kg/h</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right; ${statusClass}">${diferencaPercentual > 0 ? '+' : ''}${diferencaPercentual.toFixed(1)}%</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: center; ${status.cor}">${status.icone} ${status.texto}</td>
+                <tr style="border: 1px solid #e5e7eb;">
+                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">${r.op}</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">${dataFormatada}</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">${r.machine}</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">${r.turno}</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;">${cliente}</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: right;">${r.est} kg/h</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: right;">${r.realKgH} kg/h</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: right; ${statusClass} font-weight: bold;">${diferencaPercentual > 0 ? '+' : ''}${diferencaPercentual.toFixed(1)}%</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">
+                        <span style="display: inline-block; padding: 4px 8px; border-radius: 20px; ${statusBg} ${statusClass} font-weight: bold; font-size: 12px;">
+                            ${status.icone} ${status.texto}
+                        </span>
+                    </td>
                 </tr>
             `;
         });
@@ -2411,9 +2607,11 @@
                     </tbody>
                 </table>
                 
-                <div style="margin-top: 30px; font-size: 12px; color: #666; text-align: center;">
-                    <p>Relatório gerado em ${new Date().toLocaleDateString('pt-PT')} às ${new Date().toLocaleTimeString('pt-PT')}</p>
-                    <p>Total de pedidos fora da margem: ${registrosForaMargem.length}</p>
+                <!-- FOOTER -->
+                <div style="margin-top: 30px; padding: 20px; background-color: #f9fafb; border-radius: 0 0 15px 15px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 5px 0;">Relatório gerado em ${new Date().toLocaleDateString('pt-PT')} às ${new Date().toLocaleTimeString('pt-PT')}</p>
+                    <p style="margin: 5px 0; font-weight: bold;">Total de pedidos fora da margem: ${registrosForaMargem.length}</p>
+                    <p style="margin: 5px 0; color: #9ca3af;">Este relatório deve ser enviado ao PCP para ajuste dos parâmetros de produção.</p>
                 </div>
             </div>
         `;
@@ -2424,6 +2622,7 @@
         elementoRelatorio.style.position = 'absolute';
         elementoRelatorio.style.left = '-9999px';
         elementoRelatorio.style.top = '-9999px';
+        elementoRelatorio.style.width = '1200px';
         document.body.appendChild(elementoRelatorio);
         
         // Capturar como imagem
@@ -3330,14 +3529,10 @@
     }
 
     function renderPerdasChart(data) {
-        const perdas = { M1: { setup: 0, avaria: 0, aparas: 0 }, M2: { setup: 0, avaria: 0, aparas: 0 }, M3: { setup: 0, avaria: 0, aparas: 0 } };
-        
+        const perdas = { M1: 0, M2: 0, M3: 0 };
         data.forEach(reg => {
             if (reg.machine && perdas.hasOwnProperty(reg.machine)) {
-                perdas[reg.machine].setup += reg.setup || 0;
-                perdas[reg.machine].avaria += reg.avaria || 0;
-                // Aparas em kg, mas vamos considerar como minutos equivalentes para o gráfico
-                // Ou podemos manter separado
+                perdas[reg.machine] += (reg.setup || 0) + (reg.avaria || 0);
             }
         });
         
@@ -3350,18 +3545,11 @@
             type: 'bar',
             data: {
                 labels: ['M1', 'M2', 'M3'],
-                datasets: [
-                    {
-                        label: 'Setup (min)',
-                        data: [perdas.M1.setup, perdas.M2.setup, perdas.M3.setup],
-                        backgroundColor: '#f59e0b'
-                    },
-                    {
-                        label: 'Paradas (min)',
-                        data: [perdas.M1.avaria, perdas.M2.avaria, perdas.M3.avaria],
-                        backgroundColor: '#ef4444'
-                    }
-                ]
+                datasets: [{
+                    label: 'Perdas (minutos)',
+                    data: [perdas.M1, perdas.M2, perdas.M3],
+                    backgroundColor: ['#005a2b', '#c4121a', '#FFD700']
+                }]
             },
             options: {
                 responsive: true,
@@ -3380,37 +3568,53 @@
     }
 
     function renderPerdasView(data) {
-        const perdasMaq = { M1: { setup: 0, avaria: 0 }, M2: { setup: 0, avaria: 0 }, M3: { setup: 0, avaria: 0 } };
+        const perdasMaq = { 
+            M1: { setup: 0, avaria: 0, aparas: 0 }, 
+            M2: { setup: 0, avaria: 0, aparas: 0 }, 
+            M3: { setup: 0, avaria: 0, aparas: 0 } 
+        };
         const perdasMot = {};
         const perdasDia = {};
+        
+        // Para cálculo de aparas em minutos
+        const perdasAparas = { M1: 0, M2: 0, M3: 0 };
         
         data.forEach(reg => {
             const setup = reg.setup || 0;
             const avaria = reg.avaria || 0;
+            const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
+            
+            // Calcular aparas em minutos
+            const aparasMin = calcularAparasEmMinutos(reg.aparas || 0, reg.realKgH, horas);
             
             if (reg.machine && perdasMaq.hasOwnProperty(reg.machine)) {
                 perdasMaq[reg.machine].setup += setup;
                 perdasMaq[reg.machine].avaria += avaria;
+                perdasMaq[reg.machine].aparas += aparasMin;
+                perdasAparas[reg.machine] += aparasMin;
             }
             
-            // Agrupar por motivo (incluindo Setup como motivo)
+            // Agrupar por motivo (incluindo Setup e Aparas como motivos)
             if (setup > 0) {
                 perdasMot['Setup'] = (perdasMot['Setup'] || 0) + setup;
             }
             if (reg.motivoPerda && avaria > 0) {
                 perdasMot[reg.motivoPerda] = (perdasMot[reg.motivoPerda] || 0) + avaria;
             }
+            if (aparasMin > 0) {
+                perdasMot['Aparas'] = (perdasMot['Aparas'] || 0) + aparasMin;
+            }
             
-            // Perdas totais por dia
+            // Perdas totais por dia (setup + avaria + aparas)
             if (reg.data) {
-                perdasDia[reg.data] = (perdasDia[reg.data] || 0) + setup + avaria;
+                perdasDia[reg.data] = (perdasDia[reg.data] || 0) + setup + avaria + aparasMin;
             }
         });
         
         // Top máquina (considerando total de perdas)
         let topMaq = '--', topMaqVal = 0;
         Object.entries(perdasMaq).forEach(([m, v]) => {
-            const total = v.setup + v.avaria;
+            const total = v.setup + v.avaria + v.aparas;
             if (total > topMaqVal) { 
                 topMaqVal = total; 
                 topMaq = m; 
@@ -3478,7 +3682,50 @@
             });
         }
         
-        // Gráfico de perdas por motivo (incluindo Setup)
+        // NOVO GRÁFICO: Perdas por Tipo (Setup, Paradas, Aparas)
+        const ctxTipo = document.getElementById('perdasTipoChart')?.getContext('2d');
+        if (ctxTipo) {
+            if (perdasTipoChart) perdasTipoChart.destroy();
+            
+            perdasTipoChart = new Chart(ctxTipo, {
+                type: 'bar',
+                data: {
+                    labels: ['M1', 'M2', 'M3'],
+                    datasets: [
+                        { 
+                            label: 'Setup', 
+                            data: [perdasMaq.M1.setup, perdasMaq.M2.setup, perdasMaq.M3.setup], 
+                            backgroundColor: '#f59e0b' 
+                        },
+                        { 
+                            label: 'Paradas', 
+                            data: [perdasMaq.M1.avaria, perdasMaq.M2.avaria, perdasMaq.M3.avaria], 
+                            backgroundColor: '#ef4444' 
+                        },
+                        { 
+                            label: 'Aparas', 
+                            data: [perdasMaq.M1.aparas, perdasMaq.M2.aparas, perdasMaq.M3.aparas], 
+                            backgroundColor: '#10b981' 
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        datalabels: { 
+                            anchor: 'end', 
+                            align: 'top', 
+                            formatter: val => val + ' min', 
+                            font: { weight: 'bold', size: 10 } 
+                        } 
+                    },
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
+                }
+            });
+        }
+        
+        // Gráfico de perdas por motivo (incluindo Setup e Aparas)
         const ctxMot = document.getElementById('perdasMotivoChart')?.getContext('2d');
         if (ctxMot) {
             if (perdasMotivoChart) perdasMotivoChart.destroy();
@@ -3497,7 +3744,7 @@
                     labels: Object.keys(motivosOrdenados),
                     datasets: [{ 
                         data: Object.values(motivosOrdenados), 
-                        backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#10b981', '#64748b', '#ec4899', '#14b8a6'] 
+                        backgroundColor: ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#64748b', '#ec4899', '#14b8a6'] 
                     }]
                 },
                 options: {
@@ -3546,10 +3793,11 @@
         data.sort((a, b) => new Date(b.data) - new Date(a.data)).forEach(reg => {
             const setup = reg.setup || 0;
             const avaria = reg.avaria || 0;
-            const aparas = reg.aparas || 0;
-            const total = setup + avaria;
+            const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
+            const aparasMin = calcularAparasEmMinutos(reg.aparas || 0, reg.realKgH, horas);
+            const total = setup + avaria + aparasMin;
             
-            if (total > 0 || aparas > 0) {
+            if (total > 0) {
                 const motivoClass = reg.motivoPerda ? `perda-${reg.motivoPerda.toLowerCase().replace(/ /g, '-')}` : '';
                 tbody.innerHTML += `
                     <tr>
@@ -3560,9 +3808,9 @@
                         <td class="py-2">${reg.produto || '-'}</td>
                         <td class="py-2 text-center ${setup > 0 ? 'text-orange-600 font-bold' : ''}">${setup}</td>
                         <td class="py-2 text-center ${avaria > 0 ? 'text-red-600 font-bold' : ''}">${avaria}</td>
-                        <td class="py-2 text-center ${aparas > 0 ? 'text-yellow-600 font-bold' : ''}">${aparas}</td>
+                        <td class="py-2 text-center ${aparasMin > 0 ? 'text-green-600 font-bold' : ''}">${aparasMin}</td>
                         <td class="py-2 text-center font-bold text-red-600">${total}</td>
-                        <td class="py-2"><span class="perda-badge ${motivoClass}">${reg.motivoPerda || (setup > 0 ? 'Setup' : '-')}</span></td>
+                        <td class="py-2"><span class="perda-badge ${motivoClass}">${reg.motivoPerda || (setup > 0 ? 'Setup' : (aparasMin > 0 ? 'Aparas' : '-'))}</span></td>
                     </tr>
                 `;
             }
@@ -3823,7 +4071,7 @@
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesOP('${op}')">
                     <div class="flex justify-between items-start mb-3">
                         <div><span class="font-black text-xl text-green-700">OP ${op}</span><span class="ml-3 text-sm font-medium text-slate-500">${p.produto||'-'}</span></div>
-                        <span class="text-sm font-bold px-3 py-1 rounded-full ${statusPerf.cor.replace('text-', 'bg-').replace('600', '100')} ${statusPerf.cor}">
+                        <span class="text-sm font-bold px-3 py-1 rounded-full ${statusPerf.bgCor} ${statusPerf.cor}">
                             ${statusPerf.icone} ${statusPerf.texto}
                         </span>
                     </div>

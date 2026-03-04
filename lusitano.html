@@ -748,7 +748,6 @@
             font-weight: 700;
         }
         
-        /* Estilos para o relatório PCP */
         .pcp-header {
             background: linear-gradient(135deg, #005a2b 0%, #00803d 100%);
             color: white;
@@ -1281,7 +1280,7 @@
                 </div>
 
                 <!-- ============================================ -->
-                <!-- NOVA SEÇÃO: MÚLTIPLOS TURNOS COM DATA -->
+                <!-- SEÇÃO: MÚLTIPLOS TURNOS COM DATA -->
                 <!-- ============================================ -->
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
                     <div class="flex justify-between items-center mb-3">
@@ -1337,30 +1336,29 @@
                         </div>
                     </div>
                     
+                    <!-- ============================================ -->
+                    <!-- SEÇÃO: REGISTRO DETALHADO DE PARADAS -->
+                    <!-- ============================================ -->
+                    <div class="bg-purple-50 p-3 rounded-lg border border-purple-200 mb-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-[9px] font-bold uppercase text-purple-700">
+                                ⏱️ PARADAS DETALHADAS DESTE TURNO
+                            </label>
+                            <button type="button" onclick="adicionarParadaDetalhada()" 
+                                class="text-xs bg-purple-600 text-white px-2 py-0.5 rounded font-bold hover:bg-purple-700">
+                                + Adicionar Parada
+                            </button>
+                        </div>
+                        
+                        <div id="paradas-detalhadas-container" class="space-y-2 mb-2"></div>
+                        
+                        <p class="text-[8px] text-purple-600">
+                            ⚡ As paradas serão vinculadas a este turno e salvas no histórico
+                        </p>
+                    </div>
+                    
                     <!-- Lista de turnos adicionados -->
-                    <div id="turnos-lista" class="space-y-2 max-h-40 overflow-y-auto mb-3"></div>
-                </div>
-
-                <!-- ============================================ -->
-                <!-- NOVA SEÇÃO: REGISTRO DETALHADO DE PARADAS -->
-                <!-- ============================================ -->
-                <div class="bg-purple-50 p-4 rounded-xl border border-purple-200">
-                    <div class="flex justify-between items-center mb-3">
-                        <label class="block text-[10px] font-bold uppercase text-purple-700 tracking-widest">
-                            ⏱️ REGISTRO DETALHADO DE PARADAS (opcional)
-                        </label>
-                        <button type="button" onclick="adicionarParadaDetalhada()" 
-                            class="text-xs bg-purple-600 text-white px-3 py-1 rounded-lg font-bold hover:bg-purple-700">
-                            + Adicionar Parada
-                        </button>
-                    </div>
-                    
-                    <div id="paradas-detalhadas-container" class="space-y-2 mb-3"></div>
-                    
-                    <div class="bg-purple-100 p-2 rounded-lg text-[10px] text-purple-800">
-                        <strong>📌 Exemplo:</strong> Se a energia acabou 01:40 e voltou 11:10 do dia seguinte, 
-                        registre como: <span class="font-bold">Início 01:40 | Fim 11:10 | Motivo Falta de Energia</span>
-                    </div>
+                    <div id="turnos-lista" class="space-y-2 max-h-60 overflow-y-auto mt-3"></div>
                 </div>
 
                 <div class="bg-slate-800 text-white p-6 rounded-2xl">
@@ -2410,8 +2408,8 @@
         
         const inputs = div.querySelectorAll('input, select');
         inputs.forEach(input => {
-            input.addEventListener('change', atualizarTotalParadas);
-            input.addEventListener('input', atualizarTotalParadas);
+            input.addEventListener('change', atualizarTotalParadasPreview);
+            input.addEventListener('input', atualizarTotalParadasPreview);
         });
         
         paradasDetalhadas.push({ 
@@ -2427,44 +2425,25 @@
         if (div) div.remove();
         
         paradasDetalhadas = paradasDetalhadas.filter(p => p.index !== index);
-        atualizarTotalParadas();
+        atualizarTotalParadasPreview();
     }
 
-    function atualizarTotalParadas() {
+    function atualizarTotalParadasPreview() {
         let totalMinutos = 0;
-        let motivoPrincipal = '';
-        let maiorDuracao = 0;
         
         paradasDetalhadas.forEach((p, idx) => {
             const inicio = document.getElementById(`parada-inicio-${idx}`)?.value;
             const fim = document.getElementById(`parada-fim-${idx}`)?.value;
-            const motivo = document.getElementById(`parada-motivo-${idx}`)?.value;
             
             if (inicio && fim) {
                 const minutosInicio = horaParaMinutos(inicio);
                 let minutosFim = horaParaMinutos(fim);
-                
-                if (minutosFim < minutosInicio) {
-                    minutosFim += 24 * 60;
-                }
-                
-                const duracao = minutosFim - minutosInicio;
-                totalMinutos += duracao;
-                
-                if (duracao > maiorDuracao && motivo) {
-                    maiorDuracao = duracao;
-                    motivoPrincipal = motivo;
-                }
+                if (minutosFim < minutosInicio) minutosFim += 24 * 60;
+                totalMinutos += minutosFim - minutosInicio;
             }
         });
         
-        document.getElementById('regAvaria').value = totalMinutos;
-        
-        if (motivoPrincipal) {
-            document.getElementById('regMotivoPerda').value = motivoPrincipal;
-        }
-        
-        atualizarPreview();
+        document.getElementById('novoTurnoAvaria').value = totalMinutos;
     }
 
     // ============================================
@@ -2493,17 +2472,44 @@
             return;
         }
         
+        const paradasDesteTurno = [];
+        paradasDetalhadas.forEach((p, idx) => {
+            const inicioParada = document.getElementById(`parada-inicio-${idx}`)?.value;
+            const fimParada = document.getElementById(`parada-fim-${idx}`)?.value;
+            const motivoParada = document.getElementById(`parada-motivo-${idx}`)?.value;
+            
+            if (inicioParada && fimParada) {
+                paradasDesteTurno.push({
+                    inicio: inicioParada,
+                    fim: fimParada,
+                    motivo: motivoParada
+                });
+            }
+        });
+        
+        let totalParadas = avaria;
+        if (paradasDesteTurno.length > 0) {
+            totalParadas = 0;
+            paradasDesteTurno.forEach(p => {
+                const minutosInicio = horaParaMinutos(p.inicio);
+                let minutosFim = horaParaMinutos(p.fim);
+                if (minutosFim < minutosInicio) minutosFim += 24 * 60;
+                totalParadas += minutosFim - minutosInicio;
+            });
+        }
+        
         turnosTemp.push({
             data: data,
             turno: turno,
             inicio: inicio,
             fim: fim,
             setup: setup,
-            avaria: avaria,
+            avaria: totalParadas,
             produzido: produzido,
             rejeicao: rejeicao,
             aparas: aparas,
-            motivoPerda: motivoPerda
+            motivoPerda: motivoPerda,
+            paradasDetalhadas: paradasDesteTurno
         });
         
         document.getElementById('novoTurnoData').value = '';
@@ -2514,9 +2520,14 @@
         document.getElementById('novoTurnoAvaria').value = '0';
         document.getElementById('novoTurnoMotivo').value = '';
         
+        paradasDetalhadas = [];
+        document.getElementById('paradas-detalhadas-container').innerHTML = '';
+        
         atualizarListaTurnos();
         marcarDadosPendentes();
-        showToast(`Turno ${turno} (${data}) adicionado!`);
+        
+        const totalParadasMsg = totalParadas > 0 ? ` (${totalParadas}min paradas)` : '';
+        showToast(`✅ Turno ${turno} (${data}) adicionado${totalParadasMsg}`);
     }
 
     function atualizarListaTurnos() {
@@ -2532,30 +2543,73 @@
             const duracao = calcularDuracaoHoras(turno.inicio, turno.fim).toFixed(1);
             const dataFormatada = turno.data.split('-').reverse().join('/');
             
-            container.innerHTML += `
-                <div class="flex items-center justify-between bg-white p-3 rounded-lg border-l-4 ${turno.avaria > 0 ? 'border-red-500' : 'border-green-500'} shadow-sm mb-2">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1 flex-wrap">
-                            <span class="font-bold text-sm bg-blue-100 px-2 py-0.5 rounded">${dataFormatada}</span>
-                            <span class="font-bold text-sm">Turno ${turno.turno}</span>
-                            <span class="text-xs bg-slate-100 px-2 py-0.5 rounded">${turno.inicio} - ${turno.fim} (${duracao}h)</span>
+            const tempoProdutivo = (calcularDuracaoHoras(turno.inicio, turno.fim) * 60) - turno.setup - turno.avaria;
+            const perf = turno.produzido > 0 && tempoProdutivo > 0 
+                ? Math.min(100, Math.round((turno.produzido / (tempoProdutivo/60)) / (document.getElementById('regEst').value || 90) * 100))
+                : 0;
+            
+            let html = `
+                <div class="bg-white p-3 rounded-lg border-l-4 ${turno.avaria > 0 ? 'border-red-500' : 'border-green-500'} shadow-sm mb-2">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="font-bold text-sm bg-blue-100 px-2 py-0.5 rounded">${dataFormatada}</span>
+                                <span class="font-bold text-sm">Turno ${turno.turno}</span>
+                                <span class="text-xs bg-slate-100 px-2 py-0.5 rounded">${turno.inicio} - ${turno.fim} (${duracao}h)</span>
+                                <span class="text-xs ${perf >= 90 ? 'text-green-600' : 'text-orange-600'} font-bold">
+                                    Perf: ${perf}%
+                                </span>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 text-xs flex-wrap">
+                                <span class="font-medium">📦 Prod: ${turno.produzido} kg</span>
+                                <span class="${turno.setup > 0 ? 'text-orange-600' : 'text-slate-400'}">⚙️ Setup: ${turno.setup} min</span>
+                                <span class="${turno.avaria > 0 ? 'text-red-600 font-bold' : 'text-slate-400'}">⏸️ Parada: ${turno.avaria} min</span>
+                                <span class="${turno.aparas > 0 ? 'text-amber-600' : 'text-slate-400'}">✂️ Aparas: ${turno.aparas} kg</span>
+                            </div>
+            `;
+            
+            if (turno.paradasDetalhadas && turno.paradasDetalhadas.length > 0) {
+                html += `<div class="mt-2 pl-2 border-l-2 border-purple-200">`;
+                turno.paradasDetalhadas.forEach(p => {
+                    html += `
+                        <div class="text-[10px] text-purple-700 flex items-center gap-1">
+                            <span>⏱️ ${p.inicio} - ${p.fim}</span>
+                            <span class="font-medium">${p.motivo || 'Sem motivo'}</span>
                         </div>
-                        <div class="flex items-center gap-3 text-xs flex-wrap">
-                            <span class="font-medium">📦 Prod: ${turno.produzido} kg</span>
-                            <span class="${turno.setup > 0 ? 'text-orange-600' : 'text-slate-400'}">⚙️ Setup: ${turno.setup} min</span>
-                            <span class="${turno.avaria > 0 ? 'text-red-600 font-bold' : 'text-slate-400'}">⏸️ Parada: ${turno.avaria} min</span>
-                            <span class="${turno.aparas > 0 ? 'text-amber-600' : 'text-slate-400'}">✂️ Aparas: ${turno.aparas} kg</span>
-                            <span class="text-purple-600 truncate max-w-[200px]">${turno.motivoPerda || 'Sem motivo'}</span>
+                    `;
+                });
+                html += `</div>`;
+            }
+            
+            html += `
                         </div>
+                        <button type="button" onclick="removerTurno(${index})" class="text-red-500 hover:text-red-700 ml-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
                     </div>
-                    <button type="button" onclick="removerTurno(${index})" class="text-red-500 hover:text-red-700 ml-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
                 </div>
             `;
+            
+            container.innerHTML += html;
         });
+        
+        if (turnosTemp.length > 0) {
+            const totalKg = turnosTemp.reduce((acc, t) => acc + t.produzido, 0);
+            const totalHoras = turnosTemp.reduce((acc, t) => acc + calcularDuracaoHoras(t.inicio, t.fim), 0);
+            const totalParadas = turnosTemp.reduce((acc, t) => acc + t.avaria, 0);
+            
+            container.innerHTML += `
+                <div class="bg-green-50 p-3 rounded-lg font-bold text-green-700 flex justify-between items-center mt-3 border border-green-200">
+                    <span>📊 TOTAL: ${turnosTemp.length} turnos</span>
+                    <span>📦 ${totalKg} kg</span>
+                    <span>⏱️ ${totalHoras.toFixed(1)} h</span>
+                    <span class="${totalParadas > 0 ? 'text-red-600' : ''}">⏸️ ${totalParadas} min paradas</span>
+                </div>
+            `;
+        }
     }
 
     function removerTurno(index) {
@@ -2568,9 +2622,7 @@
     // FUNÇÃO CALCULAR E SALVAR - CORRIGIDA
     // ============================================
     async function calcularESalvar() {
-        console.log("🟢 Iniciando cálculo e salvamento...");
-        
-        atualizarTotalParadas();
+        console.log("🟢 Salvando múltiplos turnos...");
         
         const machine = document.getElementById('regMachine').value;
         const op = document.getElementById('regOP').value;
@@ -2603,21 +2655,6 @@
             }
         }
         
-        const paradasDetalhadasJSON = [];
-        paradasDetalhadas.forEach((p, idx) => {
-            const inicio = document.getElementById(`parada-inicio-${idx}`)?.value;
-            const fim = document.getElementById(`parada-fim-${idx}`)?.value;
-            const motivo = document.getElementById(`parada-motivo-${idx}`)?.value;
-            
-            if (inicio && fim) {
-                paradasDetalhadasJSON.push({
-                    inicio,
-                    fim,
-                    motivo
-                });
-            }
-        });
-        
         let registrosSalvos = 0;
         
         for (let t of turnosTemp) {
@@ -2647,7 +2684,7 @@
                 produzido: t.produzido,
                 rejeicao: t.rejeicao,
                 aparas: t.aparas,
-                paradas_detalhadas: JSON.stringify(paradasDetalhadasJSON),
+                paradas_detalhadas: JSON.stringify(t.paradasDetalhadas || []),
                 timestamp: new Date().toISOString()
             };
             

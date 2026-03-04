@@ -1280,15 +1280,87 @@
                     </div>
                 </div>
 
-                <!-- Seção para múltiplos turnos -->
+                <!-- ============================================ -->
+                <!-- NOVA SEÇÃO: MÚLTIPLOS TURNOS COM DATA -->
+                <!-- ============================================ -->
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
                     <div class="flex justify-between items-center mb-3">
-                        <label class="block text-[10px] font-bold uppercase text-blue-700 tracking-widest">🔄 MÚLTIPLOS TURNOS PARA ESTA OP</label>
-                        <button type="button" onclick="adicionarTurnoModal()" class="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg font-bold hover:bg-blue-700">
+                        <label class="block text-[10px] font-bold uppercase text-blue-700 tracking-widest">
+                            🔄 MÚLTIPLOS TURNOS PARA ESTA OP
+                        </label>
+                        <button type="button" onclick="adicionarTurnoModal()" 
+                            class="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg font-bold hover:bg-blue-700">
                             + Adicionar Turno
                         </button>
                     </div>
-                    <div id="turnos-lista" class="space-y-2 max-h-40 overflow-y-auto"></div>
+                    
+                    <!-- Campos para novo turno (com DATA) -->
+                    <div class="grid grid-cols-1 md:grid-cols-7 gap-2 mb-3 bg-white p-3 rounded-lg border border-blue-300">
+                        <div>
+                            <label class="block text-[8px] font-bold uppercase text-slate-400">DATA</label>
+                            <input type="date" id="novoTurnoData" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-bold uppercase text-slate-400">TURNO</label>
+                            <select id="novoTurnoSelect" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-bold uppercase text-slate-400">INÍCIO</label>
+                            <input type="time" id="novoTurnoInicio" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-bold uppercase text-slate-400">FIM</label>
+                            <input type="time" id="novoTurnoFim" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-bold uppercase text-slate-400">PROD.(KG)</label>
+                            <input type="number" id="novoTurnoProduzido" value="0" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-bold uppercase text-slate-400">PARADA(MIN)</label>
+                            <input type="number" id="novoTurnoAvaria" value="0" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-bold uppercase text-slate-400">MOTIVO</label>
+                            <select id="novoTurnoMotivo" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                                <option value="">Sem motivo</option>
+                                <option value="Avaria Elétrica">⚡ Avaria Elétrica</option>
+                                <option value="Avaria Mecânica">🔧 Avaria Mecânica</option>
+                                <option value="Falta de Energia">💡 Falta de Energia</option>
+                                <option value="Setup">⚙️ Setup</option>
+                                <option value="Outros">📌 Outros</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Lista de turnos adicionados -->
+                    <div id="turnos-lista" class="space-y-2 max-h-40 overflow-y-auto mb-3"></div>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- NOVA SEÇÃO: REGISTRO DETALHADO DE PARADAS -->
+                <!-- ============================================ -->
+                <div class="bg-purple-50 p-4 rounded-xl border border-purple-200">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-[10px] font-bold uppercase text-purple-700 tracking-widest">
+                            ⏱️ REGISTRO DETALHADO DE PARADAS (opcional)
+                        </label>
+                        <button type="button" onclick="adicionarParadaDetalhada()" 
+                            class="text-xs bg-purple-600 text-white px-3 py-1 rounded-lg font-bold hover:bg-purple-700">
+                            + Adicionar Parada
+                        </button>
+                    </div>
+                    
+                    <div id="paradas-detalhadas-container" class="space-y-2 mb-3"></div>
+                    
+                    <div class="bg-purple-100 p-2 rounded-lg text-[10px] text-purple-800">
+                        <strong>📌 Exemplo:</strong> Se a energia acabou 01:40 e voltou 11:10 do dia seguinte, 
+                        registre como: <span class="font-bold">Início 01:40 | Fim 11:10 | Motivo Falta de Energia</span>
+                    </div>
                 </div>
 
                 <div class="bg-slate-800 text-white p-6 rounded-2xl">
@@ -1528,6 +1600,7 @@
 
     let historico = [];
     let turnosTemp = [];
+    let paradasDetalhadas = [];
     let autoSaveTimer = null;
     let dadosPendentes = false;
     
@@ -1662,9 +1735,6 @@
         return (minutosFim - minutosInicio) / 60;
     }
 
-    // ============================================
-    // FUNÇÕES CORRIGIDAS DE CÁLCULO
-    // ============================================
     function calcularTempoProdutivoMinutos(inicio, fim, setup, avaria) {
         const minutosInicio = horaParaMinutos(inicio);
         let minutosFim = horaParaMinutos(fim);
@@ -2158,6 +2228,7 @@
                 produzido: novo.produzido,
                 rejeicao: novo.rejeicao,
                 aparas: novo.aparas,
+                paradas_detalhadas: novo.paradas_detalhadas || null,
                 criado_em: novo.timestamp
             };
             
@@ -2217,7 +2288,6 @@
         
         if (registrosBanco && registrosBanco.length > 0) {
             historico = registrosBanco.map(reg => {
-                // Calcular valores corretos
                 const realKgH = calcularRealKgH(
                     reg.produzido || 0, 
                     reg.inicio || '00:00', 
@@ -2270,6 +2340,7 @@
                     produzido: reg.produzido || 0,
                     rejeicao: reg.rejeicao || 0,
                     aparas: reg.aparas || 0,
+                    paradas_detalhadas: reg.paradas_detalhadas || null,
                     timestamp: reg.criado_em || new Date().toISOString(),
                     dispTurno: 0
                 };
@@ -2277,7 +2348,6 @@
             
             console.log(`✅ Processados ${historico.length} registros`);
             
-            // Agrupar por turno e calcular disponibilidade do turno
             const grupos = {};
             historico.forEach(reg => {
                 const key = `${reg.data}-${reg.machine}-${reg.turno}`;
@@ -2304,22 +2374,117 @@
     }
 
     // ============================================
+    // FUNÇÕES PARA PARADAS DETALHADAS
+    // ============================================
+    function adicionarParadaDetalhada() {
+        const container = document.getElementById('paradas-detalhadas-container');
+        const index = paradasDetalhadas.length;
+        
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-2 bg-white p-2 rounded-lg border border-purple-200';
+        div.id = `parada-${index}`;
+        div.innerHTML = `
+            <input type="time" id="parada-inicio-${index}" class="border-2 border-slate-200 p-2 rounded-lg text-sm w-24" placeholder="Início">
+            <span class="text-slate-400">até</span>
+            <input type="time" id="parada-fim-${index}" class="border-2 border-slate-200 p-2 rounded-lg text-sm w-24" placeholder="Fim">
+            <select id="parada-motivo-${index}" class="border-2 border-slate-200 p-2 rounded-lg text-sm flex-1">
+                <option value="">Motivo...</option>
+                <option value="Avaria Elétrica">⚡ Avaria Elétrica</option>
+                <option value="Avaria Mecânica">🔧 Avaria Mecânica</option>
+                <option value="Falta de Energia">💡 Falta de Energia</option>
+                <option value="Manutenção">🛠️ Manutenção</option>
+                <option value="Ajuste">⚙️ Ajuste</option>
+                <option value="Setup">⏱️ Setup</option>
+                <option value="Qualidade">📦 Qualidade</option>
+                <option value="Falta Material">📦 Falta Material</option>
+                <option value="Outros">📌 Outros</option>
+            </select>
+            <button type="button" onclick="removerParadaDetalhada(${index})" class="text-red-500 hover:text-red-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        `;
+        
+        container.appendChild(div);
+        
+        const inputs = div.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('change', atualizarTotalParadas);
+            input.addEventListener('input', atualizarTotalParadas);
+        });
+        
+        paradasDetalhadas.push({ 
+            index, 
+            inicio: '', 
+            fim: '', 
+            motivo: '' 
+        });
+    }
+
+    function removerParadaDetalhada(index) {
+        const div = document.getElementById(`parada-${index}`);
+        if (div) div.remove();
+        
+        paradasDetalhadas = paradasDetalhadas.filter(p => p.index !== index);
+        atualizarTotalParadas();
+    }
+
+    function atualizarTotalParadas() {
+        let totalMinutos = 0;
+        let motivoPrincipal = '';
+        let maiorDuracao = 0;
+        
+        paradasDetalhadas.forEach((p, idx) => {
+            const inicio = document.getElementById(`parada-inicio-${idx}`)?.value;
+            const fim = document.getElementById(`parada-fim-${idx}`)?.value;
+            const motivo = document.getElementById(`parada-motivo-${idx}`)?.value;
+            
+            if (inicio && fim) {
+                const minutosInicio = horaParaMinutos(inicio);
+                let minutosFim = horaParaMinutos(fim);
+                
+                if (minutosFim < minutosInicio) {
+                    minutosFim += 24 * 60;
+                }
+                
+                const duracao = minutosFim - minutosInicio;
+                totalMinutos += duracao;
+                
+                if (duracao > maiorDuracao && motivo) {
+                    maiorDuracao = duracao;
+                    motivoPrincipal = motivo;
+                }
+            }
+        });
+        
+        document.getElementById('regAvaria').value = totalMinutos;
+        
+        if (motivoPrincipal) {
+            document.getElementById('regMotivoPerda').value = motivoPrincipal;
+        }
+        
+        atualizarPreview();
+    }
+
+    // ============================================
     // FUNÇÃO ADICIONAR TURNO MODAL - CORRIGIDA
     // ============================================
     function adicionarTurnoModal() {
-        const data = document.getElementById('regDate').value;
-        const turno = document.getElementById('regTurno').value;
-        const inicio = document.getElementById('regInicio').value;
-        const fim = document.getElementById('regFim').value;
-        const setup = document.getElementById('regSetup').value;
-        const avaria = document.getElementById('regAvaria').value;
-        const produzido = document.getElementById('regProduzido').value;
-        const rejeicao = document.getElementById('regRejeicao').value;
-        const aparas = document.getElementById('regAparas').value;
-        const motivoPerda = document.getElementById('regMotivoPerda').value;
+        const data = document.getElementById('novoTurnoData').value;
+        const turno = document.getElementById('novoTurnoSelect').value;
+        const inicio = document.getElementById('novoTurnoInicio').value;
+        const fim = document.getElementById('novoTurnoFim').value;
+        const produzido = safeNumber(document.getElementById('novoTurnoProduzido').value);
+        const avaria = safeNumber(document.getElementById('novoTurnoAvaria').value);
+        const motivoPerda = document.getElementById('novoTurnoMotivo').value;
+        
+        const setup = safeNumber(document.getElementById('regSetup').value);
+        const rejeicao = safeNumber(document.getElementById('regRejeicao').value);
+        const aparas = safeNumber(document.getElementById('regAparas').value);
         
         if (!data || !turno || !inicio || !fim) {
-            showErrorToast('Preencha data e dados do turno antes de adicionar!');
+            showErrorToast('Preencha todos os dados do turno!');
             return;
         }
         
@@ -2330,31 +2495,28 @@
         
         turnosTemp.push({
             data: data,
-            turno,
-            inicio,
-            fim,
-            setup: safeNumber(setup),
-            avaria: safeNumber(avaria),
-            produzido: safeNumber(produzido),
-            rejeicao: safeNumber(rejeicao),
-            aparas: safeNumber(aparas),
-            motivoPerda
+            turno: turno,
+            inicio: inicio,
+            fim: fim,
+            setup: setup,
+            avaria: avaria,
+            produzido: produzido,
+            rejeicao: rejeicao,
+            aparas: aparas,
+            motivoPerda: motivoPerda
         });
+        
+        document.getElementById('novoTurnoData').value = '';
+        document.getElementById('novoTurnoSelect').value = 'A';
+        document.getElementById('novoTurnoInicio').value = '';
+        document.getElementById('novoTurnoFim').value = '';
+        document.getElementById('novoTurnoProduzido').value = '0';
+        document.getElementById('novoTurnoAvaria').value = '0';
+        document.getElementById('novoTurnoMotivo').value = '';
         
         atualizarListaTurnos();
         marcarDadosPendentes();
-        
-        document.getElementById('regTurno').value = '';
-        document.getElementById('regInicio').value = '';
-        document.getElementById('regFim').value = '';
-        document.getElementById('regSetup').value = '0';
-        document.getElementById('regAvaria').value = '0';
-        document.getElementById('regProduzido').value = '0';
-        document.getElementById('regRejeicao').value = '0';
-        document.getElementById('regAparas').value = '0';
-        document.getElementById('regMotivoPerda').value = '';
-        
-        showToast(`Turno ${turno} (${data}) adicionado à lista!`);
+        showToast(`Turno ${turno} (${data}) adicionado!`);
     }
 
     function atualizarListaTurnos() {
@@ -2371,17 +2533,23 @@
             const dataFormatada = turno.data.split('-').reverse().join('/');
             
             container.innerHTML += `
-                <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-blue-200">
-                    <div>
-                        <span class="font-bold text-sm bg-blue-100 px-2 py-0.5 rounded">${dataFormatada}</span>
-                        <span class="font-bold text-sm ml-2">Turno ${turno.turno}</span>
-                        <span class="text-xs ml-2 text-slate-500">${turno.inicio} - ${turno.fim} (${duracao}h)</span>
-                        <span class="text-xs ml-2 font-medium">Prod: ${turno.produzido} kg</span>
-                        <span class="text-xs ml-2 ${turno.setup > 0 ? 'text-orange-600' : 'text-slate-400'}">Setup: ${turno.setup}min</span>
-                        <span class="text-xs ml-2 ${turno.avaria > 0 ? 'text-red-600' : 'text-slate-400'}">Parada: ${turno.avaria}min</span>
+                <div class="flex items-center justify-between bg-white p-3 rounded-lg border-l-4 ${turno.avaria > 0 ? 'border-red-500' : 'border-green-500'} shadow-sm mb-2">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span class="font-bold text-sm bg-blue-100 px-2 py-0.5 rounded">${dataFormatada}</span>
+                            <span class="font-bold text-sm">Turno ${turno.turno}</span>
+                            <span class="text-xs bg-slate-100 px-2 py-0.5 rounded">${turno.inicio} - ${turno.fim} (${duracao}h)</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs flex-wrap">
+                            <span class="font-medium">📦 Prod: ${turno.produzido} kg</span>
+                            <span class="${turno.setup > 0 ? 'text-orange-600' : 'text-slate-400'}">⚙️ Setup: ${turno.setup} min</span>
+                            <span class="${turno.avaria > 0 ? 'text-red-600 font-bold' : 'text-slate-400'}">⏸️ Parada: ${turno.avaria} min</span>
+                            <span class="${turno.aparas > 0 ? 'text-amber-600' : 'text-slate-400'}">✂️ Aparas: ${turno.aparas} kg</span>
+                            <span class="text-purple-600 truncate max-w-[200px]">${turno.motivoPerda || 'Sem motivo'}</span>
+                        </div>
                     </div>
-                    <button type="button" onclick="removerTurno(${index})" class="text-red-500 hover:text-red-700">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button type="button" onclick="removerTurno(${index})" class="text-red-500 hover:text-red-700 ml-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                     </button>
@@ -2401,6 +2569,8 @@
     // ============================================
     async function calcularESalvar() {
         console.log("🟢 Iniciando cálculo e salvamento...");
+        
+        atualizarTotalParadas();
         
         const machine = document.getElementById('regMachine').value;
         const op = document.getElementById('regOP').value;
@@ -2428,11 +2598,25 @@
         for (let t of turnosTemp) {
             const conflitos = verificarSobreposicao(t.data, machine, t.inicio, t.fim);
             if (conflitos.length > 0) {
-                const conflito = conflitos[0];
                 showErrorToast(`Conflito no Turno ${t.turno} do dia ${t.data}!`);
                 return;
             }
         }
+        
+        const paradasDetalhadasJSON = [];
+        paradasDetalhadas.forEach((p, idx) => {
+            const inicio = document.getElementById(`parada-inicio-${idx}`)?.value;
+            const fim = document.getElementById(`parada-fim-${idx}`)?.value;
+            const motivo = document.getElementById(`parada-motivo-${idx}`)?.value;
+            
+            if (inicio && fim) {
+                paradasDetalhadasJSON.push({
+                    inicio,
+                    fim,
+                    motivo
+                });
+            }
+        });
         
         let registrosSalvos = 0;
         
@@ -2463,6 +2647,7 @@
                 produzido: t.produzido,
                 rejeicao: t.rejeicao,
                 aparas: t.aparas,
+                paradas_detalhadas: JSON.stringify(paradasDetalhadasJSON),
                 timestamp: new Date().toISOString()
             };
             
@@ -2491,6 +2676,8 @@
             limparIndicadorAutosave();
             document.getElementById('regForm').reset();
             turnosTemp = [];
+            paradasDetalhadas = [];
+            document.getElementById('paradas-detalhadas-container').innerHTML = '';
             atualizarListaTurnos();
             closeModal();
             filterByRange();
@@ -2528,6 +2715,8 @@
     function openModal() { 
         document.getElementById('regForm').reset();
         turnosTemp = [];
+        paradasDetalhadas = [];
+        document.getElementById('paradas-detalhadas-container').innerHTML = '';
         atualizarListaTurnos();
         dadosPendentes = false;
         
@@ -2542,7 +2731,17 @@
         document.getElementById('regAparas').value = '0';
         document.getElementById('regPedido').value = '0';
         
+        document.getElementById('novoTurnoData').value = '';
+        document.getElementById('novoTurnoSelect').value = 'A';
+        document.getElementById('novoTurnoInicio').value = '';
+        document.getElementById('novoTurnoFim').value = '';
+        document.getElementById('novoTurnoProduzido').value = '0';
+        document.getElementById('novoTurnoAvaria').value = '0';
+        document.getElementById('novoTurnoMotivo').value = '';
+        
         atualizarSelectClientesProduto();
+        adicionarPreviewListeners();
+        atualizarPreview();
         
         document.getElementById('modal').style.display = 'flex'; 
     }
@@ -2872,7 +3071,11 @@
     }
 
     function renderPerdasView(data) {
-        const perdasMaq = { M1: { setup: 0, avaria: 0, aparas: 0 }, M2: { setup: 0, avaria: 0, aparas: 0 }, M3: { setup: 0, avaria: 0, aparas: 0 } };
+        const perdasMaq = { 
+            M1: { setup: 0, avaria: 0, aparas: 0 }, 
+            M2: { setup: 0, avaria: 0, aparas: 0 }, 
+            M3: { setup: 0, avaria: 0, aparas: 0 } 
+        };
         const perdasMot = {};
         const perdasDia = {};
         
@@ -3674,71 +3877,47 @@
         });
     }
 
-    // ============================================
-    // FUNÇÃO PARA RECALCULAR TODOS OS REGISTROS
-    // ============================================
-    function recalcularTodosRegistros() {
-        console.log("🔄 Recalculando todos os registros...");
-        
-        historico.forEach(reg => {
-            // Recalcular valores
-            reg.realKgH = calcularRealKgH(reg.produzido, reg.inicio, reg.fim, reg.setup, reg.avaria);
-            reg.perf = calcularPerformance(reg.est, reg.produzido, reg.inicio, reg.fim, reg.setup, reg.avaria);
-            reg.disp = calcularDisponibilidadeOP(reg.inicio, reg.fim, reg.setup, reg.avaria);
-            reg.qual = calcularQualidade(reg.produzido, reg.rejeicao, reg.aparas);
-        });
-        
-        // Reagrupar e recalcular disponibilidade do turno
-        const grupos = {};
-        historico.forEach(reg => {
-            const key = `${reg.data}-${reg.machine}-${reg.turno}`;
-            if (!grupos[key]) grupos[key] = [];
-            grupos[key].push(reg);
-        });
-        
-        Object.values(grupos).forEach(grupo => {
-            if (grupo.length > 0) {
-                const dispTurno = calcularDisponibilidadeTurno(grupo);
-                grupo.forEach(op => {
-                    op.dispTurno = dispTurno;
-                });
+    function adicionarPreviewListeners() {
+        const campos = ['regInicio', 'regFim', 'regSetup', 'regAvaria', 'regEst', 'regProduzido', 'regRejeicao', 'regAparas', 'regTurno', 'regOP', 'regProduto'];
+        campos.forEach(campoId => {
+            const campo = document.getElementById(campoId);
+            if (campo) {
+                campo.removeEventListener('input', atualizarPreview);
+                campo.removeEventListener('change', atualizarPreview);
+                campo.addEventListener('input', atualizarPreview);
+                campo.addEventListener('change', atualizarPreview);
             }
         });
-        
-        console.log("✅ Registros recalculados!");
-        filterByRange();
-        showToast("📊 Dados recalculados com sucesso!");
     }
 
-    // ============================================
-    // FUNÇÃO PARA CORRIGIR REGISTROS EXISTENTES
-    // ============================================
-    async function corrigirRegistrosExistentes() {
-        console.log("🔧 Corrigindo registros existentes...");
+    function atualizarPreview() {
+        const inicio = document.getElementById('regInicio')?.value;
+        const fim = document.getElementById('regFim')?.value;
+        const setup = document.getElementById('regSetup')?.value;
+        const avaria = document.getElementById('regAvaria')?.value;
+        const est = document.getElementById('regEst')?.value;
+        const produzido = document.getElementById('regProduzido')?.value;
+        const rejeicao = document.getElementById('regRejeicao')?.value;
+        const aparas = document.getElementById('regAparas')?.value;
         
-        for (let reg of historico) {
-            const valoresCorrigidos = {
-                real_kgh: calcularRealKgH(reg.produzido, reg.inicio, reg.fim, reg.setup, reg.avaria),
-                performance: calcularPerformance(reg.est, reg.produzido, reg.inicio, reg.fim, reg.setup, reg.avaria),
-                disponibilidade: calcularDisponibilidadeOP(reg.inicio, reg.fim, reg.setup, reg.avaria),
-                qualidade: calcularQualidade(reg.produzido, reg.rejeicao, reg.aparas)
-            };
-            
-            // Atualizar no banco
-            await window.supabase
-                .from("oee_registros")
-                .update({
-                    real_kgh: valoresCorrigidos.real_kgh,
-                    performance: valoresCorrigidos.performance,
-                    disponibilidade: valoresCorrigidos.disponibilidade,
-                    qualidade: valoresCorrigidos.qualidade
-                })
-                .eq('id', reg.id);
-        }
+        const dispOP = calcularDisponibilidadeOP(inicio, fim, setup, avaria);
+        const realKgH = calcularRealKgH(produzido, inicio, fim, setup, avaria);
+        const perf = calcularPerformance(est, produzido, inicio, fim, setup, avaria);
+        const qual = calcularQualidade(produzido, rejeicao, aparas);
+        const oee = calcularOEE(dispOP, perf, qual);
         
-        console.log("✅ Registros corrigidos no banco!");
-        await carregarDados();
-        showToast("✅ Registros corrigidos permanentemente!");
+        document.getElementById('previewDispOP').innerText = dispOP + '%';
+        document.getElementById('previewPerf').innerText = perf + '%';
+        document.getElementById('previewQual').innerText = qual + '%';
+        document.getElementById('previewReal').innerText = realKgH;
+        document.getElementById('previewOEE').innerText = oee + '%';
+        
+        const previewOEE = document.getElementById('previewOEE');
+        if (oee >= 85) previewOEE.className = 'text-3xl font-black text-green-400';
+        else if (oee >= 60) previewOEE.className = 'text-3xl font-black text-yellow-400';
+        else previewOEE.className = 'text-3xl font-black text-red-400';
+        
+        marcarDadosPendentes();
     }
 
     // ============================================
@@ -3750,23 +3929,12 @@
         
         await carregarDados();
         
-        // Verificar se os dados carregaram
         setTimeout(() => {
             if (historico.length === 0) {
                 console.log("⚠️ Nenhum dado carregado. Tentando novamente...");
                 carregarDados();
             } else {
                 console.log(`✅ Sistema pronto com ${historico.length} registros!`);
-                
-                // Verificar se algum registro precisa ser recalculado
-                const precisaRecalcular = historico.some(reg => 
-                    reg.realKgH === 0.5 || reg.perf === 0 || reg.disp === 0
-                );
-                
-                if (precisaRecalcular) {
-                    console.log("⚠️ Detectados registros com valores 0.5. Recalculando...");
-                    recalcularTodosRegistros();
-                }
             }
         }, 1000);
         
@@ -3779,9 +3947,8 @@
         atualizarSelectClientesProduto();
         atualizarListaClientesProdutos();
         
-        // Adicionar funções de correção ao objeto window para acesso no console
-        window.recalcularTodosRegistros = recalcularTodosRegistros;
-        window.corrigirRegistrosExistentes = corrigirRegistrosExistentes;
+        adicionarPreviewListeners();
+        atualizarPreview();
     };
     </script>
 </body>

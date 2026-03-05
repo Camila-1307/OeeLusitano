@@ -2166,6 +2166,9 @@
         }
     }
 
+    // ============================================
+    // FUNÇÃO INSERIR REGISTRO - CORRIGIDA (SEM paradas_detalhadas)
+    // ============================================
     async function inserirRegistro(novo) {
         try {
             const registroParaBanco = {
@@ -2189,7 +2192,7 @@
                 produzido: novo.produzido,
                 rejeicao: novo.rejeicao,
                 aparas: novo.aparas,
-                paradas_detalhadas: novo.paradas_detalhadas || null,
+                // paradas_detalhadas: novo.paradas_detalhadas || null, // COMENTADO - coluna não existe no banco
                 criado_em: novo.timestamp
             };
             
@@ -2301,7 +2304,6 @@
                     produzido: reg.produzido || 0,
                     rejeicao: reg.rejeicao || 0,
                     aparas: reg.aparas || 0,
-                    paradas_detalhadas: reg.paradas_detalhadas || null,
                     timestamp: reg.criado_em || new Date().toISOString(),
                     dispTurno: 0
                 };
@@ -2437,7 +2439,7 @@
             return;
         }
         
-        // Coletar paradas detalhadas deste turno
+        // Coletar paradas detalhadas deste turno (só para visualização, não vai para o banco)
         const paradasDesteTurno = [];
         paradasDetalhadas.forEach((p, idx) => {
             const inicioParada = document.getElementById(`parada-inicio-${idx}`)?.value;
@@ -2559,85 +2561,35 @@
         marcarDadosPendentes();
     }
 
-   // ============================================
-// FUNÇÃO CALCULAR E SALVAR - COM MAIS LOGS
-// ============================================
-async function calcularESalvar() {
-    console.log("🟢 Salvando múltiplos turnos...");
-    console.log("Turnos a salvar:", JSON.stringify(turnosTemp, null, 2));
-    
-    if (turnosTemp.length === 0) {
-        console.log("❌ Nenhum turno para salvar");
-        showErrorToast('Adicione pelo menos um turno!');
-        return;
-    }
-    
-    console.log(`📊 Total de turnos: ${turnosTemp.length}`);
-    
-    // Verificar cada turno
-    for (let i = 0; i < turnosTemp.length; i++) {
-        const t = turnosTemp[i];
-        console.log(`\n--- Verificando turno ${i+1} ---`);
-        console.log("Dados completos do turno:", t);
+    // ============================================
+    // FUNÇÃO CALCULAR E SALVAR - CORRIGIDA
+    // ============================================
+    async function calcularESalvar() {
+        console.log("🟢 Salvando múltiplos turnos...");
         
-        // Verificar campos obrigatórios
-        if (!t.data) console.log("❌ data ausente");
-        if (!t.machine) console.log("❌ machine ausente");
-        if (!t.turno) console.log("❌ turno ausente");
-        if (!t.op) console.log("❌ op ausente");
-        if (!t.produtoDisplay) console.log("❌ produtoDisplay ausente");
-        if (!t.inicio) console.log("❌ inicio ausente");
-        if (!t.fim) console.log("❌ fim ausente");
-        
-        if (!t.data || !t.machine || !t.turno || !t.op || !t.produtoDisplay || !t.inicio || !t.fim) {
-            console.log("❌ Turno incompleto:", t);
-            showErrorToast(`Dados incompletos no turno ${t.turno || i+1}!`);
+        if (turnosTemp.length === 0) {
+            showErrorToast('Adicione pelo menos um turno!');
             return;
         }
-    }
-    
-    // Verificar conflitos
-    console.log("\n--- Verificando conflitos ---");
-    for (let t of turnosTemp) {
-        console.log(`Verificando conflito para: ${t.data} ${t.machine} ${t.inicio}-${t.fim}`);
-        const conflitos = verificarSobreposicao(t.data, t.machine, t.inicio, t.fim);
-        if (conflitos.length > 0) {
-            console.log("❌ Conflito encontrado:", conflitos);
-            showErrorToast(`Conflito no Turno ${t.turno} do dia ${t.data}!`);
-            return;
-        }
-        console.log("✅ Sem conflitos");
-    }
-    
-    let registrosSalvos = 0;
-    let erros = [];
-    
-    console.log("\n--- Iniciando salvamento ---");
-    
-    for (let i = 0; i < turnosTemp.length; i++) {
-        const t = turnosTemp[i];
-        console.log(`\n📝 Processando turno ${i+1}: ${t.turno} (${t.data})`);
         
-        try {
-            // Calcular valores
-            console.log("Calculando performance...");
+        // Verificar conflitos
+        for (let t of turnosTemp) {
+            const conflitos = verificarSobreposicao(t.data, t.machine, t.inicio, t.fim);
+            if (conflitos.length > 0) {
+                showErrorToast(`Conflito no Turno ${t.turno} do dia ${t.data}!`);
+                return;
+            }
+        }
+        
+        let registrosSalvos = 0;
+        
+        for (let t of turnosTemp) {
             const perf = calcularPerformance(t.est, t.produzido, t.inicio, t.fim, t.setup, t.avaria);
-            console.log("Performance:", perf);
-            
-            console.log("Calculando qualidade...");
             const qual = calcularQualidade(t.produzido, t.rejeicao, t.aparas);
-            console.log("Qualidade:", qual);
-            
-            console.log("Calculando disponibilidade...");
             const dispOP = calcularDisponibilidadeOP(t.inicio, t.fim, t.setup, t.avaria);
-            console.log("Disponibilidade:", dispOP);
-            
-            console.log("Calculando real kg/h...");
             const realKgH = calcularRealKgH(t.produzido, t.inicio, t.fim, t.setup, t.avaria);
-            console.log("Real kg/h:", realKgH);
             
             const produtoInfo = produtos.find(p => p.displayName === t.produtoDisplay) || { cliente: '' };
-            console.log("Cliente:", produtoInfo.cliente);
             
             const novoRegistro = {
                 data: t.data,
@@ -2660,66 +2612,45 @@ async function calcularESalvar() {
                 produzido: t.produzido || 0,
                 rejeicao: t.rejeicao || 0,
                 aparas: t.aparas || 0,
-                paradas_detalhadas: JSON.stringify(t.paradasDetalhadas || []),
                 timestamp: new Date().toISOString()
             };
             
-            console.log("Registro preparado:", novoRegistro);
-            
-            console.log("Enviando para o banco...");
             const resultado = await inserirRegistro(novoRegistro);
             
             if (resultado && resultado.length > 0) {
-                console.log(`✅ Turno ${t.turno} salvo com ID:`, resultado[0].id);
                 novoRegistro.id = resultado[0].id;
                 historico.push(novoRegistro);
                 registrosSalvos++;
-            } else {
-                console.log(`❌ Falha ao inserir turno ${t.turno}`);
-                erros.push(`Turno ${t.turno}: falha ao inserir (resultado vazio)`);
-            }
-        } catch (error) {
-            console.error(`❌ Erro ao processar turno ${t.turno}:`, error);
-            console.error("Stack trace:", error.stack);
-            erros.push(`Turno ${t.turno}: ${error.message}`);
-        }
-    }
-    
-    console.log(`\n--- Resumo: ${registrosSalvos} de ${turnosTemp.length} turnos salvos ---`);
-    
-    if (registrosSalvos === turnosTemp.length) {
-        showToast(`✅ ${registrosSalvos} turnos salvos com sucesso!`);
-        
-        // Recalcular disponibilidades de turno
-        for (let t of turnosTemp) {
-            const opsDoTurno = historico.filter(h => 
-                h.data === t.data && h.machine === t.machine && h.turno === t.turno
-            );
-            if (opsDoTurno.length > 0) {
-                const dispTurno = calcularDisponibilidadeTurno(opsDoTurno);
-                opsDoTurno.forEach(op => op.dispTurno = dispTurno);
             }
         }
         
-        // Limpar tudo
-        limparIndicadorAutosave();
-        document.getElementById('regForm').reset();
-        turnosTemp = [];
-        paradasDetalhadas = [];
-        document.getElementById('paradas-detalhadas-container').innerHTML = '';
-        atualizarListaTurnos();
-        closeModal();
-        filterByRange();
-    } else {
-        const mensagem = `⚠️ ${registrosSalvos} de ${turnosTemp.length} turnos salvos.`;
-        if (erros.length > 0) {
-            showWarningToast(mensagem + ' Verifique o console para detalhes.');
-            console.error("Erros detalhados:", erros);
+        if (registrosSalvos === turnosTemp.length) {
+            showToast(`✅ ${registrosSalvos} turnos salvos com sucesso!`);
+            
+            // Recalcular disponibilidades de turno
+            for (let t of turnosTemp) {
+                const opsDoTurno = historico.filter(h => 
+                    h.data === t.data && h.machine === t.machine && h.turno === t.turno
+                );
+                if (opsDoTurno.length > 0) {
+                    const dispTurno = calcularDisponibilidadeTurno(opsDoTurno);
+                    opsDoTurno.forEach(op => op.dispTurno = dispTurno);
+                }
+            }
+            
+            // Limpar tudo
+            limparIndicadorAutosave();
+            document.getElementById('regForm').reset();
+            turnosTemp = [];
+            paradasDetalhadas = [];
+            document.getElementById('paradas-detalhadas-container').innerHTML = '';
+            atualizarListaTurnos();
+            closeModal();
+            filterByRange();
         } else {
-            showWarningToast(mensagem);
+            showWarningToast(`⚠️ ${registrosSalvos} de ${turnosTemp.length} turnos salvos.`);
         }
     }
-}
 
     function recalcularDisponibilidadesTurno(data, maquina, turno) {
         const opsDoTurno = historico.filter(h => 

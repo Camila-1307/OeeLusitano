@@ -1280,28 +1280,32 @@
                 </div>
 
                 <!-- ============================================ -->
-                <!-- SEÇÃO: MÚLTIPLOS TURNOS COM DATA -->
+                <!-- SEÇÃO: TURNOS ADICIONADOS (LISTA) -->
                 <!-- ============================================ -->
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
                     <div class="flex justify-between items-center mb-3">
                         <label class="block text-[10px] font-bold uppercase text-blue-700 tracking-widest">
-                            🔄 MÚLTIPLOS TURNOS PARA ESTA OP
+                            📋 TURNOS ADICIONADOS
                         </label>
-                        <button type="button" onclick="adicionarTurnoModal()" 
-                            class="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg font-bold hover:bg-blue-700">
-                            + Adicionar Turno
-                        </button>
                     </div>
                     
-                    <!-- Campos para novo turno (com DATA) -->
-                    <div class="grid grid-cols-1 md:grid-cols-7 gap-2 mb-3 bg-white p-3 rounded-lg border border-blue-300">
+                    <div id="turnos-lista" class="space-y-2 max-h-60 overflow-y-auto mb-3"></div>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- SEÇÃO: DADOS DO PRÓXIMO TURNO -->
+                <!-- ============================================ -->
+                <div class="bg-green-50 p-4 rounded-xl border border-green-200 mt-4">
+                    <h3 class="text-xs font-black uppercase text-green-700 mb-3 tracking-widest">➕ NOVO TURNO</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-7 gap-2 mb-3">
                         <div>
                             <label class="block text-[8px] font-bold uppercase text-slate-400">DATA</label>
-                            <input type="date" id="novoTurnoData" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                            <input type="date" id="novoTurnoData" class="w-full border-2 border-slate-200 p-2 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-[8px] font-bold uppercase text-slate-400">TURNO</label>
-                            <select id="novoTurnoSelect" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                            <select id="novoTurnoSelect" class="w-full border-2 border-slate-200 p-2 rounded-lg text-sm">
                                 <option value="A">A</option>
                                 <option value="B">B</option>
                                 <option value="C">C</option>
@@ -1309,23 +1313,23 @@
                         </div>
                         <div>
                             <label class="block text-[8px] font-bold uppercase text-slate-400">INÍCIO</label>
-                            <input type="time" id="novoTurnoInicio" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                            <input type="time" id="novoTurnoInicio" class="w-full border-2 border-slate-200 p-2 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-[8px] font-bold uppercase text-slate-400">FIM</label>
-                            <input type="time" id="novoTurnoFim" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                            <input type="time" id="novoTurnoFim" class="w-full border-2 border-slate-200 p-2 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-[8px] font-bold uppercase text-slate-400">PROD.(KG)</label>
-                            <input type="number" id="novoTurnoProduzido" value="0" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                            <input type="number" id="novoTurnoProduzido" value="0" class="w-full border-2 border-slate-200 p-2 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-[8px] font-bold uppercase text-slate-400">PARADA(MIN)</label>
-                            <input type="number" id="novoTurnoAvaria" value="0" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                            <input type="number" id="novoTurnoAvaria" value="0" class="w-full border-2 border-slate-200 p-2 rounded-lg text-sm" readonly>
                         </div>
                         <div>
                             <label class="block text-[8px] font-bold uppercase text-slate-400">MOTIVO</label>
-                            <select id="novoTurnoMotivo" class="w-full border border-slate-200 p-2 rounded-lg text-sm">
+                            <select id="novoTurnoMotivo" class="w-full border-2 border-slate-200 p-2 rounded-lg text-sm">
                                 <option value="">Sem motivo</option>
                                 <option value="Avaria Elétrica">⚡ Avaria Elétrica</option>
                                 <option value="Avaria Mecânica">🔧 Avaria Mecânica</option>
@@ -1335,11 +1339,11 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <!-- ============================================ -->
-                    <!-- SEÇÃO: REGISTRO DETALHADO DE PARADAS -->
+                    <!-- SEÇÃO: PARADAS DETALHADAS DESTE TURNO -->
                     <!-- ============================================ -->
-                    <div class="bg-purple-50 p-3 rounded-lg border border-purple-200 mb-3">
+                    <div class="bg-purple-50 p-3 rounded-lg border border-purple-200 mt-2">
                         <div class="flex justify-between items-center mb-2">
                             <label class="block text-[9px] font-bold uppercase text-purple-700">
                                 ⏱️ PARADAS DETALHADAS DESTE TURNO
@@ -1353,12 +1357,18 @@
                         <div id="paradas-detalhadas-container" class="space-y-2 mb-2"></div>
                         
                         <p class="text-[8px] text-purple-600">
-                            ⚡ As paradas serão vinculadas a este turno e salvas no histórico
+                            ⚡ As paradas serão vinculadas a este turno
                         </p>
                     </div>
-                    
-                    <!-- Lista de turnos adicionados -->
-                    <div id="turnos-lista" class="space-y-2 max-h-60 overflow-y-auto mt-3"></div>
+
+                    <!-- Botão Adicionar Turno -->
+                    <button type="button" onclick="adicionarTurnoModal()" 
+                        class="w-full mt-3 bg-green-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-green-700 flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        ADICIONAR TURNO À LISTA
+                    </button>
                 </div>
 
                 <div class="bg-slate-800 text-white p-6 rounded-2xl">
@@ -2447,9 +2457,20 @@
     }
 
     // ============================================
-    // FUNÇÃO ADICIONAR TURNO MODAL - CORRIGIDA
+    // FUNÇÃO ADICIONAR TURNO - CORRIGIDA
     // ============================================
     function adicionarTurnoModal() {
+        // Dados principais (fixos para todos turnos)
+        const machine = document.getElementById('regMachine').value;
+        const op = document.getElementById('regOP').value;
+        const produtoDisplay = document.getElementById('regProduto').value;
+        const pedido = safeNumber(document.getElementById('regPedido').value);
+        const est = safeNumber(document.getElementById('regEst').value);
+        const setup = safeNumber(document.getElementById('regSetup').value);
+        const rejeicao = safeNumber(document.getElementById('regRejeicao').value);
+        const aparas = safeNumber(document.getElementById('regAparas').value);
+        
+        // Dados do turno atual
         const data = document.getElementById('novoTurnoData').value;
         const turno = document.getElementById('novoTurnoSelect').value;
         const inicio = document.getElementById('novoTurnoInicio').value;
@@ -2458,20 +2479,18 @@
         const avaria = safeNumber(document.getElementById('novoTurnoAvaria').value);
         const motivoPerda = document.getElementById('novoTurnoMotivo').value;
         
-        const setup = safeNumber(document.getElementById('regSetup').value);
-        const rejeicao = safeNumber(document.getElementById('regRejeicao').value);
-        const aparas = safeNumber(document.getElementById('regAparas').value);
+        // Validações
+        if (!machine || !op || !produtoDisplay) {
+            showErrorToast('Preencha os dados principais da OP!');
+            return;
+        }
         
         if (!data || !turno || !inicio || !fim) {
             showErrorToast('Preencha todos os dados do turno!');
             return;
         }
         
-        if (turnosTemp.find(t => t.data === data && t.turno === turno)) {
-            showErrorToast(`Turno ${turno} da data ${data.split('-').reverse().join('/')} já foi adicionado!`);
-            return;
-        }
-        
+        // Coletar paradas detalhadas deste turno
         const paradasDesteTurno = [];
         paradasDetalhadas.forEach((p, idx) => {
             const inicioParada = document.getElementById(`parada-inicio-${idx}`)?.value;
@@ -2487,6 +2506,7 @@
             }
         });
         
+        // Calcular total de paradas
         let totalParadas = avaria;
         if (paradasDesteTurno.length > 0) {
             totalParadas = 0;
@@ -2498,20 +2518,22 @@
             });
         }
         
+        // Verificar duplicidade
+        if (turnosTemp.find(t => t.data === data && t.turno === turno)) {
+            showErrorToast(`Turno ${turno} da data ${data.split('-').reverse().join('/')} já foi adicionado!`);
+            return;
+        }
+        
+        // Adicionar à lista
         turnosTemp.push({
-            data: data,
-            turno: turno,
-            inicio: inicio,
-            fim: fim,
-            setup: setup,
+            machine, op, produtoDisplay, pedido, est, setup, rejeicao, aparas,
+            data, turno, inicio, fim, produzido,
             avaria: totalParadas,
-            produzido: produzido,
-            rejeicao: rejeicao,
-            aparas: aparas,
-            motivoPerda: motivoPerda,
+            motivoPerda,
             paradasDetalhadas: paradasDesteTurno
         });
         
+        // Limpar campos
         document.getElementById('novoTurnoData').value = '';
         document.getElementById('novoTurnoSelect').value = 'A';
         document.getElementById('novoTurnoInicio').value = '';
@@ -2526,13 +2548,17 @@
         atualizarListaTurnos();
         marcarDadosPendentes();
         
-        const totalParadasMsg = totalParadas > 0 ? ` (${totalParadas}min paradas)` : '';
-        showToast(`✅ Turno ${turno} (${data}) adicionado${totalParadasMsg}`);
+        showToast(`✅ Turno ${turno} (${data}) adicionado à lista!`);
     }
 
     function atualizarListaTurnos() {
         const container = document.getElementById('turnos-lista');
         container.innerHTML = '';
+        
+        if (turnosTemp.length === 0) {
+            container.innerHTML = '<p class="text-center text-slate-400 text-sm py-4">Nenhum turno adicionado ainda.</p>';
+            return;
+        }
         
         turnosTemp.sort((a, b) => {
             if (a.data !== b.data) return a.data.localeCompare(b.data);
@@ -2540,12 +2566,12 @@
         });
         
         turnosTemp.forEach((turno, index) => {
-            const duracao = calcularDuracaoHoras(turno.inicio, turno.fim).toFixed(1);
             const dataFormatada = turno.data.split('-').reverse().join('/');
+            const duracao = calcularDuracaoHoras(turno.inicio, turno.fim).toFixed(1);
             
             const tempoProdutivo = (calcularDuracaoHoras(turno.inicio, turno.fim) * 60) - turno.setup - turno.avaria;
             const perf = turno.produzido > 0 && tempoProdutivo > 0 
-                ? Math.min(100, Math.round((turno.produzido / (tempoProdutivo/60)) / (document.getElementById('regEst').value || 90) * 100))
+                ? Math.min(100, Math.round((turno.produzido / (tempoProdutivo/60)) / (turno.est || 90) * 100))
                 : 0;
             
             let html = `
@@ -2596,20 +2622,18 @@
             container.innerHTML += html;
         });
         
-        if (turnosTemp.length > 0) {
-            const totalKg = turnosTemp.reduce((acc, t) => acc + t.produzido, 0);
-            const totalHoras = turnosTemp.reduce((acc, t) => acc + calcularDuracaoHoras(t.inicio, t.fim), 0);
-            const totalParadas = turnosTemp.reduce((acc, t) => acc + t.avaria, 0);
-            
-            container.innerHTML += `
-                <div class="bg-green-50 p-3 rounded-lg font-bold text-green-700 flex justify-between items-center mt-3 border border-green-200">
-                    <span>📊 TOTAL: ${turnosTemp.length} turnos</span>
-                    <span>📦 ${totalKg} kg</span>
-                    <span>⏱️ ${totalHoras.toFixed(1)} h</span>
-                    <span class="${totalParadas > 0 ? 'text-red-600' : ''}">⏸️ ${totalParadas} min paradas</span>
-                </div>
-            `;
-        }
+        const totalKg = turnosTemp.reduce((acc, t) => acc + t.produzido, 0);
+        const totalHoras = turnosTemp.reduce((acc, t) => acc + calcularDuracaoHoras(t.inicio, t.fim), 0);
+        const totalParadas = turnosTemp.reduce((acc, t) => acc + t.avaria, 0);
+        
+        container.innerHTML += `
+            <div class="bg-green-50 p-3 rounded-lg font-bold text-green-700 flex justify-between items-center mt-3 border border-green-200">
+                <span>📊 TOTAL: ${turnosTemp.length} turnos</span>
+                <span>📦 ${totalKg} kg</span>
+                <span>⏱️ ${totalHoras.toFixed(1)} h</span>
+                <span class="${totalParadas > 0 ? 'text-red-600' : ''}">⏸️ ${totalParadas} min paradas</span>
+            </div>
+        `;
     }
 
     function removerTurno(index) {
@@ -2624,31 +2648,13 @@
     async function calcularESalvar() {
         console.log("🟢 Salvando múltiplos turnos...");
         
-        const machine = document.getElementById('regMachine').value;
-        const op = document.getElementById('regOP').value;
-        const produtoDisplay = document.getElementById('regProduto').value;
-        const pedido = safeNumber(document.getElementById('regPedido').value);
-        
-        if (!machine || !op || !produtoDisplay) {
-            showErrorToast('Preencha máquina, OP e cliente/produto!');
-            return;
-        }
-        
-        const produtoInfo = produtos.find(p => p.displayName === produtoDisplay);
-        if (!produtoInfo) {
-            showErrorToast('Produto não encontrado!');
-            return;
-        }
-        
-        const est = safeNumber(document.getElementById('regEst').value) || produtoInfo.est;
-        
         if (turnosTemp.length === 0) {
             showErrorToast('Adicione pelo menos um turno!');
             return;
         }
         
         for (let t of turnosTemp) {
-            const conflitos = verificarSobreposicao(t.data, machine, t.inicio, t.fim);
+            const conflitos = verificarSobreposicao(t.data, t.machine, t.inicio, t.fim);
             if (conflitos.length > 0) {
                 showErrorToast(`Conflito no Turno ${t.turno} do dia ${t.data}!`);
                 return;
@@ -2658,28 +2664,30 @@
         let registrosSalvos = 0;
         
         for (let t of turnosTemp) {
-            const perf = calcularPerformance(est, t.produzido, t.inicio, t.fim, t.setup, t.avaria);
+            const perf = calcularPerformance(t.est, t.produzido, t.inicio, t.fim, t.setup, t.avaria);
             const qual = calcularQualidade(t.produzido, t.rejeicao, t.aparas);
             const dispOP = calcularDisponibilidadeOP(t.inicio, t.fim, t.setup, t.avaria);
             const realKgH = calcularRealKgH(t.produzido, t.inicio, t.fim, t.setup, t.avaria);
             
+            const produtoInfo = produtos.find(p => p.displayName === t.produtoDisplay) || { cliente: '' };
+            
             const novoRegistro = {
                 data: t.data,
-                machine: machine,
+                machine: t.machine,
                 turno: t.turno,
-                op: op,
-                produto: produtoDisplay,
+                op: t.op,
+                produto: t.produtoDisplay,
                 cliente: produtoInfo.cliente,
                 disp: dispOP,
                 perf: perf,
                 qual: qual,
-                pedido: pedido,
+                pedido: t.pedido,
                 inicio: t.inicio,
                 fim: t.fim,
                 setup: t.setup,
                 avaria: t.avaria,
                 motivoPerda: t.motivoPerda,
-                est: est,
+                est: t.est,
                 realKgH: realKgH,
                 produzido: t.produzido,
                 rejeicao: t.rejeicao,
@@ -2699,16 +2707,6 @@
         
         if (registrosSalvos === turnosTemp.length) {
             showToast(`✅ ${registrosSalvos} turnos salvos com sucesso!`);
-            
-            for (let t of turnosTemp) {
-                const opsDoTurno = historico.filter(h => 
-                    h.data === t.data && h.machine === machine && h.turno === t.turno
-                );
-                if (opsDoTurno.length > 0) {
-                    const dispTurno = calcularDisponibilidadeTurno(opsDoTurno);
-                    opsDoTurno.forEach(op => op.dispTurno = dispTurno);
-                }
-            }
             
             limparIndicadorAutosave();
             document.getElementById('regForm').reset();

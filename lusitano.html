@@ -2409,17 +2409,19 @@
     }
 
     // ============================================
-    // FUNÇÃO ADICIONAR TURNO - CORRIGIDA
+    // FUNÇÃO ADICIONAR TURNO - CORRIGIDA (MANTER DADOS PRINCIPAIS)
     // ============================================
     function adicionarTurnoModal() {
-        // Dados principais
+        // Dados que PERMANECEM (já estão no formulário)
         const data = document.getElementById('regDate').value;
         const machine = document.getElementById('regMachine').value;
-        const turno = document.getElementById('regTurno').value;
         const op = document.getElementById('regOP').value;
         const pedido = safeNumber(document.getElementById('regPedido').value);
         const produtoDisplay = document.getElementById('regProduto').value;
         const est = safeNumber(document.getElementById('regEst').value);
+        
+        // Dados ESPECÍFICOS deste turno (que serão limpos depois)
+        const turno = document.getElementById('regTurno').value;
         const inicio = document.getElementById('regInicio').value;
         const fim = document.getElementById('regFim').value;
         const setup = safeNumber(document.getElementById('regSetup').value);
@@ -2430,7 +2432,7 @@
         const aparas = safeNumber(document.getElementById('regAparas').value);
         
         // Validações
-        if (!data || !machine || !turno || !op || !produtoDisplay || !inicio || !fim) {
+        if (!data || !machine || !op || !produtoDisplay || !turno || !inicio || !fim) {
             showErrorToast('Preencha todos os campos obrigatórios!');
             return;
         }
@@ -2465,14 +2467,8 @@
             paradasDetalhadas: paradasDesteTurno
         });
         
-        // Limpar campos
-        document.getElementById('regDate').value = '';
-        document.getElementById('regMachine').value = '';
+        // ===== LIMPAR APENAS OS CAMPOS ESPECÍFICOS DO TURNO =====
         document.getElementById('regTurno').value = '';
-        document.getElementById('regOP').value = '';
-        document.getElementById('regPedido').value = '0';
-        document.getElementById('regProduto').value = '';
-        document.getElementById('regEst').value = '90';
         document.getElementById('regInicio').value = '06:00';
         document.getElementById('regFim').value = '14:00';
         document.getElementById('regSetup').value = '0';
@@ -2482,8 +2478,11 @@
         document.getElementById('regRejeicao').value = '0';
         document.getElementById('regAparas').value = '0';
         
+        // Limpar paradas detalhadas
         paradasDetalhadas = [];
         document.getElementById('paradas-detalhadas-container').innerHTML = '';
+        
+        // NÃO LIMPAR: data, machine, op, pedido, regProduto, regEst
         
         atualizarListaTurnos();
         marcarDadosPendentes();
@@ -2673,7 +2672,13 @@
         atualizarListaTurnos();
         dadosPendentes = false;
         
+        // Valores padrão para NOVO registro
         document.getElementById('regDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('regMachine').value = '';
+        document.getElementById('regTurno').value = '';
+        document.getElementById('regOP').value = '';
+        document.getElementById('regPedido').value = '0';
+        document.getElementById('regProduto').value = '';
         document.getElementById('regInicio').value = '06:00';
         document.getElementById('regFim').value = '14:00';
         document.getElementById('regSetup').value = '0';
@@ -2682,7 +2687,7 @@
         document.getElementById('regProduzido').value = '0';
         document.getElementById('regRejeicao').value = '0';
         document.getElementById('regAparas').value = '0';
-        document.getElementById('regPedido').value = '0';
+        document.getElementById('regMotivoPerda').value = '';
         
         atualizarSelectClientesProduto();
         adicionarPreviewListeners();

@@ -2,7 +2,7 @@
 <html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lusitano - OEE Extrusoras</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1026,7 +1026,6 @@
                 </div>
             </div>
             
-            <!-- NOVO GRÁFICO: Comparativo de Perdas por Turno -->
             <div class="grid grid-cols-1 gap-8 mb-8">
                 <div class="chart-container">
                     <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Comparativo de Perdas por Turno</h3>
@@ -1269,8 +1268,6 @@
                     </div>
                 </div>
 
-                <!-- MOTIVO DA PERDA FOI REMOVIDO - Agora usamos paradas detalhadas -->
-
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">EST. (KG/H)</label>
@@ -1291,7 +1288,28 @@
                 </div>
 
                 <!-- ============================================ -->
-                <!-- SEÇÃO: MÚLTIPLOS TURNOS -->
+                <!-- SEÇÃO: PARADAS DETALHADAS DESTE TURNO (AGORA EM CIMA) -->
+                <!-- ============================================ -->
+                <div class="bg-purple-50 p-4 rounded-xl border border-purple-200">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-[10px] font-bold uppercase text-purple-700 tracking-widest">
+                            ⏱️ PARADAS DETALHADAS DESTE TURNO
+                        </label>
+                        <button type="button" onclick="adicionarParadaDetalhada()" 
+                            class="text-xs bg-purple-600 text-white px-3 py-1 rounded-lg font-bold hover:bg-purple-700">
+                            + Adicionar Parada
+                        </button>
+                    </div>
+                    
+                    <div id="paradas-detalhadas-container" class="space-y-2 mb-3"></div>
+                    
+                    <p class="text-[8px] text-purple-600">
+                        ⚡ Registre cada parada com horário de início e fim. O total será somado automaticamente no campo PARADAS (MIN).
+                    </p>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- SEÇÃO: MÚLTIPLOS TURNOS PARA ESTA OP (AGORA EMBAIXO) -->
                 <!-- ============================================ -->
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
                     <div class="flex justify-between items-center mb-3">
@@ -1335,27 +1353,6 @@
                             <p id="previewOEE" class="text-3xl font-black">0%</p>
                         </div>
                     </div>
-                </div>
-
-                <!-- ============================================ -->
-                <!-- SEÇÃO: PARADAS DETALHADAS DESTE TURNO -->
-                <!-- ============================================ -->
-                <div class="bg-purple-50 p-4 rounded-xl border border-purple-200">
-                    <div class="flex justify-between items-center mb-3">
-                        <label class="block text-[10px] font-bold uppercase text-purple-700 tracking-widest">
-                            ⏱️ PARADAS DETALHADAS DESTE TURNO
-                        </label>
-                        <button type="button" onclick="adicionarParadaDetalhada()" 
-                            class="text-xs bg-purple-600 text-white px-3 py-1 rounded-lg font-bold hover:bg-purple-700">
-                            + Adicionar Parada
-                        </button>
-                    </div>
-                    
-                    <div id="paradas-detalhadas-container" class="space-y-2 mb-3"></div>
-                    
-                    <p class="text-[8px] text-purple-600">
-                        ⚡ Registre cada parada com horário de início e fim. O total será somado automaticamente no campo PARADAS (MIN).
-                    </p>
                 </div>
 
                 <div class="flex gap-3 pt-4">
@@ -1442,8 +1439,6 @@
                         <input type="number" id="editAvaria" value="0" min="0" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
                     </div>
                 </div>
-
-                <!-- MOTIVO DA PERDA FOI REMOVIDO - Agora usamos paradas detalhadas -->
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
@@ -1824,7 +1819,6 @@
     // LIMPAR SESSÃO AO FECHAR A PÁGINA
     // ============================================
     window.addEventListener('beforeunload', function() {
-        // Não fazemos logout automático para não atrapalhar, mas limpamos o sessionStorage
         sessionStorage.removeItem('session_checked');
     });
 
@@ -1897,7 +1891,7 @@
             if (dadosPendentes) {
                 autoSalvar();
             }
-        }, 300000); // 5 minutos = 300000 ms
+        }, 300000);
     }
 
     function limparIndicadorAutosave() {
@@ -2181,7 +2175,7 @@
     }
 
     // ============================================
-    // FUNÇÃO INSERIR REGISTRO - CORRIGIDA (SEM paradas_detalhadas)
+    // FUNÇÃO INSERIR REGISTRO - CORRIGIDA
     // ============================================
     async function inserirRegistro(novo) {
         try {
@@ -2206,7 +2200,6 @@
                 produzido: novo.produzido,
                 rejeicao: novo.rejeicao,
                 aparas: novo.aparas,
-                // paradas_detalhadas: novo.paradas_detalhadas || null, // COMENTADO - coluna não existe no banco
                 criado_em: novo.timestamp
             };
             
@@ -2428,7 +2421,6 @@
     // FUNÇÃO ADICIONAR TURNO - CORRIGIDA
     // ============================================
     function adicionarTurnoModal() {
-        // Dados que PERMANECEM (já estão no formulário)
         const data = document.getElementById('regDate').value;
         const machine = document.getElementById('regMachine').value;
         const op = document.getElementById('regOP').value;
@@ -2436,7 +2428,6 @@
         const produtoDisplay = document.getElementById('regProduto').value;
         const est = safeNumber(document.getElementById('regEst').value);
         
-        // Dados ESPECÍFICOS deste turno (que serão limpos depois)
         const turno = document.getElementById('regTurno').value;
         const inicio = document.getElementById('regInicio').value;
         const fim = document.getElementById('regFim').value;
@@ -2446,13 +2437,11 @@
         const rejeicao = safeNumber(document.getElementById('regRejeicao').value);
         const aparas = safeNumber(document.getElementById('regAparas').value);
         
-        // Validações
         if (!data || !machine || !op || !produtoDisplay || !turno || !inicio || !fim) {
             showErrorToast('Preencha todos os campos obrigatórios!');
             return;
         }
         
-        // Coletar paradas detalhadas deste turno (só para visualização)
         const paradasDesteTurno = [];
         paradasDetalhadas.forEach((p, idx) => {
             const inicioParada = document.getElementById(`parada-inicio-${idx}`)?.value;
@@ -2468,13 +2457,11 @@
             }
         });
         
-        // Verificar duplicidade
         if (turnosTemp.find(t => t.data === data && t.turno === turno)) {
             showErrorToast(`Turno ${turno} da data ${data.split('-').reverse().join('/')} já foi adicionado!`);
             return;
         }
         
-        // Adicionar à lista
         turnosTemp.push({
             data, machine, turno, op, pedido, produtoDisplay, est,
             inicio, fim, setup, avaria,
@@ -2482,7 +2469,6 @@
             paradasDetalhadas: paradasDesteTurno
         });
         
-        // ===== LIMPAR APENAS OS CAMPOS ESPECÍFICOS DO TURNO =====
         document.getElementById('regTurno').value = '';
         document.getElementById('regInicio').value = '06:00';
         document.getElementById('regFim').value = '14:00';
@@ -2492,11 +2478,8 @@
         document.getElementById('regRejeicao').value = '0';
         document.getElementById('regAparas').value = '0';
         
-        // Limpar paradas detalhadas
         paradasDetalhadas = [];
         document.getElementById('paradas-detalhadas-container').innerHTML = '';
-        
-        // NÃO LIMPAR: data, machine, op, pedido, regProduto, regEst
         
         atualizarListaTurnos();
         marcarDadosPendentes();
@@ -2574,17 +2557,14 @@
     }
 
     // ============================================
-    // FUNÇÃO CALCULAR E SALVAR - NOVA VERSÃO (com suporte a turno único)
+    // FUNÇÃO CALCULAR E SALVAR
     // ============================================
     async function calcularESalvar() {
         console.log("🟢 Salvando dados...");
         
-        // Verificar se tem turnos na lista
         if (turnosTemp.length > 0) {
-            // CASO 1: Tem turnos na lista (múltiplos turnos)
             await salvarMultiplosTurnos();
         } else {
-            // CASO 2: Turno único - pegar dados diretamente do formulário
             await salvarTurnoUnico();
         }
     }
@@ -2592,7 +2572,6 @@
     async function salvarTurnoUnico() {
         console.log("📝 Salvando turno único...");
         
-        // Pegar dados do formulário
         const data = document.getElementById('regDate').value;
         const machine = document.getElementById('regMachine').value;
         const turno = document.getElementById('regTurno').value;
@@ -2608,20 +2587,17 @@
         const rejeicao = safeNumber(document.getElementById('regRejeicao').value);
         const aparas = safeNumber(document.getElementById('regAparas').value);
         
-        // Validações
         if (!data || !machine || !turno || !op || !produtoDisplay || !inicio || !fim) {
             showErrorToast('Preencha todos os campos obrigatórios!');
             return;
         }
         
-        // Verificar conflitos
         const conflitos = verificarSobreposicao(data, machine, inicio, fim);
         if (conflitos.length > 0) {
             showErrorToast(`Conflito de horário na máquina ${machine}!`);
             return;
         }
         
-        // Coletar paradas detalhadas (se houver)
         const paradasDesteTurno = [];
         paradasDetalhadas.forEach((p, idx) => {
             const inicioParada = document.getElementById(`parada-inicio-${idx}`)?.value;
@@ -2637,7 +2613,6 @@
             }
         });
         
-        // Calcular valores
         const perf = calcularPerformance(est, produzido, inicio, fim, setup, avaria);
         const qual = calcularQualidade(produzido, rejeicao, aparas);
         const dispOP = calcularDisponibilidadeOP(inicio, fim, setup, avaria);
@@ -2645,7 +2620,6 @@
         
         const produtoInfo = produtos.find(p => p.displayName === produtoDisplay) || { cliente: '' };
         
-        // Determinar motivo principal das paradas detalhadas
         let motivoPrincipal = '';
         if (paradasDesteTurno.length > 0) {
             motivoPrincipal = paradasDesteTurno[0].motivo || '';
@@ -2683,12 +2657,10 @@
             novoRegistro.id = resultado[0].id;
             historico.push(novoRegistro);
             
-            // Recalcular disponibilidade do turno
             recalcularDisponibilidadesTurno(data, machine, turno);
             
             showToast('✅ Turno salvo com sucesso!');
             
-            // Limpar formulário
             limparIndicadorAutosave();
             document.getElementById('regForm').reset();
             turnosTemp = [];
@@ -2696,7 +2668,6 @@
             document.getElementById('paradas-detalhadas-container').innerHTML = '';
             atualizarListaTurnos();
             
-            // Valores padrão para novo registro
             document.getElementById('regDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('regInicio').value = '06:00';
             document.getElementById('regFim').value = '14:00';
@@ -2717,7 +2688,6 @@
             return;
         }
         
-        // Verificar conflitos
         for (let t of turnosTemp) {
             const conflitos = verificarSobreposicao(t.data, t.machine, t.inicio, t.fim);
             if (conflitos.length > 0) {
@@ -2736,7 +2706,6 @@
             
             const produtoInfo = produtos.find(p => p.displayName === t.produtoDisplay) || { cliente: '' };
             
-            // Determinar motivo principal das paradas detalhadas
             let motivoPrincipal = '';
             if (t.paradasDetalhadas && t.paradasDetalhadas.length > 0) {
                 motivoPrincipal = t.paradasDetalhadas[0].motivo || '';
@@ -2778,7 +2747,6 @@
         if (registrosSalvos === turnosTemp.length) {
             showToast(`✅ ${registrosSalvos} turnos salvos com sucesso!`);
             
-            // Recalcular disponibilidades de turno
             for (let t of turnosTemp) {
                 const opsDoTurno = historico.filter(h => 
                     h.data === t.data && h.machine === t.machine && h.turno === t.turno
@@ -2789,7 +2757,6 @@
                 }
             }
             
-            // Limpar tudo
             limparIndicadorAutosave();
             document.getElementById('regForm').reset();
             turnosTemp = [];
@@ -2797,7 +2764,6 @@
             document.getElementById('paradas-detalhadas-container').innerHTML = '';
             atualizarListaTurnos();
             
-            // Valores padrão para novo registro
             document.getElementById('regDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('regInicio').value = '06:00';
             document.getElementById('regFim').value = '14:00';
@@ -2844,7 +2810,6 @@
         atualizarListaTurnos();
         dadosPendentes = false;
         
-        // Valores padrão para NOVO registro
         document.getElementById('regDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('regMachine').value = '';
         document.getElementById('regTurno').value = '';
@@ -3202,19 +3167,16 @@
         
         let dadosFiltrados = [...historico];
         
-        // Filtrar por período atual (usar o mesmo período do dashboard)
         const start = document.getElementById('startDate').value;
         const end = document.getElementById('endDate').value;
         if (start && end) {
             dadosFiltrados = dadosFiltrados.filter(h => h.data >= start && h.data <= end);
         }
         
-        // Filtrar por turno
         if (turnoFilter !== 'ALL') {
             dadosFiltrados = dadosFiltrados.filter(h => h.turno === turnoFilter);
         }
         
-        // Filtrar por máquina
         if (maquinaFilter !== 'ALL') {
             dadosFiltrados = dadosFiltrados.filter(h => h.machine === maquinaFilter);
         }
@@ -3229,7 +3191,6 @@
     function renderPerdasView(data) {
         console.log("📊 Renderizando análise de perdas com", data.length, "registros");
         
-        // Inicializar acumuladores
         const perdasMaq = { 
             M1: { setup: 0, avaria: 0, aparas: 0, total: 0 }, 
             M2: { setup: 0, avaria: 0, aparas: 0, total: 0 }, 
@@ -3239,7 +3200,6 @@
         const perdasDia = {};
         const perdasPorTurno = { A: 0, B: 0, C: 0 };
         
-        // Processar cada registro
         data.forEach(reg => {
             const setup = reg.setup || 0;
             const avaria = reg.avaria || 0;
@@ -3247,7 +3207,6 @@
             const aparasMin = calcularAparasEmMinutos(reg.aparas || 0, reg.realKgH || reg.est || 90, horas);
             const total = setup + avaria + aparasMin;
             
-            // Acumular por máquina
             if (reg.machine && perdasMaq.hasOwnProperty(reg.machine)) {
                 perdasMaq[reg.machine].setup += setup;
                 perdasMaq[reg.machine].avaria += avaria;
@@ -3255,17 +3214,14 @@
                 perdasMaq[reg.machine].total += total;
             }
             
-            // Acumular por motivo
             if (reg.motivoPerda && avaria > 0) {
                 perdasMot[reg.motivoPerda] = (perdasMot[reg.motivoPerda] || 0) + avaria;
             }
             
-            // Acumular por dia
             if (reg.data) {
                 perdasDia[reg.data] = (perdasDia[reg.data] || 0) + total;
             }
             
-            // Acumular por turno
             if (reg.turno && perdasPorTurno.hasOwnProperty(reg.turno)) {
                 perdasPorTurno[reg.turno] += total;
             }
@@ -3276,7 +3232,6 @@
         console.log("Perdas por dia:", perdasDia);
         console.log("Perdas por turno:", perdasPorTurno);
         
-        // ===== CARD 1: MÁQUINA COM MAIS PERDAS =====
         let topMaq = '--', topMaqVal = 0;
         Object.entries(perdasMaq).forEach(([m, v]) => {
             if (v.total > topMaqVal) { 
@@ -3287,7 +3242,6 @@
         document.getElementById('topMaquinaNome').innerText = topMaq;
         document.getElementById('topMaquinaMinutos').innerText = Math.round(topMaqVal) + ' min';
         
-        // ===== CARD 2: PRINCIPAL MOTIVO =====
         let topMot = '--', topMotVal = 0;
         Object.entries(perdasMot).forEach(([m, v]) => { 
             if (v > topMotVal) { 
@@ -3296,7 +3250,6 @@
             } 
         });
         
-        // Se não houver perdas por motivo registradas, mostrar o maior motivo de parada
         if (topMotVal === 0) {
             const motivoAvaria = {};
             data.forEach(reg => {
@@ -3315,7 +3268,6 @@
         document.getElementById('topMotivoNome').innerText = topMot;
         document.getElementById('topMotivoMinutos').innerText = Math.round(topMotVal) + ' min';
         
-        // ===== CARD 3: DIA COM MAIOR PERDA =====
         let topDia = '--', topDiaVal = 0;
         Object.entries(perdasDia).forEach(([d, v]) => { 
             if (v > topDiaVal) { 
@@ -3326,22 +3278,12 @@
         document.getElementById('topDiaData').innerText = topDia;
         document.getElementById('topDiaMinutos').innerText = Math.round(topDiaVal) + ' min';
         
-        // ===== GRÁFICO: Comparativo de Perdas por Turno =====
         renderPerdasTurnoComparativoChart(perdasPorTurno);
-        
-        // ===== GRÁFICO 1: Perdas por Máquina (Setup vs Paradas) =====
         renderPerdasDetalheChart(perdasMaq);
-        
-        // ===== GRÁFICO 2: Perdas por Motivo =====
         renderPerdasMotivoChart(perdasMot);
-        
-        // ===== GRÁFICO 3: Perdas por Tipo (Setup, Paradas, Aparas) =====
         renderPerdasTipoChart(perdasMaq);
-        
-        // ===== GRÁFICO 4: Evolução Diária =====
         renderPerdasEvolucaoChart(perdasDia);
         
-        // ===== TABELA DETALHADA =====
         const tbody = document.getElementById('perdas-detail-rows');
         tbody.innerHTML = '';
         
@@ -3456,7 +3398,6 @@
         
         if (perdasMotivoChart) perdasMotivoChart.destroy();
         
-        // Filtrar motivos com valores > 0
         const motivosFiltrados = {};
         Object.entries(perdasMot).forEach(([motivo, valor]) => {
             if (valor > 0) {
@@ -3464,7 +3405,6 @@
             }
         });
         
-        // Se não houver motivos, mostrar mensagem
         if (Object.keys(motivosFiltrados).length === 0) {
             perdasMotivoChart = new Chart(ctx, {
                 type: 'pie',
@@ -3485,7 +3425,6 @@
                 }
             });
         } else {
-            // Ordenar por valor decrescente
             const motivosOrdenados = Object.entries(motivosFiltrados)
                 .sort((a, b) => b[1] - a[1])
                 .reduce((obj, [key, value]) => {
@@ -4386,9 +4325,10 @@
         adicionarPreviewListeners();
         atualizarPreview();
         
-        // Inicializar filtros de perdas
-        document.getElementById('perdasTurnoFilter').value = 'ALL';
-        document.getElementById('perdasMaquinaFilter').value = 'ALL';
+        const turnoFilter = document.getElementById('perdasTurnoFilter');
+        if (turnoFilter) turnoFilter.value = 'ALL';
+        const maquinaFilter = document.getElementById('perdasMaquinaFilter');
+        if (maquinaFilter) maquinaFilter.value = 'ALL';
     };
     </script>
 </body>

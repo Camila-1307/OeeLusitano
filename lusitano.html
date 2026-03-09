@@ -1143,6 +1143,7 @@
             <div id="opTimelineContainer" class="space-y-4"></div>
         </div>
 
+        <!-- VIEW HISTÓRICO - CORRIGIDA -->
         <div id="view-history" class="view-content">
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                 <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-8">Histórico Detalhado</h3>
@@ -1206,9 +1207,6 @@
             </div>
             
             <form id="regForm" class="space-y-6">
-                <!-- ============================================ -->
-                <!-- CAMPOS PRINCIPAIS -->
-                <!-- ============================================ -->
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div class="col-span-1">
                         <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">DATA</label>
@@ -1287,9 +1285,7 @@
                     </div>
                 </div>
 
-                <!-- ============================================ -->
-                <!-- SEÇÃO: PARADAS DETALHADAS DESTE TURNO (AGORA EM CIMA) -->
-                <!-- ============================================ -->
+                <!-- PARADAS DETALHADAS (EM CIMA) -->
                 <div class="bg-purple-50 p-4 rounded-xl border border-purple-200">
                     <div class="flex justify-between items-center mb-3">
                         <label class="block text-[10px] font-bold uppercase text-purple-700 tracking-widest">
@@ -1308,9 +1304,7 @@
                     </p>
                 </div>
 
-                <!-- ============================================ -->
-                <!-- SEÇÃO: MÚLTIPLOS TURNOS PARA ESTA OP (AGORA EMBAIXO) -->
-                <!-- ============================================ -->
+                <!-- MÚLTIPLOS TURNOS (EMBAIXO) -->
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
                     <div class="flex justify-between items-center mb-3">
                         <label class="block text-[10px] font-bold uppercase text-blue-700 tracking-widest">
@@ -1322,13 +1316,10 @@
                         </button>
                     </div>
                     
-                    <!-- Lista de turnos adicionados -->
                     <div id="turnos-lista" class="space-y-2 max-h-60 overflow-y-auto"></div>
                 </div>
 
-                <!-- ============================================ -->
                 <!-- PRÉ-VISUALIZAÇÃO DO OEE -->
-                <!-- ============================================ -->
                 <div class="bg-slate-800 text-white p-6 rounded-2xl">
                     <h3 class="text-xs font-black uppercase opacity-60 tracking-widest mb-3">PRÉ-VISUALIZAÇÃO DO OEE</h3>
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -1765,7 +1756,7 @@
     }
 
     // ============================================
-    // FUNÇÃO CALCULAR APARAS EM MINUTOS - CORRIGIDA
+    // FUNÇÃO CALCULAR APARAS EM MINUTOS
     // ============================================
     function calcularAparasEmMinutos(aparasKg, realKgH, horas) {
         if (!aparasKg || aparasKg <= 0 || !realKgH || realKgH <= 0) return 0;
@@ -1804,7 +1795,7 @@
     };
 
     // ============================================
-    // VERIFICAR USUÁRIO - FORÇAR LOGIN AO ABRIR
+    // VERIFICAR USUÁRIO
     // ============================================
     window.supabase.auth.getUser().then(({ data: { user } }) => {
         if (!user) {
@@ -1866,7 +1857,7 @@
     }, 1000);
 
     // ============================================
-    // FUNÇÕES DE AUTOSAVE (5 MINUTOS)
+    // FUNÇÕES DE AUTOSAVE
     // ============================================
     function marcarDadosPendentes() {
         dadosPendentes = true;
@@ -2175,7 +2166,7 @@
     }
 
     // ============================================
-    // FUNÇÃO INSERIR REGISTRO - CORRIGIDA
+    // FUNÇÃO INSERIR REGISTRO
     // ============================================
     async function inserirRegistro(novo) {
         try {
@@ -2212,6 +2203,7 @@
 
             if (error) {
                 console.error("❌ Erro no Supabase:", error);
+                showErrorToast(`Erro: ${error.message}`);
                 return null;
             }
             
@@ -2219,6 +2211,7 @@
             return data;
         } catch (error) {
             console.error("❌ Erro inesperado:", error);
+            showErrorToast(`Erro: ${error.message}`);
             return null;
         }
     }
@@ -2238,7 +2231,7 @@
     }
 
     // ============================================
-    // FUNÇÃO CORRIGIDA DE CARREGAR DADOS
+    // FUNÇÃO CARREGAR DADOS - CORRIGIDA
     // ============================================
     async function carregarDados() {
         console.log("📥 Carregando dados do banco...");
@@ -2289,8 +2282,13 @@
                     reg.aparas || 0
                 );
                 
+                // IMPORTANTE: Garantir que o ID está presente
+                if (!reg.id) {
+                    console.warn("Registro sem ID:", reg);
+                }
+                
                 return {
-                    id: reg.id,
+                    id: reg.id, // Manter o ID original do banco
                     data: reg.data,
                     machine: reg.maquina || 'M1',
                     turno: reg.turno || 'A',
@@ -2335,6 +2333,7 @@
             });
             
             console.log("✅ Dados carregados com sucesso!");
+            console.log("IDs dos registros:", historico.map(h => h.id));
         } else {
             historico = [];
             console.log("📭 Nenhum registro encontrado no banco");
@@ -2418,7 +2417,7 @@
     }
 
     // ============================================
-    // FUNÇÃO ADICIONAR TURNO - CORRIGIDA
+    // FUNÇÃO ADICIONAR TURNO
     // ============================================
     function adicionarTurnoModal() {
         const data = document.getElementById('regDate').value;
@@ -2792,57 +2791,92 @@
     }
 
     // ============================================
-    // FUNÇÕES DE VIEW E FILTROS
+    // FUNÇÃO RENDER HISTORY VIEW - CORRIGIDA
     // ============================================
-    function showView(viewId) {
-        document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-' + viewId).classList.add('active');
-        document.querySelectorAll('.nav-tab-item').forEach(t => t.classList.remove('active'));
-        document.getElementById('tab-' + viewId).classList.add('active');
-        filterByRange();
-    }
-
-    function openModal() { 
-        document.getElementById('regForm').reset();
-        turnosTemp = [];
-        paradasDetalhadas = [];
-        document.getElementById('paradas-detalhadas-container').innerHTML = '';
-        atualizarListaTurnos();
-        dadosPendentes = false;
+    function renderHistoryView(data) {
+        console.log("📊 renderHistoryView recebeu", data.length, "registros");
         
-        document.getElementById('regDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('regMachine').value = '';
-        document.getElementById('regTurno').value = '';
-        document.getElementById('regOP').value = '';
-        document.getElementById('regPedido').value = '0';
-        document.getElementById('regProduto').value = '';
-        document.getElementById('regInicio').value = '06:00';
-        document.getElementById('regFim').value = '14:00';
-        document.getElementById('regSetup').value = '0';
-        document.getElementById('regAvaria').value = '0';
-        document.getElementById('regEst').value = '90';
-        document.getElementById('regProduzido').value = '0';
-        document.getElementById('regRejeicao').value = '0';
-        document.getElementById('regAparas').value = '0';
-        
-        atualizarSelectClientesProduto();
-        adicionarPreviewListeners();
-        atualizarPreview();
-        
-        document.getElementById('modal').style.display = 'flex'; 
-    }
-
-    function closeModal() { 
-        if (dadosPendentes && confirm('Tem dados não salvos. Deseja salvar antes de fechar?')) {
-            autoSalvar();
+        const tbody = document.getElementById('history-rows');
+        if (!tbody) {
+            console.error("❌ Elemento history-rows não encontrado!");
+            return;
         }
-        dadosPendentes = false;
-        document.getElementById('modal').style.display = 'none'; 
+        
+        tbody.innerHTML = '';
+        
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="14" class="text-center py-4 text-slate-400">Nenhum registro encontrado no período.</td></tr>';
+            return;
+        }
+        
+        data.sort((a, b) => new Date(b.data) - new Date(a.data));
+        
+        data.forEach((reg, index) => {
+            if (!reg.id) {
+                console.warn("Registro sem ID:", reg);
+                return;
+            }
+            
+            const oee = calcularOEE(reg.disp, reg.perf, reg.qual);
+            const statusClass = oee >= META ? 'text-green-600' : 'text-red-600';
+            const statusText = oee >= META ? '✅ Meta' : '⚠️ Abaixo';
+            const statusBg = oee >= META ? 'bg-green-100' : 'bg-red-100';
+            
+            tbody.innerHTML += `
+                <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'} hover:bg-slate-100">
+                    <td class="py-2 px-2">${reg.data ? reg.data.split('-').reverse().join('/') : '-'}</td>
+                    <td class="py-2 px-2 font-bold">${reg.machine || '-'}</td>
+                    <td class="py-2 px-2">${reg.turno || '-'}</td>
+                    <td class="py-2 px-2 font-medium text-blue-600">${reg.op || '-'}</td>
+                    <td class="py-2 px-2 max-w-xs truncate" title="${reg.produto || ''}">${reg.produto || '-'}</td>
+                    <td class="py-2 px-2 text-right">${reg.est || 0}</td>
+                    <td class="py-2 px-2 text-right font-medium">${reg.realKgH || 0}</td>
+                    <td class="py-2 px-2 text-right ${reg.disp >= 85 ? 'text-green-600' : 'text-orange-600'}">${reg.disp || 0}%</td>
+                    <td class="py-2 px-2 text-right ${reg.dispTurno >= 85 ? 'text-green-600' : 'text-orange-600'}">${reg.dispTurno || 0}%</td>
+                    <td class="py-2 px-2 text-right ${reg.perf >= 100 ? 'text-green-600' : 'text-orange-600'}">${reg.perf || 0}%</td>
+                    <td class="py-2 px-2 text-right ${reg.qual >= 98 ? 'text-green-600' : 'text-orange-600'}">${reg.qual || 0}%</td>
+                    <td class="py-2 px-2 text-right font-bold ${statusClass}">${oee}%</td>
+                    <td class="py-2 px-2 text-center">
+                        <span class="inline-block px-2 py-1 rounded-full text-[8px] font-bold uppercase ${statusBg} ${statusClass}">
+                            ${statusText}
+                        </span>
+                    </td>
+                    <td class="py-2 px-2 text-center">
+                        <button onclick="openEditModal(${reg.id})" class="edit-btn mx-1 inline-block" title="Editar">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                        </button>
+                        <button onclick="apagarRegistro(${reg.id})" class="text-red-500 hover:text-red-700 mx-1 inline-block" title="Apagar">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        console.log("✅ Tabela de histórico atualizada com", data.length, "registros");
     }
 
+    // ============================================
+    // FUNÇÃO OPEN EDIT MODAL - CORRIGIDA
+    // ============================================
     function openEditModal(id) {
-        const reg = historico.find(h => h.id === id);
-        if (!reg) return;
+        console.log("🔍 Abrindo edição para ID:", id, "Tipo:", typeof id);
+        
+        const idNum = typeof id === 'string' ? parseInt(id) : id;
+        
+        const reg = historico.find(h => h.id === idNum);
+        if (!reg) {
+            console.error("❌ Registro não encontrado com ID:", idNum);
+            console.log("IDs disponíveis:", historico.map(h => h.id));
+            showErrorToast('Registro não encontrado!');
+            return;
+        }
+        
+        console.log("✅ Registro encontrado:", reg);
         
         document.getElementById('editId').value = reg.id;
         document.getElementById('editDate').value = reg.data;
@@ -2927,15 +2961,73 @@
         showToast('Registro atualizado com sucesso!');
     }
 
+    // ============================================
+    // FUNÇÃO APAGAR REGISTRO - CORRIGIDA
+    // ============================================
     async function apagarRegistro(id) {
+        console.log("🗑️ Apagando registro ID:", id, "Tipo:", typeof id);
+        
+        const idNum = typeof id === 'string' ? parseInt(id) : id;
+        
         if (confirm("Deseja apagar este registo permanentemente?")) {
-            const apagado = await apagarRegistroBanco(id);
+            const apagado = await apagarRegistroBanco(idNum);
             if (apagado) {
-                historico = historico.filter(h => h.id !== id);
+                historico = historico.filter(h => h.id !== idNum);
                 filterByRange();
-                showToast('Registro apagado!');
+                showToast('✅ Registro apagado!');
+            } else {
+                showErrorToast('❌ Erro ao apagar registro!');
             }
         }
+    }
+
+    // ============================================
+    // FUNÇÕES DE VIEW E FILTROS
+    // ============================================
+    function showView(viewId) {
+        document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + viewId).classList.add('active');
+        document.querySelectorAll('.nav-tab-item').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + viewId).classList.add('active');
+        filterByRange();
+    }
+
+    function openModal() { 
+        document.getElementById('regForm').reset();
+        turnosTemp = [];
+        paradasDetalhadas = [];
+        document.getElementById('paradas-detalhadas-container').innerHTML = '';
+        atualizarListaTurnos();
+        dadosPendentes = false;
+        
+        document.getElementById('regDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('regMachine').value = '';
+        document.getElementById('regTurno').value = '';
+        document.getElementById('regOP').value = '';
+        document.getElementById('regPedido').value = '0';
+        document.getElementById('regProduto').value = '';
+        document.getElementById('regInicio').value = '06:00';
+        document.getElementById('regFim').value = '14:00';
+        document.getElementById('regSetup').value = '0';
+        document.getElementById('regAvaria').value = '0';
+        document.getElementById('regEst').value = '90';
+        document.getElementById('regProduzido').value = '0';
+        document.getElementById('regRejeicao').value = '0';
+        document.getElementById('regAparas').value = '0';
+        
+        atualizarSelectClientesProduto();
+        adicionarPreviewListeners();
+        atualizarPreview();
+        
+        document.getElementById('modal').style.display = 'flex'; 
+    }
+
+    function closeModal() { 
+        if (dadosPendentes && confirm('Tem dados não salvos. Deseja salvar antes de fechar?')) {
+            autoSalvar();
+        }
+        dadosPendentes = false;
+        document.getElementById('modal').style.display = 'none'; 
     }
 
     function filterToday() {
@@ -3156,11 +3248,6 @@
         });
     }
 
-    // ============================================
-    // FUNÇÃO PARA FILTRAR PERDAS POR TURNO
-    // ============================================
-    let perdasDataFiltrada = [];
-
     function filtrarPerdasPorTurno() {
         const turnoFilter = document.getElementById('perdasTurnoFilter')?.value || 'ALL';
         const maquinaFilter = document.getElementById('perdasMaquinaFilter')?.value || 'ALL';
@@ -3181,16 +3268,10 @@
             dadosFiltrados = dadosFiltrados.filter(h => h.machine === maquinaFilter);
         }
         
-        perdasDataFiltrada = dadosFiltrados;
         renderPerdasView(dadosFiltrados);
     }
 
-    // ============================================
-    // FUNÇÃO RENDER PERDAS VIEW - CORRIGIDA
-    // ============================================
     function renderPerdasView(data) {
-        console.log("📊 Renderizando análise de perdas com", data.length, "registros");
-        
         const perdasMaq = { 
             M1: { setup: 0, avaria: 0, aparas: 0, total: 0 }, 
             M2: { setup: 0, avaria: 0, aparas: 0, total: 0 }, 
@@ -3226,11 +3307,6 @@
                 perdasPorTurno[reg.turno] += total;
             }
         });
-        
-        console.log("Perdas por máquina:", perdasMaq);
-        console.log("Perdas por motivo:", perdasMot);
-        console.log("Perdas por dia:", perdasDia);
-        console.log("Perdas por turno:", perdasPorTurno);
         
         let topMaq = '--', topMaqVal = 0;
         Object.entries(perdasMaq).forEach(([m, v]) => {
@@ -3988,58 +4064,6 @@
     function fecharDetalhesCliente() {
         const m = document.getElementById('detalhesClienteModal');
         if (m) m.remove();
-    }
-
-    function renderHistoryView(data) {
-        const tbody = document.getElementById('history-rows');
-        if (!tbody) return;
-        
-        tbody.innerHTML = '';
-        
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="14" class="text-center py-4 text-slate-400">Nenhum registro encontrado no período.</td></tr>';
-            return;
-        }
-        
-        data.sort((a, b) => new Date(b.data) - new Date(a.data)).forEach((reg) => {
-            const oee = calcularOEE(reg.disp, reg.perf, reg.qual);
-            const statusClass = oee >= META ? 'text-green-600' : 'text-red-600';
-            const statusText = oee >= META ? '✅ Meta' : '⚠️ Abaixo';
-            
-            tbody.innerHTML += `
-                <tr>
-                    <td class="py-2">${reg.data ? reg.data.split('-').reverse().join('/') : '-'}</td>
-                    <td class="py-2">${reg.machine || '-'}</td>
-                    <td class="py-2">${reg.turno || '-'}</td>
-                    <td class="py-2">${reg.op || '-'}</td>
-                    <td class="py-2">${reg.produto || '-'}</td>
-                    <td class="py-2 text-center">${reg.est || 0}</td>
-                    <td class="py-2 text-center">${reg.realKgH || 0}</td>
-                    <td class="py-2 text-center">${reg.disp || 0}%</td>
-                    <td class="py-2 text-center">${reg.dispTurno || 0}%</td>
-                    <td class="py-2 text-center">${reg.perf || 0}%</td>
-                    <td class="py-2 text-center">${reg.qual || 0}%</td>
-                    <td class="py-2 text-right font-bold ${statusClass}">${oee}%</td>
-                    <td class="py-2 text-center">
-                        <span class="inline-block px-2 py-1 rounded-full text-[8px] font-bold uppercase ${oee >= META ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                            ${statusText}
-                        </span>
-                    </td>
-                    <td class="py-2 text-center">
-                        <button onclick="openEditModal(${reg.id})" class="edit-btn mx-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            </svg>
-                        </button>
-                        <button onclick="apagarRegistro(${reg.id})" class="text-red-500 hover:text-red-700 mx-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
     }
 
     function capturarDashboard() {

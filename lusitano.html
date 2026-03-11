@@ -1076,7 +1076,7 @@
                                 <th class="pb-4">Motivo Principal</th>
                             </tr>
                         </thead>
-                        <tbody id="perdas-detail-rows" class="divide-y divide-slate-50"></tbody>
+                        <tbody id="perdas-detail-rows"></tbody>
                     </table>
                 </div>
             </div>
@@ -2901,6 +2901,9 @@
         document.getElementById('editModal').style.display = 'none';
     }
 
+    // ============================================
+    // FUNÇÃO SALVAR EDIÇÃO - CORRIGIDA (REMOVI O CAMPO editMotivoPerda)
+    // ============================================
     async function salvarEdicao() {
         const id = parseInt(document.getElementById('editId').value);
         const index = historico.findIndex(h => h.id === id);
@@ -2916,7 +2919,7 @@
         const fim = document.getElementById('editFim').value;
         const setup = safeNumber(document.getElementById('editSetup').value);
         const avaria = safeNumber(document.getElementById('editAvaria').value);
-        const motivoPerda = document.getElementById('editMotivoPerda').value;
+        // REMOVIDA a linha que causava o erro: const motivoPerda = document.getElementById('editMotivoPerda').value;
         const est = safeNumber(document.getElementById('editEst').value);
         const produzido = safeNumber(document.getElementById('editProduzido').value);
         const rejeicao = safeNumber(document.getElementById('editRejeicao').value);
@@ -2940,7 +2943,8 @@
             data: date,
             machine, turno, op, produto, pedido,
             cliente: produtoInfo.cliente,
-            inicio, fim, setup, avaria, motivoPerda,
+            inicio, fim, setup, avaria,
+            // REMOVIDO: motivoPerda,
             est, realKgH, produzido, rejeicao, aparas,
             perf, qual,
             disp: dispOP

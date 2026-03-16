@@ -3080,101 +3080,112 @@
         document.getElementById(id).classList.add('active');
     }
 
-    // ============================================
-    // FUNÇÃO DE BUSCA EM TEMPO REAL PARA CLIENTES
-    // ============================================
-    function filtrarClientesLive() {
-        const termo = document.getElementById('clientLiveSearch').value.trim().toLowerCase();
-        const listaContainer = document.getElementById('client-performance-list');
-        
-        // Pega os dados filtrados pelo período atual
-        const start = document.getElementById('startDate').value;
-        const end = document.getElementById('endDate').value;
-        let dadosPeriodo = historico;
-        
-        if (start && end) {
-            dadosPeriodo = historico.filter(h => h.data >= start && h.data <= end);
-        }
-        
-        // Agrupa por cliente
-        const clientesData = {};
-        dadosPeriodo.forEach(r => { 
-            const c = r.cliente || 'Sem cliente'; 
-            if (!clientesData[c]) clientesData[c] = []; 
-            clientesData[c].push(r); 
-        });
-        
-        // Filtra clientes pelo termo digitado (mostra apenas os que contêm o termo)
-        const clientesFiltrados = Object.keys(clientesData)
-            .filter(cliente => cliente.toLowerCase().includes(termo))
-            .sort();
-        
-        // Atualiza contador
-        document.getElementById('clientSearchCount').innerHTML = 
-            `${clientesFiltrados.length} cliente${clientesFiltrados.length !== 1 ? 's' : ''}`;
-        
-        // Renderiza lista filtrada
-        listaContainer.innerHTML = '';
-        
-        if (clientesFiltrados.length === 0) {
-            listaContainer.innerHTML = `
-                <div class="bg-white p-12 rounded-2xl border border-slate-200 text-center">
-                    <p class="text-slate-400 text-lg">🔍 Nenhum cliente encontrado com "${termo}"</p>
-                    <p class="text-slate-400 text-sm mt-2">Tente outro termo de busca</p>
-                </div>
-            `;
-            return;
-        }
-        
-        clientesFiltrados.forEach(cliente => {
-            const rs = clientesData[cliente];
-            let total = 0, horas = 0, datas = [];
-            
-            rs.forEach(r => {
-                total += r.produzido || 0;
-                datas.push(r.data);
-                horas += calcularDuracaoHoras(r.inicio, r.fim);
-            });
-            
-            datas.sort();
-            const p = datas[0]?.split('-').reverse().join('/') || '';
-            const u = datas[datas.length - 1]?.split('-').reverse().join('/') || '';
-            const per = p === u ? p : `${p} a ${u}`;
-            
-            // Pega os produtos deste cliente para mostrar
-            const produtosCliente = produtos.filter(p => p.cliente === cliente).slice(0, 3); // Mostra só 3 produtos
-            const produtosHTML = produtosCliente.length > 0 ? 
-                `<div class="flex gap-1 mt-2 flex-wrap">
-                    ${produtosCliente.map(p => {
-                        const produtoNum = (produtos.indexOf(p) % 8) + 1;
-                        return `<span class="product-badge product-${produtoNum} text-[8px]">${p.nome}</span>`;
-                    }).join('')}
-                    ${produtos.filter(p => p.cliente === cliente).length > 3 ? '<span class="text-[8px] text-slate-400">...</span>' : ''}
-                </div>` : '';
-            
-            listaContainer.innerHTML += `
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesCliente('${cliente.replace(/'/g, "\\'")}')">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <span class="font-black text-xl text-green-700">${cliente}</span>
-                            ${produtosHTML}
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
-                        <div>
-                            <span class="font-medium">📦 ${total.toFixed(0)} kg</span>
-                            <span class="mx-2">•</span>
-                            <span>📋 ${rs.length} pedidos</span>
-                            <span class="mx-2">•</span>
-                            <span>🕒 ${horas.toFixed(1)}h</span>
-                        </div>
-                        <div><span>📅 ${per}</span></div>
-                    </div>
-                </div>
-            `;
-        });
+   // ============================================
+// FUNÇÃO DE BUSCA EM TEMPO REAL PARA CLIENTES - CORRIGIDA
+// ============================================
+function filtrarClientesLive() {
+    const termo = document.getElementById('clientLiveSearch').value.trim().toLowerCase();
+    const listaContainer = document.getElementById('client-performance-list');
+    
+    // Pega os dados filtrados pelo período atual
+    const start = document.getElementById('startDate').value;
+    const end = document.getElementById('endDate').value;
+    let dadosPeriodo = historico;
+    
+    if (start && end) {
+        dadosPeriodo = historico.filter(h => h.data >= start && h.data <= end);
     }
-
+    
+    // Agrupa por cliente
+    const clientesData = {};
+    dadosPeriodo.forEach(r => { 
+        const c = r.cliente || 'Sem cliente'; 
+        if (!clientesData[c]) clientesData[c] = []; 
+        clientesData[c].push(r); 
+    });
+    
+    // Se não tem termo de busca, NÃO mostra NINGUÉM (lista vazia)
+    if (termo === '') {
+        document.getElementById('clientSearchCount').innerHTML = '0 clientes';
+        listaContainer.innerHTML = `
+            <div class="bg-white p-12 rounded-2xl border border-slate-200 text-center">
+                <p class="text-slate-400 text-lg">🔍 Digite para buscar clientes</p>
+                <p class="text-slate-400 text-sm mt-2">Comece a digitar o nome do cliente</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // FILTRA clientes que CONTÊM o termo digitado (não todos)
+    const clientesFiltrados = Object.keys(clientesData)
+        .filter(cliente => cliente.toLowerCase().includes(termo))
+        .sort();
+    
+    // Atualiza contador
+    document.getElementById('clientSearchCount').innerHTML = 
+        `${clientesFiltrados.length} cliente${clientesFiltrados.length !== 1 ? 's' : ''}`;
+    
+    // Renderiza lista filtrada
+    listaContainer.innerHTML = '';
+    
+    if (clientesFiltrados.length === 0) {
+        listaContainer.innerHTML = `
+            <div class="bg-white p-12 rounded-2xl border border-slate-200 text-center">
+                <p class="text-slate-400 text-lg">🔍 Nenhum cliente encontrado com "${termo}"</p>
+                <p class="text-slate-400 text-sm mt-2">Tente outro termo de busca</p>
+            </div>
+        `;
+        return;
+    }
+    
+    clientesFiltrados.forEach(cliente => {
+        const rs = clientesData[cliente];
+        let total = 0, horas = 0, datas = [];
+        
+        rs.forEach(r => {
+            total += r.produzido || 0;
+            datas.push(r.data);
+            horas += calcularDuracaoHoras(r.inicio, r.fim);
+        });
+        
+        datas.sort();
+        const p = datas[0]?.split('-').reverse().join('/') || '';
+        const u = datas[datas.length - 1]?.split('-').reverse().join('/') || '';
+        const per = p === u ? p : `${p} a ${u}`;
+        
+        // Pega os produtos deste cliente para mostrar
+        const produtosCliente = produtos.filter(p => p.cliente === cliente).slice(0, 3); // Mostra só 3 produtos
+        const produtosHTML = produtosCliente.length > 0 ? 
+            `<div class="flex gap-1 mt-2 flex-wrap">
+                ${produtosCliente.map(p => {
+                    const produtoNum = (produtos.indexOf(p) % 8) + 1;
+                    return `<span class="product-badge product-${produtoNum} text-[8px]">${p.nome}</span>`;
+                }).join('')}
+                ${produtos.filter(p => p.cliente === cliente).length > 3 ? '<span class="text-[8px] text-slate-400">...</span>' : ''}
+            </div>` : '';
+        
+        listaContainer.innerHTML += `
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesCliente('${cliente.replace(/'/g, "\\'")}')">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <span class="font-black text-xl text-green-700">${cliente}</span>
+                        ${produtosHTML}
+                    </div>
+                </div>
+                <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
+                    <div>
+                        <span class="font-medium">📦 ${total.toFixed(0)} kg</span>
+                        <span class="mx-2">•</span>
+                        <span>📋 ${rs.length} pedidos</span>
+                        <span class="mx-2">•</span>
+                        <span>🕒 ${horas.toFixed(1)}h</span>
+                    </div>
+                    <div><span>📅 ${per}</span></div>
+                </div>
+            </div>
+        `;
+    });
+}
     function searchClient() {
         const term = document.getElementById('clientSearchInput').value.trim().toLowerCase();
         if (term) {

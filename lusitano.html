@@ -295,7 +295,7 @@
             color: #94a3b8;
         }
 
-        #modal, #clientModal, #editModal, #turnosModal, #detalhesOPModal, #detalhesClienteModal {
+        #modal, #clientModal, #editModal, #turnosModal, #detalhesOPModal, #detalhesClienteModal, #modalDiaDetalhes {
             display: none;
             position: fixed;
             inset: 0;
@@ -874,6 +874,73 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
+        /* Estilos para o calendário - VERSÃO MAIOR */
+        .calendar-day {
+            transition: all 0.2s;
+            cursor: pointer;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+        
+        .calendar-day:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .calendar-day.selected {
+            border: 2px solid var(--lusitano-green);
+            background-color: #f0fdf4;
+        }
+
+        /* Estilos para o modal - TAMANHO MAIOR */
+        .maquina-col {
+            border-right: 1px solid #e2e8f0;
+            padding-right: 20px;
+        }
+        
+        .maquina-col:last-child {
+            border-right: none;
+        }
+        
+        .timeline-maquina {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .timeline-item {
+            padding: 6px 0;
+            border-bottom: 1px dashed #e2e8f0;
+            font-size: 14px;
+        }
+        
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+        
+        .pedido-card-modal {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--lusitano-green);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            font-size: 14px;
+        }
+        
+        .pedido-card-modal .op-numero {
+            font-weight: 800;
+            color: var(--lusitano-green);
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -1082,6 +1149,7 @@
             </div>
         </div>
 
+        <!-- VIEW EFICIÊNCIA DETALHADA - COM CALENDÁRIO MAIOR -->
         <div id="view-efficiency" class="view-content">
             <div class="bg-white p-8 rounded-3xl border border-slate-200 mb-8">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-6">
@@ -1097,7 +1165,42 @@
                     </select>
                 </div>
             </div>
+
+            <!-- CALENDÁRIO MAIOR -->
+            <div class="bg-white p-8 rounded-2xl border border-slate-200 mb-6 max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h4 class="text-lg font-black uppercase text-slate-600">📅 Calendário de Produção</h4>
+                    <div class="flex gap-3">
+                        <button onclick="mudarMes(-1)" class="px-4 py-2 bg-slate-100 rounded-lg text-base font-bold hover:bg-slate-200">←</button>
+                        <button onclick="mudarMes(1)" class="px-4 py-2 bg-slate-100 rounded-lg text-base font-bold hover:bg-slate-200">→</button>
+                    </div>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <select id="machineCalendarSelect" onchange="carregarCalendario()" class="bg-slate-100 border border-slate-200 p-3 rounded-lg text-base font-bold">
+                        <option value="ALL">TODAS AS MÁQUINAS</option>
+                        <option value="M1">M1</option>
+                        <option value="M2">M2</option>
+                        <option value="M3">M3</option>
+                    </select>
+                </div>
+                
+                <div id="calendarGrid" class="grid grid-cols-7 gap-2 text-center">
+                    <!-- Dias da semana por extenso -->
+                    <div class="text-base font-black text-slate-500 py-3">DOM</div>
+                    <div class="text-base font-black text-slate-500 py-3">SEG</div>
+                    <div class="text-base font-black text-slate-500 py-3">TER</div>
+                    <div class="text-base font-black text-slate-500 py-3">QUA</div>
+                    <div class="text-base font-black text-slate-500 py-3">QUI</div>
+                    <div class="text-base font-black text-slate-500 py-3">SEX</div>
+                    <div class="text-base font-black text-slate-500 py-3">SÁB</div>
+                </div>
+            </div>
+            
+            <!-- CARDS DE EFICIÊNCIA POR TURNO -->
             <div id="efficiency-cards-container" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10"></div>
+            
+            <!-- TABELA DE DADOS -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200">
                 <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Dados do Período Selecionado</h4>
                 <div class="max-h-[400px] overflow-y-auto">
@@ -1143,7 +1246,7 @@
             <div id="opTimelineContainer" class="space-y-4"></div>
         </div>
 
-        <!-- VIEW HISTÓRICO - CORRIGIDA -->
+        <!-- VIEW HISTÓRICO -->
         <div id="view-history" class="view-content">
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                 <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-8">Histórico Detalhado</h3>
@@ -1173,20 +1276,21 @@
             </div>
         </div>
 
-        <!-- VIEW CLIENTES - MODIFICADA PARA BUSCA EM TEMPO REAL -->
+        <!-- VIEW CLIENTES - CORRIGIDA -->
         <div id="view-clients" class="view-content">
             <div class="bg-white p-8 rounded-3xl border border-slate-200 mb-8">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-6">
                     <div>
                         <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Análise por Cliente</h3>
-                        <p class="text-slate-400 text-sm font-medium">Digite para filtrar clientes em tempo real</p>
+                        <p class="text-slate-400 text-sm font-medium">Digite para buscar clientes em tempo real</p>
                     </div>
                     <div class="client-search-container w-full md:w-auto">
                         <input type="text" id="clientLiveSearch" 
                                placeholder="Digite para filtrar cliente..." 
-                               class="client-search-input w-full md:w-80"
-                               onkeyup="filtrarClientesLive()">
-                        <span class="text-xs text-slate-400 ml-2" id="clientSearchCount"></span>
+                               class="client-search-input w-full md:w-96 text-base"
+                               onkeyup="filtrarClientesLive()"
+                               autocomplete="off">
+                        <span class="text-sm text-slate-400 ml-2" id="clientSearchCount">0 clientes</span>
                     </div>
                 </div>
             </div>
@@ -1261,7 +1365,7 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">PARADAS (MIN)</label>
-                        <input type="number" id="regAvaria" value="0" min="0" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" readonly>
+                        <input type="number" id="regAvaria" value="0" min="0" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
                     </div>
                 </div>
 
@@ -1284,7 +1388,7 @@
                     </div>
                 </div>
 
-                <!-- PARADAS DETALHADAS (EM CIMA) -->
+                <!-- PARADAS DETALHADAS - COM GEL E CAMPO PARA OUTROS -->
                 <div class="bg-purple-50 p-4 rounded-xl border border-purple-200">
                     <div class="flex justify-between items-center mb-3">
                         <label class="block text-[10px] font-bold uppercase text-purple-700 tracking-widest">
@@ -1303,7 +1407,7 @@
                     </p>
                 </div>
 
-                <!-- MÚLTIPLOS TURNOS (EMBAIXO) -->
+                <!-- MÚLTIPLOS TURNOS -->
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
                     <div class="flex justify-between items-center mb-3">
                         <label class="block text-[10px] font-bold uppercase text-blue-700 tracking-widest">
@@ -1525,7 +1629,7 @@
     // CONFIGURAÇÃO DO SUPABASE - GLOBAL
     // ============================================
     const SUPABASE_URL = "https://qyozqutvlppmgrmxcjit.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_kPFHFcxD-sB-OzoF-SLb9g_JEFVusgm";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5b3pxdXR2bHBwbWdybXhjaml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1MTQ0MjAsImV4cCI6MjA1NzA5MDQyMH0.kPFHFcxD-sB-OzoF-SLb9g_JEFVusgm";
 
     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         auth: { persistSession: true, autoRefreshToken: true }
@@ -1543,6 +1647,10 @@
     let paradasDetalhadas = [];
     let autoSaveTimer = null;
     let dadosPendentes = false;
+    
+    // Variáveis para o calendário único
+    let dataCalendarioAtual = new Date();
+    let maquinaCalendario = 'ALL';
     
     let trendChart, pillarChart, shiftChart, perdasMaquinaChart;
     let perdasMaquinaDetalheChart, perdasMotivoChart, perdasEvolucaoChart, perdasTipoChart;
@@ -1668,6 +1776,12 @@
         return (h || 0) * 60 + (m || 0);
     }
 
+    function minutosParaHora(minutos) {
+        const h = Math.floor(minutos / 60);
+        const m = minutos % 60;
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    }
+
     function calcularDuracaoHoras(inicio, fim) {
         if (!inicio || !fim) return 0;
         const minutosInicio = horaParaMinutos(inicio);
@@ -1755,6 +1869,17 @@
     }
 
     // ============================================
+    // FUNÇÃO CALCULAR APARAS EM MINUTOS
+    // ============================================
+    function calcularAparasEmMinutos(aparasKg, realKgH, horas) {
+        if (!aparasKg || aparasKg <= 0 || !realKgH || realKgH <= 0) return 0;
+        const horasEfetivas = horas > 0 ? horas : 1;
+        const kgPorHora = realKgH;
+        const minutosParaProduzirAparas = (aparasKg / kgPorHora) * 60;
+        return Math.round(minutosParaProduzirAparas);
+    }
+
+    // ============================================
     // FUNÇÃO PARA ATUALIZAR HORÁRIO POR TURNO
     // ============================================
     function atualizarHorarioPorTurno() {
@@ -1764,17 +1889,6 @@
             document.getElementById('regFim').value = TURNOS[turno].fim;
             atualizarPreview();
         }
-    }
-
-    // ============================================
-    // FUNÇÃO CALCULAR APARAS EM MINUTOS
-    // ============================================
-    function calcularAparasEmMinutos(aparasKg, realKgH, horas) {
-        if (!aparasKg || aparasKg <= 0 || !realKgH || realKgH <= 0) return 0;
-        const horasEfetivas = horas > 0 ? horas : 1;
-        const kgPorHora = realKgH;
-        const minutosParaProduzirAparas = (aparasKg / kgPorHora) * 60;
-        return Math.round(minutosParaProduzirAparas);
     }
 
     // ============================================
@@ -2242,7 +2356,7 @@
     }
 
     // ============================================
-    // FUNÇÃO CARREGAR DADOS - CORRIGIDA
+    // FUNÇÃO CARREGAR DADOS
     // ============================================
     async function carregarDados() {
         console.log("📥 Carregando dados do banco...");
@@ -2293,13 +2407,12 @@
                     reg.aparas || 0
                 );
                 
-                // IMPORTANTE: Garantir que o ID está presente
                 if (!reg.id) {
                     console.warn("Registro sem ID:", reg);
                 }
                 
                 return {
-                    id: reg.id, // Manter o ID original do banco
+                    id: reg.id,
                     data: reg.data,
                     machine: reg.maquina || 'M1',
                     turno: reg.turno || 'A',
@@ -2351,6 +2464,7 @@
         }
         
         filterByRange();
+        carregarCalendario();
     }
 
     // ============================================
@@ -2374,9 +2488,12 @@
                 <option value="Falta de Energia">💡 Falta de Energia</option>
                 <option value="Manutenção">🛠️ Manutenção</option>
                 <option value="Ajuste">⚙️ Ajuste</option>
-                <option value="Setup">⏱️ Setup</option>
+                <option value="Gel">❄️ Gel</option>
                 <option value="Outros">📌 Outros</option>
             </select>
+            <div class="flex gap-1">
+                <input type="text" id="parada-outro-${index}" class="border-2 border-slate-200 p-1 rounded-lg text-xs w-24 hidden" placeholder="Digite o motivo">
+            </div>
             <button type="button" onclick="removerParadaDetalhada(${index})" class="text-red-500 hover:text-red-700">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -2385,6 +2502,18 @@
         `;
         
         container.appendChild(div);
+        
+        // Adiciona evento para mostrar campo "Outros"
+        const selectMotivo = document.getElementById(`parada-motivo-${index}`);
+        const inputOutro = document.getElementById(`parada-outro-${index}`);
+        
+        selectMotivo.addEventListener('change', function() {
+            if (this.value === 'Outros') {
+                inputOutro.classList.remove('hidden');
+            } else {
+                inputOutro.classList.add('hidden');
+            }
+        });
         
         const inputs = div.querySelectorAll('input, select');
         inputs.forEach(input => {
@@ -2456,7 +2585,11 @@
         paradasDetalhadas.forEach((p, idx) => {
             const inicioParada = document.getElementById(`parada-inicio-${idx}`)?.value;
             const fimParada = document.getElementById(`parada-fim-${idx}`)?.value;
-            const motivoParada = document.getElementById(`parada-motivo-${idx}`)?.value;
+            let motivoParada = document.getElementById(`parada-motivo-${idx}`)?.value;
+            
+            if (motivoParada === 'Outros') {
+                motivoParada = document.getElementById(`parada-outro-${idx}`)?.value || 'Outros';
+            }
             
             if (inicioParada && fimParada) {
                 paradasDesteTurno.push({
@@ -2612,7 +2745,11 @@
         paradasDetalhadas.forEach((p, idx) => {
             const inicioParada = document.getElementById(`parada-inicio-${idx}`)?.value;
             const fimParada = document.getElementById(`parada-fim-${idx}`)?.value;
-            const motivoParada = document.getElementById(`parada-motivo-${idx}`)?.value;
+            let motivoParada = document.getElementById(`parada-motivo-${idx}`)?.value;
+            
+            if (motivoParada === 'Outros') {
+                motivoParada = document.getElementById(`parada-outro-${idx}`)?.value || 'Outros';
+            }
             
             if (inicioParada && fimParada) {
                 paradasDesteTurno.push({
@@ -2685,6 +2822,7 @@
             
             closeModal();
             filterByRange();
+            carregarCalendario();
         } else {
             showErrorToast('Erro ao salvar turno!');
         }
@@ -2781,6 +2919,7 @@
             
             closeModal();
             filterByRange();
+            carregarCalendario();
         } else {
             showWarningToast(`⚠️ ${registrosSalvos} de ${turnosTemp.length} turnos salvos.`);
         }
@@ -2802,7 +2941,266 @@
     }
 
     // ============================================
-    // FUNÇÃO RENDER HISTORY VIEW - CORRIGIDA
+    // FUNÇÕES DO CALENDÁRIO ÚNICO - VERSÃO MAIOR
+    // ============================================
+    function carregarCalendario() {
+        maquinaCalendario = document.getElementById('machineCalendarSelect').value;
+        const ano = dataCalendarioAtual.getFullYear();
+        const mes = dataCalendarioAtual.getMonth();
+        
+        const primeiroDia = new Date(ano, mes, 1);
+        const ultimoDia = new Date(ano, mes + 1, 0);
+        
+        let dias = [];
+        
+        // Preenche os dias em branco antes do primeiro dia do mês
+        for (let i = 0; i < primeiroDia.getDay(); i++) {
+            dias.push('<div class="p-4"></div>');
+        }
+        
+        // Preenche os dias do mês
+        for (let d = 1; d <= ultimoDia.getDate(); d++) {
+            const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            
+            // Verifica se tem pedidos na máquina selecionada neste dia
+            const temPedidos = historico.some(h => 
+                h.data === dataStr && 
+                (maquinaCalendario === 'ALL' || h.machine === maquinaCalendario)
+            );
+            
+            dias.push(`
+                <div onclick="abrirModalDia('${dataStr}')" 
+                     class="calendar-day p-4 rounded text-lg font-medium ${temPedidos ? 'bg-green-100 font-bold hover:bg-green-200 border-2 border-green-600' : 'bg-slate-50 hover:bg-slate-200'} cursor-pointer">
+                    ${d}
+                </div>
+            `);
+        }
+        
+        document.getElementById('calendarGrid').innerHTML = dias.join('');
+    }
+
+    function mudarMes(direcao) {
+        dataCalendarioAtual.setMonth(dataCalendarioAtual.getMonth() + direcao);
+        carregarCalendario();
+    }
+
+    // ============================================
+    // FUNÇÃO PARA ABRIR MODAL DO DIA (3 COLUNAS) - TAMANHO MAIOR
+    // ============================================
+    function abrirModalDia(data) {
+        const dataFormatada = data.split('-').reverse().join('/');
+        
+        // Busca pedidos do dia para cada máquina
+        const pedidosM1 = historico.filter(h => h.data === data && h.machine === 'M1')
+            .sort((a, b) => horaParaMinutos(a.inicio) - horaParaMinutos(b.inicio));
+        const pedidosM2 = historico.filter(h => h.data === data && h.machine === 'M2')
+            .sort((a, b) => horaParaMinutos(a.inicio) - horaParaMinutos(b.inicio));
+        const pedidosM3 = historico.filter(h => h.data === data && h.machine === 'M3')
+            .sort((a, b) => horaParaMinutos(a.inicio) - horaParaMinutos(b.inicio));
+        
+        const totalPedidos = pedidosM1.length + pedidosM2.length + pedidosM3.length;
+        
+        if (totalPedidos === 0) {
+            showWarningToast('Não há pedidos neste dia');
+            return;
+        }
+        
+        // Remove modal anterior se existir
+        const modalExistente = document.getElementById('modalDiaDetalhes');
+        if (modalExistente) modalExistente.remove();
+        
+        // Cria o modal - TAMANHO MAIOR
+        const modal = document.createElement('div');
+        modal.id = 'modalDiaDetalhes';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[200]';
+        modal.style.display = 'flex';
+        
+        // Calcula totais gerais do dia
+        let totalHoras = 0;
+        let totalKg = 0;
+        let somaOEE = 0;
+        let countOEE = 0;
+        
+        [...pedidosM1, ...pedidosM2, ...pedidosM3].forEach(p => {
+            const horas = calcularDuracaoHoras(p.inicio, p.fim);
+            totalHoras += horas;
+            totalKg += p.produzido || 0;
+            somaOEE += calcularOEE(p.disp, p.perf, p.qual);
+            countOEE++;
+        });
+        
+        const oeeMedio = countOEE > 0 ? Math.round(somaOEE / countOEE) : 0;
+        const horasOciosas = 24 - totalHoras;
+        
+        modal.innerHTML = `
+            <div class="bg-white rounded-3xl shadow-2xl w-[95vw] max-w-7xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <h2 class="font-black uppercase text-slate-800 text-2xl">
+                        📅 ANÁLISE DO DIA ${dataFormatada}
+                    </h2>
+                    <button onclick="fecharModalDia()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
+                </div>
+                
+                <!-- TRÊS COLUNAS (M1, M2, M3) - MAIORES -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Coluna M1 -->
+                    <div class="maquina-col">
+                        <h3 class="text-xl font-black text-green-700 mb-4 text-center">M1</h3>
+                        ${criarColunaMaquina(pedidosM1, 'M1')}
+                    </div>
+                    
+                    <!-- Coluna M2 -->
+                    <div class="maquina-col">
+                        <h3 class="text-xl font-black text-green-700 mb-4 text-center">M2</h3>
+                        ${criarColunaMaquina(pedidosM2, 'M2')}
+                    </div>
+                    
+                    <!-- Coluna M3 -->
+                    <div>
+                        <h3 class="text-xl font-black text-green-700 mb-4 text-center">M3</h3>
+                        ${criarColunaMaquina(pedidosM3, 'M3')}
+                    </div>
+                </div>
+                
+                <!-- RESUMO DO DIA - MAIOR -->
+                <div class="bg-slate-100 p-6 rounded-xl mt-4">
+                    <h4 class="text-base font-black uppercase text-slate-600 mb-4">📊 RESUMO DO DIA</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-black text-green-700">${totalPedidos}</div>
+                            <div class="text-xs text-slate-500">Pedidos</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-black text-blue-700">${totalHoras.toFixed(1)}h</div>
+                            <div class="text-xs text-slate-500">Horas Produtivas</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-black text-orange-700">${horasOciosas.toFixed(1)}h</div>
+                            <div class="text-xs text-slate-500">Horas Ociosas</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-black text-purple-700">${totalKg}kg</div>
+                            <div class="text-xs text-slate-500">Produção</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-black ${oeeMedio >= 85 ? 'text-green-700' : 'text-red-700'}">${oeeMedio}%</div>
+                            <div class="text-xs text-slate-500">OEE Médio</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end">
+                    <button onclick="fecharModalDia()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl text-base hover:bg-slate-300">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    }
+
+    function criarColunaMaquina(pedidos, maquina) {
+        if (pedidos.length === 0) {
+            return `<div class="text-slate-400 italic text-center py-4 text-base">Sem produção neste dia</div>`;
+        }
+        
+        // Agrupa por turno
+        const turnos = ['A', 'B', 'C'];
+        let html = '';
+        
+        turnos.forEach(turno => {
+            const pedidosTurno = pedidos.filter(p => p.turno === turno)
+                .sort((a, b) => horaParaMinutos(a.inicio) - horaParaMinutos(b.inicio));
+            
+            const turnoInfo = TURNOS[turno];
+            
+            html += `
+                <div class="mb-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-sm font-black ${
+                            turno === 'A' ? 'text-yellow-600' : 
+                            turno === 'B' ? 'text-green-600' : 'text-red-600'
+                        }">TURNO ${turno}</span>
+                        <span class="text-xs bg-slate-100 px-2 py-1 rounded">${turnoInfo.inicio} - ${turnoInfo.fim}</span>
+                    </div>
+                    <div class="timeline-maquina text-sm">
+            `;
+            
+            if (pedidosTurno.length === 0) {
+                html += `<div class="text-slate-400 italic text-xs">Sem produção</div>`;
+            } else {
+                const inicioTurno = horaParaMinutos(turnoInfo.inicio);
+                let fimTurno = horaParaMinutos(turnoInfo.fim);
+                if (fimTurno < inicioTurno) fimTurno += 24 * 60;
+                
+                let ultimoFim = inicioTurno;
+                
+                pedidosTurno.forEach(p => {
+                    let inicioPedido = horaParaMinutos(p.inicio);
+                    let fimPedido = horaParaMinutos(p.fim);
+                    
+                    if (fimPedido < inicioPedido) fimPedido += 24 * 60;
+                    
+                    // Gap antes do pedido
+                    if (inicioPedido > ultimoFim) {
+                        const inicioGap = minutosParaHora(ultimoFim);
+                        const fimGap = minutosParaHora(inicioPedido);
+                        html += `<div class="timeline-item text-orange-500">${inicioGap} - ${fimGap} <span class="text-[10px]">⏸️</span></div>`;
+                    }
+                    
+                    // Pedido
+                    const inicioHora = minutosParaHora(inicioPedido);
+                    const fimHora = minutosParaHora(fimPedido);
+                    html += `<div class="timeline-item text-green-700 font-medium">${inicioHora} - ${fimHora} <span class="text-[10px]">📦 OP ${p.op}</span></div>`;
+                    
+                    ultimoFim = fimPedido;
+                });
+                
+                // Gap após o último pedido
+                if (ultimoFim < fimTurno) {
+                    const inicioGap = minutosParaHora(ultimoFim);
+                    const fimGap = minutosParaHora(fimTurno);
+                    html += `<div class="timeline-item text-orange-500">${inicioGap} - ${fimGap} <span class="text-[10px]">⏸️</span></div>`;
+                }
+            }
+            
+            html += `</div></div>`;
+        });
+        
+        // Detalhes dos pedidos da máquina
+        html += `<h4 class="text-base font-bold mt-4 mb-3">📋 Detalhes</h4>`;
+        
+        pedidos.forEach(p => {
+            const duracao = calcularDuracaoHoras(p.inicio, p.fim).toFixed(1);
+            const oee = calcularOEE(p.disp, p.perf, p.qual);
+            const statusOEE = oee >= 85 ? 'text-green-600' : 'text-red-600';
+            
+            html += `
+                <div class="pedido-card-modal text-sm">
+                    <div class="flex justify-between items-start">
+                        <span class="op-numero text-base">OP ${p.op}</span>
+                        <span class="text-sm font-bold ${statusOEE}">${oee}%</span>
+                    </div>
+                    <div class="mt-2 space-y-1">
+                        <div>${p.inicio} - ${p.fim} (${duracao}h) | Turno ${p.turno}</div>
+                        <div class="truncate font-medium" title="${p.produto}">📦 ${p.produto || '-'}</div>
+                        <div>⚖️ ${p.produzido} kg | ⚙️ ${p.setup} min</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        return html;
+    }
+
+    function fecharModalDia() {
+        const modal = document.getElementById('modalDiaDetalhes');
+        if (modal) modal.remove();
+    }
+
+    // ============================================
+    // FUNÇÃO RENDER HISTORY VIEW
     // ============================================
     function renderHistoryView(data) {
         console.log("📊 renderHistoryView recebeu", data.length, "registros");
@@ -2872,7 +3270,7 @@
     }
 
     // ============================================
-    // FUNÇÃO OPEN EDIT MODAL - CORRIGIDA
+    // FUNÇÃO OPEN EDIT MODAL
     // ============================================
     function openEditModal(id) {
         console.log("🔍 Abrindo edição para ID:", id, "Tipo:", typeof id);
@@ -2913,7 +3311,7 @@
     }
 
     // ============================================
-    // FUNÇÃO SALVAR EDIÇÃO - CORRIGIDA (REMOVI O CAMPO editMotivoPerda)
+    // FUNÇÃO SALVAR EDIÇÃO
     // ============================================
     async function salvarEdicao() {
         const id = parseInt(document.getElementById('editId').value);
@@ -2970,11 +3368,12 @@
         
         closeEditModal();
         filterByRange();
+        carregarCalendario();
         showToast('Registro atualizado com sucesso!');
     }
 
     // ============================================
-    // FUNÇÃO APAGAR REGISTRO - CORRIGIDA
+    // FUNÇÃO APAGAR REGISTRO
     // ============================================
     async function apagarRegistro(id) {
         console.log("🗑️ Apagando registro ID:", id, "Tipo:", typeof id);
@@ -2986,6 +3385,7 @@
             if (apagado) {
                 historico = historico.filter(h => h.id !== idNum);
                 filterByRange();
+                carregarCalendario();
                 showToast('✅ Registro apagado!');
             } else {
                 showErrorToast('❌ Erro ao apagar registro!');
@@ -3002,9 +3402,11 @@
         document.querySelectorAll('.nav-tab-item').forEach(t => t.classList.remove('active'));
         document.getElementById('tab-' + viewId).classList.add('active');
         
-        // Se for a view de clientes, atualiza a busca
         if (viewId === 'clients') {
-            document.getElementById('clientLiveSearch').value = '';
+            const searchInput = document.getElementById('clientLiveSearch');
+            if (searchInput) {
+                searchInput.value = '';
+            }
             filtrarClientesLive();
         }
         
@@ -3080,126 +3482,104 @@
         document.getElementById(id).classList.add('active');
     }
 
-   // ============================================
-// FUNÇÃO DE BUSCA EM TEMPO REAL PARA CLIENTES - CORRIGIDA
-// ============================================
-function filtrarClientesLive() {
-    const termo = document.getElementById('clientLiveSearch').value.trim().toLowerCase();
-    const listaContainer = document.getElementById('client-performance-list');
-    
-    // Pega os dados filtrados pelo período atual
-    const start = document.getElementById('startDate').value;
-    const end = document.getElementById('endDate').value;
-    let dadosPeriodo = historico;
-    
-    if (start && end) {
-        dadosPeriodo = historico.filter(h => h.data >= start && h.data <= end);
-    }
-    
-    // Agrupa por cliente
-    const clientesData = {};
-    dadosPeriodo.forEach(r => { 
-        const c = r.cliente || 'Sem cliente'; 
-        if (!clientesData[c]) clientesData[c] = []; 
-        clientesData[c].push(r); 
-    });
-    
-    // Se não tem termo de busca, NÃO mostra NINGUÉM (lista vazia)
-    if (termo === '') {
-        document.getElementById('clientSearchCount').innerHTML = '0 clientes';
-        listaContainer.innerHTML = `
-            <div class="bg-white p-12 rounded-2xl border border-slate-200 text-center">
-                <p class="text-slate-400 text-lg">🔍 Digite para buscar clientes</p>
-                <p class="text-slate-400 text-sm mt-2">Comece a digitar o nome do cliente</p>
-            </div>
-        `;
-        return;
-    }
-    
-    // FILTRA clientes que CONTÊM o termo digitado (não todos)
-    const clientesFiltrados = Object.keys(clientesData)
-        .filter(cliente => cliente.toLowerCase().includes(termo))
-        .sort();
-    
-    // Atualiza contador
-    document.getElementById('clientSearchCount').innerHTML = 
-        `${clientesFiltrados.length} cliente${clientesFiltrados.length !== 1 ? 's' : ''}`;
-    
-    // Renderiza lista filtrada
-    listaContainer.innerHTML = '';
-    
-    if (clientesFiltrados.length === 0) {
-        listaContainer.innerHTML = `
-            <div class="bg-white p-12 rounded-2xl border border-slate-200 text-center">
-                <p class="text-slate-400 text-lg">🔍 Nenhum cliente encontrado com "${termo}"</p>
-                <p class="text-slate-400 text-sm mt-2">Tente outro termo de busca</p>
-            </div>
-        `;
-        return;
-    }
-    
-    clientesFiltrados.forEach(cliente => {
-        const rs = clientesData[cliente];
-        let total = 0, horas = 0, datas = [];
+    // ============================================
+    // FUNÇÃO DE BUSCA EM TEMPO REAL PARA CLIENTES - CORRIGIDA
+    // ============================================
+    function filtrarClientesLive() {
+        const termo = document.getElementById('clientLiveSearch').value.trim().toLowerCase();
+        const listaContainer = document.getElementById('client-performance-list');
         
-        rs.forEach(r => {
-            total += r.produzido || 0;
-            datas.push(r.data);
-            horas += calcularDuracaoHoras(r.inicio, r.fim);
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        let dadosPeriodo = historico;
+        
+        if (start && end) {
+            dadosPeriodo = historico.filter(h => h.data >= start && h.data <= end);
+        }
+        
+        const clientesData = {};
+        dadosPeriodo.forEach(r => { 
+            const c = r.cliente || 'Sem cliente'; 
+            if (!clientesData[c]) clientesData[c] = []; 
+            clientesData[c].push(r); 
         });
         
-        datas.sort();
-        const p = datas[0]?.split('-').reverse().join('/') || '';
-        const u = datas[datas.length - 1]?.split('-').reverse().join('/') || '';
-        const per = p === u ? p : `${p} a ${u}`;
-        
-        // Pega os produtos deste cliente para mostrar
-        const produtosCliente = produtos.filter(p => p.cliente === cliente).slice(0, 3); // Mostra só 3 produtos
-        const produtosHTML = produtosCliente.length > 0 ? 
-            `<div class="flex gap-1 mt-2 flex-wrap">
-                ${produtosCliente.map(p => {
-                    const produtoNum = (produtos.indexOf(p) % 8) + 1;
-                    return `<span class="product-badge product-${produtoNum} text-[8px]">${p.nome}</span>`;
-                }).join('')}
-                ${produtos.filter(p => p.cliente === cliente).length > 3 ? '<span class="text-[8px] text-slate-400">...</span>' : ''}
-            </div>` : '';
-        
-        listaContainer.innerHTML += `
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesCliente('${cliente.replace(/'/g, "\\'")}')">
-                <div class="flex justify-between items-start mb-2">
-                    <div>
-                        <span class="font-black text-xl text-green-700">${cliente}</span>
-                        ${produtosHTML}
-                    </div>
+        if (termo === '') {
+            document.getElementById('clientSearchCount').innerHTML = '0 clientes';
+            listaContainer.innerHTML = `
+                <div class="bg-white p-12 rounded-2xl border border-slate-200 text-center">
+                    <p class="text-slate-400 text-lg">🔍 Digite para buscar clientes</p>
+                    <p class="text-slate-400 text-sm mt-2">Comece a digitar o nome do cliente</p>
                 </div>
-                <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
-                    <div>
-                        <span class="font-medium">📦 ${total.toFixed(0)} kg</span>
-                        <span class="mx-2">•</span>
-                        <span>📋 ${rs.length} pedidos</span>
-                        <span class="mx-2">•</span>
-                        <span>🕒 ${horas.toFixed(1)}h</span>
-                    </div>
-                    <div><span>📅 ${per}</span></div>
-                </div>
-            </div>
-        `;
-    });
-}
-    function searchClient() {
-        const term = document.getElementById('clientSearchInput').value.trim().toLowerCase();
-        if (term) {
-            const select = document.getElementById('clientSelect');
-            for (let i = 0; i < select.options.length; i++) {
-                if (select.options[i].value.toLowerCase().includes(term)) {
-                    select.value = select.options[i].value;
-                    filterByRange();
-                    showToast(`🔍 Cliente encontrado: ${select.value}`);
-                    return;
-                }
-            }
-            alert('Cliente não encontrado!');
+            `;
+            return;
         }
+        
+        const clientesFiltrados = Object.keys(clientesData)
+            .filter(cliente => cliente.toLowerCase().includes(termo))
+            .sort();
+        
+        document.getElementById('clientSearchCount').innerHTML = 
+            `${clientesFiltrados.length} cliente${clientesFiltrados.length !== 1 ? 's' : ''}`;
+        
+        listaContainer.innerHTML = '';
+        
+        if (clientesFiltrados.length === 0) {
+            listaContainer.innerHTML = `
+                <div class="bg-white p-12 rounded-2xl border border-slate-200 text-center">
+                    <p class="text-slate-400 text-lg">🔍 Nenhum cliente encontrado com "${termo}"</p>
+                    <p class="text-slate-400 text-sm mt-2">Tente outro termo de busca</p>
+                </div>
+            `;
+            return;
+        }
+        
+        clientesFiltrados.forEach(cliente => {
+            const rs = clientesData[cliente];
+            let total = 0, horas = 0, datas = [];
+            
+            rs.forEach(r => {
+                total += r.produzido || 0;
+                datas.push(r.data);
+                horas += calcularDuracaoHoras(r.inicio, r.fim);
+            });
+            
+            datas.sort();
+            const p = datas[0]?.split('-').reverse().join('/') || '';
+            const u = datas[datas.length - 1]?.split('-').reverse().join('/') || '';
+            const per = p === u ? p : `${p} a ${u}`;
+            
+            const produtosCliente = produtos.filter(p => p.cliente === cliente).slice(0, 3);
+            const produtosHTML = produtosCliente.length > 0 ? 
+                `<div class="flex gap-1 mt-2 flex-wrap">
+                    ${produtosCliente.map(p => {
+                        const produtoNum = (produtos.indexOf(p) % 8) + 1;
+                        return `<span class="product-badge product-${produtoNum} text-[8px]">${p.nome}</span>`;
+                    }).join('')}
+                    ${produtos.filter(p => p.cliente === cliente).length > 3 ? '<span class="text-[8px] text-slate-400">...</span>' : ''}
+                </div>` : '';
+            
+            listaContainer.innerHTML += `
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesCliente('${cliente.replace(/'/g, "\\'")}')">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="font-black text-xl text-green-700">${cliente}</span>
+                            ${produtosHTML}
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
+                        <div>
+                            <span class="font-medium">📦 ${total.toFixed(0)} kg</span>
+                            <span class="mx-2">•</span>
+                            <span>📋 ${rs.length} pedidos</span>
+                            <span class="mx-2">•</span>
+                            <span>🕒 ${horas.toFixed(1)}h</span>
+                        </div>
+                        <div><span>📅 ${per}</span></div>
+                    </div>
+                </div>
+            `;
+        });
     }
 
     function filterByRange() {
@@ -3994,7 +4374,7 @@ function filtrarClientesLive() {
             container.innerHTML += `
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesOP('${op}')">
                     <div class="flex justify-between items-start mb-3">
-                        <div><span class="font-black text-xl text-green-700">OP ${op}</span><span class="ml-3 text-sm font-medium text-slate-500">${rs[0].produto||'-'}</span></div>
+                        <div><span class="font-black text-xl text-green-700">OP ${op}</span><span class="ml-3 text-sm font-medium text-slate-500">${p.produto||'-'}</span></div>
                         <span class="text-sm font-bold px-3 py-1 rounded-full ${statusPerf.bgCor} ${statusPerf.cor}">
                             ${statusPerf.icone} ${statusPerf.texto}
                         </span>
@@ -4433,8 +4813,9 @@ function filtrarClientesLive() {
         const maquinaFilter = document.getElementById('perdasMaquinaFilter');
         if (maquinaFilter) maquinaFilter.value = 'ALL';
         
-        // Configurar o select de turno para atualizar horários
         document.getElementById('regTurno').addEventListener('change', atualizarHorarioPorTurno);
+        
+        carregarCalendario();
     };
     </script>
 </body>

@@ -4573,91 +4573,205 @@
     }
 
     function renderData(data) {
-        const grid = document.getElementById('machine-grid');
-        if (!grid) return;
+    const grid = document.getElementById('machine-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    let machinesMetrics = [];
+    
+    // Obter o período selecionado
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    // Data de hoje
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    // Calcular todos os dias do período, mas apenas até hoje
+    let totalDiasNoPeriodo = 0;
+    let listaDias = [];
+    
+    if (startDate && endDate) {
+        const start = new Date(startDate);
+        let end = new Date(endDate);
         
-        grid.innerHTML = '';
-        let machinesMetrics = [];
-        
-        ['M1', 'M2', 'M3'].forEach(mId => {
-            const machineData = data.filter(d => d.machine === mId);
-            let avg = { disp: 0, perf: 0, qual: 0, oee: 0, dispTurno: 0 };
-            
-            if (machineData.length > 0) {
-                let totalDisp = 0, totalPerf = 0, totalQual = 0, totalDispTurno = 0;
-                let countDisp = 0, countPerf = 0, countQual = 0, countDispTurno = 0;
-                
-                machineData.forEach(d => {
-                    if (d.disp > 0) { totalDisp += d.disp; countDisp++; }
-                    if (d.perf > 0) { totalPerf += d.perf; countPerf++; }
-                    if (d.qual > 0) { totalQual += d.qual; countQual++; }
-                    if (d.dispTurno > 0) { totalDispTurno += d.dispTurno; countDispTurno++; }
-                });
-                
-                avg.disp = countDisp > 0 ? Math.round(totalDisp / countDisp) : 0;
-                avg.perf = countPerf > 0 ? Math.round(totalPerf / countPerf) : 0;
-                avg.qual = countQual > 0 ? Math.round(totalQual / countQual) : 0;
-                avg.dispTurno = countDispTurno > 0 ? Math.round(totalDispTurno / countDispTurno) : 0;
-                
-                let somaOEE = 0;
-                machineData.forEach(d => {
-                    const oee = calcularOEE(d.disp, d.perf, d.qual);
-                    somaOEE += oee;
-                });
-                const mediaOEE = machineData.length > 0 ? Math.round(somaOEE / machineData.length) : 0;
-                avg.oee = mediaOEE;
-            }
-            
-            machinesMetrics.push({ id: mId, ...avg });
-            
-            const oeeDisplay = avg.oee || 0;
-            const atingida = oeeDisplay >= META;
-            
-            grid.innerHTML += `
-                <div class="card-machine">
-                    <div class="header-row"><p class="title">${mId}</p></div>
-                    <div class="oee-container">
-                        <span class="oee-number ${atingida ? 'text-green-700' : 'text-red-700'}">${oeeDisplay}%</span>
-                        <span class="meta-indicator ${atingida ? 'atingida' : 'nao-atingida'}">${atingida ? '✓ META' : '✗ META'}</span>
-                    </div>
-                    <div class="space-y-3">
-                        ${renderBar('DISP MÉDIA', calcularDispMedia(avg.disp, avg.dispTurno))}
-                        ${renderBar('PERF', avg.perf)}
-                        ${renderBar('QUAL', avg.qual)}
-                    </div>
-                </div>
-            `;
-        });
-        
-        const validMachines = machinesMetrics.filter(m => m.oee > 0);
-        const topMachine = validMachines.length > 0 ? validMachines.sort((a,b) => b.oee - a.oee)[0] : { id: '--', oee: 0 };
-        
-        let global = { disp: 0, perf: 0, qual: 0, dispTurno: 0, somaOEE: 0, count: 0 };
-        if (data.length > 0) {
-            data.forEach(d => {
-                global.disp += d.disp || 0;
-                global.perf += d.perf || 0;
-                global.qual += d.qual || 0;
-                global.dispTurno += d.dispTurno || 0;
-                const oee = calcularOEE(d.disp, d.perf, d.qual);
-                global.somaOEE += oee;
-                global.count++;
-            });
-            global.disp = Math.round(global.disp / data.length);
-            global.perf = Math.round(global.perf / data.length);
-            global.qual = Math.round(global.qual / data.length);
-            global.dispTurno = Math.round(global.dispTurno / data.length);
+        // Se a data final for maior que hoje, usar hoje como limite
+        if (end > hoje) {
+            end = hoje;
         }
         
-        const globalOee = global.count > 0 ? Math.round(global.somaOEE / global.count) : 0;
-
-        document.getElementById('topMachineName').innerText = topMachine.id;
-        document.getElementById('topMachineValue').innerText = (topMachine.oee > 0 ? topMachine.oee : 0) + '%';
-        document.getElementById('avgGlobalOee').innerText = globalOee + '%';
-        document.getElementById('totalReg').innerText = data.length;
+        // Calcular diferença em dias
+        const diffTime = Math.abs(end - start);
+        totalDiasNoPeriodo = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
         
-        updateCharts(data, machinesMetrics);
+        // Gerar lista de todas as datas do período (apenas até hoje)
+        const current = new Date(start);
+        while (current <= end) {
+            listaDias.push(current.toISOString().split('T')[0]);
+            current.setDate(current.getDate() + 1);
+        }
     }
+    
+    console.log("📅 Período:", startDate, "até", endDate);
+    console.log("📆 Data de hoje:", hoje.toISOString().split('T')[0]);
+    console.log("📆 Total de dias no período (considerando apenas dias até hoje):", totalDiasNoPeriodo);
+    console.log("📋 Lista de dias:", listaDias);
+    
+    ['M1', 'M2', 'M3'].forEach(mId => {
+        const machineData = data.filter(d => d.machine === mId);
+        
+        console.log(`🔍 Máquina ${mId}: ${machineData.length} registros no período`);
+        
+        let somaOEE = 0;
+        let diasComProducao = 0;
+        
+        if (totalDiasNoPeriodo > 0 && listaDias.length > 0) {
+            // Mapa para armazenar OEE por dia
+            const oeePorDia = {};
+            
+            // Calcular OEE para cada registro e agrupar por dia
+            machineData.forEach(d => {
+                const oee = calcularOEE(d.disp, d.perf, d.qual);
+                if (!oeePorDia[d.data]) {
+                    oeePorDia[d.data] = [];
+                }
+                oeePorDia[d.data].push(oee);
+            });
+            
+            // Para cada dia do período (apenas dias que já passaram)
+            listaDias.forEach(dia => {
+                if (oeePorDia[dia] && oeePorDia[dia].length > 0) {
+                    // Calcular média dos OEE do dia (caso tenha múltiplos turnos)
+                    const somaOeeDia = oeePorDia[dia].reduce((a, b) => a + b, 0);
+                    const mediaOeeDia = somaOeeDia / oeePorDia[dia].length;
+                    somaOEE += mediaOeeDia;
+                    diasComProducao++;
+                    console.log(`   ✅ ${dia}: ${mediaOeeDia}% (${oeePorDia[dia].length} turnos)`);
+                } else {
+                    // Dia sem produção: contribui com 0
+                    console.log(`   ❌ ${dia}: 0% (sem produção)`);
+                    // somaOEE += 0; (já é 0, não precisa somar)
+                }
+            });
+            
+            // Média final = soma dos OEE de todos os dias / total de dias (apenas até hoje)
+            var mediaOEE = Math.round(somaOEE / totalDiasNoPeriodo);
+            console.log(`📊 Média OEE ${mId}: ${somaOEE} / ${totalDiasNoPeriodo} = ${mediaOEE}%`);
+        } else if (machineData.length > 0) {
+            // Fallback: sem período definido
+            let somaOeeTemp = 0;
+            machineData.forEach(d => { 
+                somaOeeTemp += calcularOEE(d.disp, d.perf, d.qual); 
+            });
+            mediaOEE = Math.round(somaOeeTemp / machineData.length);
+            diasComProducao = machineData.length;
+            console.log(`📊 Média OEE ${mId} (fallback): ${mediaOEE}%`);
+        } else {
+            mediaOEE = 0;
+            console.log(`📊 Média OEE ${mId}: 0% (sem dados)`);
+        }
+        
+        // Calcular outras médias (disponibilidade, performance, qualidade)
+        let avgDisp = 0, avgPerf = 0, avgQual = 0, avgDispTurno = 0;
+        if (machineData.length > 0) {
+            let totalDisp = 0, totalPerf = 0, totalQual = 0, totalDispTurno = 0;
+            machineData.forEach(d => {
+                totalDisp += d.disp || 0;
+                totalPerf += d.perf || 0;
+                totalQual += d.qual || 0;
+                totalDispTurno += d.dispTurno || 0;
+            });
+            avgDisp = Math.round(totalDisp / machineData.length);
+            avgPerf = Math.round(totalPerf / machineData.length);
+            avgQual = Math.round(totalQual / machineData.length);
+            avgDispTurno = Math.round(totalDispTurno / machineData.length);
+        }
+        
+        machinesMetrics.push({ 
+            id: mId, 
+            disp: avgDisp, 
+            perf: avgPerf, 
+            qual: avgQual, 
+            dispTurno: avgDispTurno,
+            oee: mediaOEE,
+            diasComProducao: diasComProducao,
+            totalDias: totalDiasNoPeriodo
+        });
+        
+        const atingida = mediaOEE >= META;
+        const diasSemProducao = totalDiasNoPeriodo - diasComProducao;
+        
+        grid.innerHTML += `
+            <div class="card-machine">
+                <div class="header-row"><p class="title">${mId}</p></div>
+                <div class="oee-container">
+                    <span class="oee-number ${atingida ? 'text-green-700' : 'text-red-700'}">${mediaOEE}%</span>
+                    <span class="meta-indicator ${atingida ? 'atingida' : 'nao-atingida'}">${atingida ? '✓ META' : '✗ META'}</span>
+                </div>
+                <div class="space-y-3">
+                    ${renderBar('DISP MÉDIA', calcularDispMedia(avgDisp, avgDispTurno))}
+                    ${renderBar('PERF', avgPerf)}
+                    ${renderBar('QUAL', avgQual)}
+                </div>
+                <div class="mt-4 text-xs text-slate-400 border-t pt-2">
+                    📊 ${diasComProducao} dias com produção / ${totalDiasNoPeriodo} dias no período (até hoje)
+                    ${diasSemProducao > 0 ? '<span class="text-red-500 ml-2">⚠️ ' + diasSemProducao + ' dias sem produção</span>' : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    // CORREÇÃO: Média Geral OEE considerando apenas dias até hoje
+    let globalOee = 0;
+    if (totalDiasNoPeriodo > 0 && listaDias.length > 0) {
+        let somaGlobal = 0;
+        let totalDiasProcessados = 0;
+        
+        // Para cada máquina
+        ['M1', 'M2', 'M3'].forEach(m => {
+            const machineData = data.filter(d => d.machine === m);
+            const oeePorDia = {};
+            
+            // Agrupar OEE por dia para esta máquina
+            machineData.forEach(d => {
+                const oee = calcularOEE(d.disp, d.perf, d.qual);
+                if (!oeePorDia[d.data]) {
+                    oeePorDia[d.data] = [];
+                }
+                oeePorDia[d.data].push(oee);
+            });
+            
+            // Para cada dia do período (apenas até hoje)
+            listaDias.forEach(dia => {
+                if (oeePorDia[dia] && oeePorDia[dia].length > 0) {
+                    const somaOeeDia = oeePorDia[dia].reduce((a, b) => a + b, 0);
+                    const mediaOeeDia = somaOeeDia / oeePorDia[dia].length;
+                    somaGlobal += mediaOeeDia;
+                }
+                // Dias sem produção: contribuem com 0
+                totalDiasProcessados++;
+            });
+        });
+        
+        globalOee = totalDiasProcessados > 0 ? Math.round(somaGlobal / totalDiasProcessados) : 0;
+        console.log(`🌍 Média Global OEE: ${somaGlobal} / ${totalDiasProcessados} = ${globalOee}%`);
+    } else if (data.length > 0) {
+        // Fallback
+        let somaOEE = 0;
+        data.forEach(d => { 
+            somaOEE += calcularOEE(d.disp, d.perf, d.qual); 
+        });
+        globalOee = Math.round(somaOEE / data.length);
+    }
+    
+    const topMachine = machinesMetrics.length > 0 ? machinesMetrics.reduce((a,b) => (a.oee > b.oee) ? a : b) : { id: '--', oee: 0 };
+    document.getElementById('topMachineName').innerText = topMachine.id;
+    document.getElementById('topMachineValue').innerText = topMachine.oee + '%';
+    document.getElementById('avgGlobalOee').innerText = globalOee + '%';
+    document.getElementById('totalReg').innerText = data.length;
+    
+    updateCharts(data, machinesMetrics);
+}
 
     function renderBar(label, val) {
         const safeVal = !isNaN(val) && val !== null ? Math.min(100, Math.max(0, val)) : 0;

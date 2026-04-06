@@ -275,6 +275,124 @@
             margin-top: 1.25rem;
         }
 
+        /* CARDS DE PRINCIPAIS PERDAS NO DASHBOARD */
+        .perdas-dashboard-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -2px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            border-top: 4px solid;
+        }
+
+        .perdas-dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        .perdas-dashboard-card .perda-nome {
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .perdas-dashboard-card .perda-porcentagem {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1;
+            color: #1f2937;
+        }
+
+        .perdas-dashboard-card .perda-minutos {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #dc2626;
+            margin-top: 0.25rem;
+        }
+
+        .perdas-dashboard-card.card-1 { border-top-color: #ef4444; }
+        .perdas-dashboard-card.card-2 { border-top-color: #f59e0b; }
+        .perdas-dashboard-card.card-3 { border-top-color: #10b981; }
+
+        /* CARDS DE MÉDIAS KG/H NO HISTÓRICO */
+        .medias-card-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .media-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -2px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            border-left: 4px solid;
+        }
+
+        .media-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        .media-card.m1 { border-left-color: #005a2b; }
+        .media-card.m2 { border-left-color: #c4121a; }
+        .media-card.m3 { border-left-color: #FFD700; }
+
+        .media-card .maquina-titulo {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .media-card .maquina-titulo.m1 { color: #005a2b; }
+        .media-card .maquina-titulo.m2 { color: #c4121a; }
+        .media-card .maquina-titulo.m3 { color: #b45309; }
+
+        .media-card .stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .media-card .stat-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 1rem;
+        }
+
+        .media-card .stat-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+        }
+
+        .media-card .stat-value {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-top: 0.25rem;
+        }
+
+        .media-card .stat-value.real {
+            color: #2563eb;
+        }
+
+        .media-card .stat-value.estimado {
+            color: #f59e0b;
+        }
+
         .footer-credit {
             position: fixed;
             bottom: 8px;
@@ -1136,6 +1254,25 @@
         <div id="view-dashboard" class="view-content active">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12" id="machine-grid"></div>
             
+            <!-- CARDS DE PRINCIPAIS PERDAS NO DASHBOARD -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="perdas-dashboard-card card-1">
+                    <div class="perda-nome" id="topPerda1Nome">--</div>
+                    <div class="perda-porcentagem" id="topPerda1Pct">0%</div>
+                    <div class="perda-minutos" id="topPerda1Min">0 min</div>
+                </div>
+                <div class="perdas-dashboard-card card-2">
+                    <div class="perda-nome" id="topPerda2Nome">--</div>
+                    <div class="perda-porcentagem" id="topPerda2Pct">0%</div>
+                    <div class="perda-minutos" id="topPerda2Min">0 min</div>
+                </div>
+                <div class="perdas-dashboard-card card-3">
+                    <div class="perda-nome" id="topPerda3Nome">--</div>
+                    <div class="perda-porcentagem" id="topPerda3Pct">0%</div>
+                    <div class="perda-minutos" id="topPerda3Min">0 min</div>
+                </div>
+            </div>
+            
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <div class="chart-container">
                     <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Tendência de OEE Diária (Meta 85%)</h3>
@@ -1196,7 +1333,6 @@
                 </div>
             </div>
             
-            <!-- NOVOS CARDS DE PERDAS COM ESTILO SOLICITADO -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="perda-card">
                     <div class="perda-label">MÁQUINA COM MAIS PERDAS</div>
@@ -1263,10 +1399,10 @@
                                 <th class="pb-4 text-center">Aparas (min)</th>
                                 <th class="pb-4 text-center">Total Perda</th>
                                 <th class="pb-4">Motivo Principal</th>
-                             </tr>
+                              </tr>
                         </thead>
                         <tbody id="perdas-detail-rows"></tbody>
-                     </table>
+                    </table>
                 </div>
             </div>
         </div>
@@ -1339,10 +1475,10 @@
                                 <th class="py-2 text-right">OEE</th>
                                 <th class="py-2 text-center">Status</th>
                                 <th class="py-2 text-center">Ações</th>
-                             </tr>
+                              </tr>
                         </thead>
                         <tbody id="efficiency-selection-rows" class="divide-y divide-slate-50 text-slate-600 font-medium"></tbody>
-                     </table>
+                    </table>
                 </div>
             </div>
         </div>
@@ -1366,6 +1502,71 @@
         </div>
 
         <div id="view-history" class="view-content">
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 mb-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">📋 Histórico Detalhado</h3>
+                        <p class="text-slate-400 text-sm font-medium">Registros completos de produção</p>
+                    </div>
+                    <button onclick="mostrarMediasKgH()" class="btn-action" style="background-color: #7c3aed; border-color: #8b5cf6;">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        MÉDIAS KG/H
+                    </button>
+                </div>
+            </div>
+            
+            <!-- CARDS DE MÉDIAS KG/H -->
+            <div id="mediasKgHContainer" class="medias-card-container" style="display: none;">
+                <div class="media-card m1">
+                    <div class="maquina-titulo m1">
+                        <span>🔧 M1</span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-label">REAL MÉDIO</div>
+                            <div class="stat-value real" id="mediaRealM1">0 kg/h</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">ESTIMADO MÉDIO</div>
+                            <div class="stat-value estimado" id="mediaEstM1">0 kg/h</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="media-card m2">
+                    <div class="maquina-titulo m2">
+                        <span>🔧 M2</span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-label">REAL MÉDIO</div>
+                            <div class="stat-value real" id="mediaRealM2">0 kg/h</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">ESTIMADO MÉDIO</div>
+                            <div class="stat-value estimado" id="mediaEstM2">0 kg/h</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="media-card m3">
+                    <div class="maquina-titulo m3">
+                        <span>🔧 M3</span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-label">REAL MÉDIO</div>
+                            <div class="stat-value real" id="mediaRealM3">0 kg/h</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">ESTIMADO MÉDIO</div>
+                            <div class="stat-value estimado" id="mediaEstM3">0 kg/h</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center text-sm text-slate-500 mb-4" id="mediasPeriodoInfo"></div>
+            
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                 <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-8">Histórico Detalhado</h3>
                 <div class="overflow-x-auto">
@@ -1386,10 +1587,10 @@
                                 <th class="pb-4 text-right">OEE</th>
                                 <th class="pb-4 text-center">Status</th>
                                 <th class="pb-4 text-center">Ações</th>
-                             </tr>
+                              </tr>
                         </thead>
                         <tbody id="history-rows" class="divide-y divide-slate-50"></tbody>
-                     </table>
+                    </table>
                 </div>
             </div>
         </div>
@@ -1505,7 +1706,7 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">PARADAS (MIN)</label>
-                        <input type="number" id="regAvaria" value="0" min="0" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0">
+                        <input type="number" id="regAvaria" value="0" min="0" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl text-sm focus:border-green-600 focus:ring-0" readonly>
                     </div>
                 </div>
 
@@ -1759,7 +1960,7 @@
                                 <th class="p-4 text-left">Cliente</th>
                                 <th class="p-4 text-left">Produtos</th>
                                 <th class="p-4 text-center">Ações</th>
-                              </tr>
+                               </tr>
                         </thead>
                         <tbody id="clientes-produtos-list" class="divide-y"></tbody>
                     </table>
@@ -2005,7 +2206,158 @@
     }
 
     // ============================================
-    // FUNÇÕES DE SELEÇÃO DE CLIENTES
+    // FUNÇÃO ATUALIZAR CARDS DE PRINCIPAIS PERDAS NO DASHBOARD (CORRIGIDA)
+    // ============================================
+    function atualizarCardsPerdasDashboard(data) {
+        const perdasPorMotivo = {};
+        let totalGeralPerdas = 0;
+        
+        data.forEach(reg => {
+            const setup = reg.setup || 0;
+            const avaria = reg.avaria || 0;
+            const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
+            const aparasMin = calcularAparasEmMinutos(reg.aparas || 0, reg.realKgH || reg.est || 90, horas);
+            
+            // Setup
+            if (setup > 0) {
+                perdasPorMotivo['Setup'] = (perdasPorMotivo['Setup'] || 0) + setup;
+                totalGeralPerdas += setup;
+            }
+            
+            // Aparas
+            if (aparasMin > 0) {
+                perdasPorMotivo['Aparas'] = (perdasPorMotivo['Aparas'] || 0) + aparasMin;
+                totalGeralPerdas += aparasMin;
+            }
+            
+            // Motivo da parada (se houver avaria)
+            if (avaria > 0) {
+                let motivo = reg.motivoPerda;
+                
+                // Se não tiver motivo específico ou for "Setup" (já tratado acima)
+                if (!motivo || motivo === 'Setup') {
+                    motivo = 'Paradas não especificadas';
+                }
+                
+                perdasPorMotivo[motivo] = (perdasPorMotivo[motivo] || 0) + avaria;
+                totalGeralPerdas += avaria;
+            }
+        });
+        
+        // Se não houver perdas, mostrar valores padrão
+        if (totalGeralPerdas === 0) {
+            document.getElementById('topPerda1Nome').innerText = '--';
+            document.getElementById('topPerda1Pct').innerText = '0%';
+            document.getElementById('topPerda1Min').innerText = '0 min';
+            document.getElementById('topPerda2Nome').innerText = '--';
+            document.getElementById('topPerda2Pct').innerText = '0%';
+            document.getElementById('topPerda2Min').innerText = '0 min';
+            document.getElementById('topPerda3Nome').innerText = '--';
+            document.getElementById('topPerda3Pct').innerText = '0%';
+            document.getElementById('topPerda3Min').innerText = '0 min';
+            return;
+        }
+        
+        // Ordenar por valor decrescente e pegar os 3 maiores
+        const perdasOrdenadas = Object.entries(perdasPorMotivo).sort((a, b) => b[1] - a[1]);
+        const top3 = perdasOrdenadas.slice(0, 3);
+        
+        // Atualizar os cards
+        const cards = [
+            { idNome: 'topPerda1Nome', idPct: 'topPerda1Pct', idMin: 'topPerda1Min' },
+            { idNome: 'topPerda2Nome', idPct: 'topPerda2Pct', idMin: 'topPerda2Min' },
+            { idNome: 'topPerda3Nome', idPct: 'topPerda3Pct', idMin: 'topPerda3Min' }
+        ];
+        
+        for (let i = 0; i < 3; i++) {
+            if (top3[i]) {
+                const [nome, valor] = top3[i];
+                // Porcentagem sobre o TOTAL GERAL de perdas
+                const percentual = Math.round((valor / totalGeralPerdas) * 100);
+                document.getElementById(cards[i].idNome).innerText = nome;
+                document.getElementById(cards[i].idPct).innerText = percentual + '%';
+                document.getElementById(cards[i].idMin).innerText = Math.round(valor) + ' min';
+            } else {
+                document.getElementById(cards[i].idNome).innerText = '--';
+                document.getElementById(cards[i].idPct).innerText = '0%';
+                document.getElementById(cards[i].idMin).innerText = '0 min';
+            }
+        }
+        
+        // Opcional: mostrar total no console para debug
+        console.log('📊 Total de perdas:', totalGeralPerdas, 'min');
+        console.log('📊 Distribuição:', perdasOrdenadas);
+    }
+    
+    // ============================================
+    // FUNÇÃO MOSTRAR MÉDIAS KG/H (CARDS VISUAIS)
+    // ============================================
+    function mostrarMediasKgH() {
+        const container = document.getElementById('mediasKgHContainer');
+        const periodoInfo = document.getElementById('mediasPeriodoInfo');
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        
+        let dadosPeriodo = historico;
+        if (start && end) {
+            dadosPeriodo = historico.filter(h => h.data >= start && h.data <= end);
+        }
+        
+        if (dadosPeriodo.length === 0) {
+            showWarningToast('Nenhum dado no período selecionado!');
+            return;
+        }
+        
+        // Calcular médias por máquina
+        const medias = {
+            M1: { real: 0, est: 0, count: 0 },
+            M2: { real: 0, est: 0, count: 0 },
+            M3: { real: 0, est: 0, count: 0 }
+        };
+        
+        dadosPeriodo.forEach(reg => {
+            const maq = reg.machine;
+            if (medias[maq]) {
+                medias[maq].real += reg.realKgH || 0;
+                medias[maq].est += reg.est || 0;
+                medias[maq].count++;
+            }
+        });
+        
+        // Calcular médias
+        const mediaRealM1 = medias.M1.count > 0 ? Math.round(medias.M1.real / medias.M1.count) : 0;
+        const mediaEstM1 = medias.M1.count > 0 ? Math.round(medias.M1.est / medias.M1.count) : 0;
+        
+        const mediaRealM2 = medias.M2.count > 0 ? Math.round(medias.M2.real / medias.M2.count) : 0;
+        const mediaEstM2 = medias.M2.count > 0 ? Math.round(medias.M2.est / medias.M2.count) : 0;
+        
+        const mediaRealM3 = medias.M3.count > 0 ? Math.round(medias.M3.real / medias.M3.count) : 0;
+        const mediaEstM3 = medias.M3.count > 0 ? Math.round(medias.M3.est / medias.M3.count) : 0;
+        
+        // Atualizar cards
+        document.getElementById('mediaRealM1').innerHTML = mediaRealM1 + ' kg/h';
+        document.getElementById('mediaEstM1').innerHTML = mediaEstM1 + ' kg/h';
+        document.getElementById('mediaRealM2').innerHTML = mediaRealM2 + ' kg/h';
+        document.getElementById('mediaEstM2').innerHTML = mediaEstM2 + ' kg/h';
+        document.getElementById('mediaRealM3').innerHTML = mediaRealM3 + ' kg/h';
+        document.getElementById('mediaEstM3').innerHTML = mediaEstM3 + ' kg/h';
+        
+        // Informação do período
+        const dataInicio = start ? start.split('-').reverse().join('/') : 'início';
+        const dataFim = end ? end.split('-').reverse().join('/') : 'hoje';
+        periodoInfo.innerHTML = `📊 Médias do período: ${dataInicio} a ${dataFim} | Total de registros: ${dadosPeriodo.length}`;
+        
+        // Mostrar container
+        container.style.display = 'grid';
+        
+        // Scroll suave até os cards
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        showToast('Médias calculadas com sucesso!');
+    }
+
+    // ============================================
+    // FUNÇÕES DE SELEÇÃO DE CLIENTES (MANTIDAS IGUAIS)
     // ============================================
     
     function carregarClientesCards() {
@@ -2122,7 +2474,7 @@
     }
 
     // ============================================
-    // FUNÇÕES DE GESTÃO DE CLIENTES E PRODUTOS
+    // FUNÇÕES DE GESTÃO DE CLIENTES E PRODUTOS (MANTIDAS IGUAIS)
     // ============================================
     function mostrarProdutosDoCliente() {
         const cliente = document.getElementById('produtoCliente').value;
@@ -2313,16 +2665,16 @@
             
             return `
                 <tr class="border-t">
-                    <td class="p-4 font-bold align-top">${cliente}</td>
-                    <td class="p-4"><div class="flex flex-col gap-1">${produtosHTML}</div></td>
+                    <td class="p-4 font-bold align-top">${cliente}<\/td>
+                    <td class="p-4"><div class="flex flex-col gap-1">${produtosHTML}<\/div><\/td>
                     <td class="p-4 text-center align-top">
                         <button onclick="removerCliente('${cliente}')" class="text-red-500 hover:text-red-700">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
                         </button>
-                    </td>
-                </tr>
+                    <\/td>
+                 <\/tr>
             `;
         }).join('');
     }
@@ -2358,21 +2710,21 @@
             
             return `
                 <tr class="border-t">
-                    <td class="p-4 font-bold align-top">${cliente}</td>
-                    <td class="p-4"><div class="flex flex-col gap-1">${produtosHTML}</div></td>
+                    <td class="p-4 font-bold align-top">${cliente}<\/td>
+                    <td class="p-4"><div class="flex flex-col gap-1">${produtosHTML}<\/div><\/td>
                     <td class="p-4 text-center align-top">
                         <button onclick="removerCliente('${cliente}')" class="text-red-500 hover:text-red-700">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
                         </button>
-                    </td>
-                </tr>
+                    <\/td>
+                 <\/tr>
             `;
         }).join('');
         
         if (clientesFiltrados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-slate-400">Nenhum cliente encontrado</td></tr>';
+            tbody.innerHTML = '.<td colspan="3" class="text-center py-8 text-slate-400">Nenhum cliente encontrado<\/td><\/tr>';
         }
     }
 
@@ -2559,7 +2911,7 @@
     }
 
     // ============================================
-    // FUNÇÃO RENDER PERDAS VIEW
+    // FUNÇÃO RENDER PERDAS VIEW (MANTIDA IGUAL)
     // ============================================
     function renderPerdasView(data) {
         const perdasMaq = { 
@@ -2607,7 +2959,6 @@
             }
         });
         
-        // Máquina com mais perdas
         let topMaq = '--', topMaqVal = 0;
         Object.entries(perdasMaq).forEach(([m, v]) => {
             if (v.total > topMaqVal) { 
@@ -2618,7 +2969,6 @@
         document.getElementById('topMaquinaNome').innerText = topMaq;
         document.getElementById('topMaquinaMinutos').innerText = Math.round(topMaqVal) + ' min';
         
-        // Principal motivo
         let topMot = '--', topMotVal = 0;
         Object.entries(perdasMot).forEach(([m, v]) => { 
             if (v > topMotVal) { 
@@ -2639,7 +2989,6 @@
         document.getElementById('topMotivoNome').innerText = topMot;
         document.getElementById('topMotivoMinutos').innerText = Math.round(topMotVal) + ' min';
         
-        // Dia com maior perda
         let topDia = '--', topDiaVal = 0;
         Object.entries(perdasDia).forEach(([d, v]) => { 
             if (v > topDiaVal) { 
@@ -2660,7 +3009,7 @@
         tbody.innerHTML = '';
         
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-slate-400">Nenhum dado encontrado no período.</td></tr>';
+            tbody.innerHTML = '.<td colspan="10" class="text-center py-4 text-slate-400">Nenhum dado encontrado no período.</td </tr';
             return;
         }
         
@@ -2673,18 +3022,18 @@
             
             if (total > 0) {
                 tbody.innerHTML += `
-                    <tr>
-                        <td class="py-2">${reg.data.split('-').reverse().join('/')}</td>
-                        <td class="py-2">${reg.machine}</td>
-                        <td class="py-2">${reg.turno}</td>
-                        <td class="py-2">${reg.op || '-'}</td>
-                        <td class="py-2">${reg.produto || '-'}</td>
-                        <td class="py-2 text-center ${setup > 0 ? 'text-orange-600 font-bold' : ''}">${setup}</td>
-                        <td class="py-2 text-center ${avaria > 0 ? 'text-red-600 font-bold' : ''}">${avaria}</td>
-                        <td class="py-2 text-center ${aparasMin > 0 ? 'text-green-600 font-bold' : ''}">${aparasMin}</td>
-                                                <td class="py-2 text-center font-bold text-red-600">${total}</td>
-                        <td class="py-2">${reg.motivoPerda || (setup > 0 ? 'Setup' : (aparasMin > 0 ? 'Aparas' : '-'))}</td>
-                     </tr>
+                    <tr class="border-b">
+                        <td class="py-2">${reg.data.split('-').reverse().join('/')}<\/td>
+                        <td class="py-2">${reg.machine}<\/td>
+                        <td class="py-2">${reg.turno}<\/td>
+                        <td class="py-2">${reg.op || '-'}<\/td>
+                        <td class="py-2">${reg.produto || '-'}<\/td>
+                        <td class="py-2 text-center ${setup > 0 ? 'text-orange-600 font-bold' : ''}">${setup}<\/td>
+                        <td class="py-2 text-center ${avaria > 0 ? 'text-red-600 font-bold' : ''}">${avaria}<\/td>
+                        <td class="py-2 text-center ${aparasMin > 0 ? 'text-green-600 font-bold' : ''}">${aparasMin}<\/td>
+                        <td class="py-2 text-center font-bold text-red-600">${total}<\/td>
+                        <td class="py-2">${reg.motivoPerda || (setup > 0 ? 'Setup' : (aparasMin > 0 ? 'Aparas' : '-'))}<\/td>
+                    <\/tr>
                 `;
             }
         });
@@ -2901,32 +3250,42 @@
     }
 
     function updateCharts(data, machineAvg) {
-        const trendCtx = document.getElementById('weeklyChart')?.getContext('2d');
-        if (trendCtx) {
-            const dates = [...new Set(data.map(d => d.data))].sort();
-            const trendVals = dates.map(d => {
-                const day = data.filter(h => h.data === d);
-                let avg = { disp: 0, perf: 0, qual: 0, dispTurno: 0 };
-                day.forEach(h => { 
-                    avg.disp += h.disp || 0; 
-                    avg.perf += h.perf || 0; 
-                    avg.qual += h.qual || 0;
-                    avg.dispTurno += h.dispTurno || 0;
-                });
-                avg.disp = day.length ? avg.disp / day.length : 0;
-                avg.perf = day.length ? avg.perf / day.length : 0;
-                avg.qual = day.length ? avg.qual / day.length : 0;
-                avg.dispTurno = day.length ? avg.dispTurno / day.length : 0;
-                
-                const dispMedia = calcularDispMedia(avg.disp, avg.dispTurno);
-                return calcularOEE(dispMedia, avg.perf, avg.qual);
-            });
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        
+        let listaDias = [];
+        let totalDiasPeriodo = 0;
+        
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            let end = new Date(endDate);
+            if (end > hoje) end = hoje;
             
+            const current = new Date(start);
+            while (current <= end) {
+                listaDias.push(current.toISOString().split('T')[0]);
+                current.setDate(current.getDate() + 1);
+            }
+            totalDiasPeriodo = listaDias.length;
+        }
+        
+        const trendCtx = document.getElementById('weeklyChart')?.getContext('2d');
+        if (trendCtx && listaDias.length > 0) {
+            const trendVals = listaDias.map(dia => {
+                const dayData = data.filter(h => h.data === dia);
+                if (dayData.length === 0) return 0;
+                let somaOEE = 0;
+                dayData.forEach(h => { somaOEE += calcularOEE(h.disp, h.perf, h.qual); });
+                return Math.round(somaOEE / dayData.length);
+            });
             if (trendChart) trendChart.destroy();
             trendChart = new Chart(trendCtx, {
                 type: 'line',
                 data: {
-                    labels: dates.map(d => d.split('-').reverse().join('/')),
+                    labels: listaDias.map(d => d.split('-').reverse().join('/')),
                     datasets: [{
                         label: 'OEE Médio %',
                         data: trendVals,
@@ -3000,23 +3359,17 @@
 
         const shiftCtx = document.getElementById('shiftChart')?.getContext('2d');
         if (shiftCtx) {
-            const shiftVals = ['A','B','C'].map(s => {
-                const sd = data.filter(d => d.turno === s);
-                if (!sd.length) return 0;
-                let avg = { disp: 0, perf: 0, qual: 0, dispTurno: 0 };
-                sd.forEach(h => { 
-                    avg.disp += h.disp || 0; 
-                    avg.perf += h.perf || 0; 
-                    avg.qual += h.qual || 0;
-                    avg.dispTurno += h.dispTurno || 0;
+            const shiftVals = ['A','B','C'].map(turno => {
+                if (totalDiasPeriodo === 0) return 0;
+                let somaOEEPeriodo = 0;
+                listaDias.forEach(dia => {
+                    const registrosDia = data.filter(d => d.turno === turno && d.data === dia);
+                    if (registrosDia.length > 0) {
+                        const somaOeeDia = registrosDia.reduce((s, r) => s + calcularOEE(r.disp, r.perf, r.qual), 0);
+                        somaOEEPeriodo += somaOeeDia / registrosDia.length;
+                    }
                 });
-                avg.disp /= sd.length; 
-                avg.perf /= sd.length; 
-                avg.qual /= sd.length;
-                avg.dispTurno /= sd.length;
-                
-                const dispMedia = calcularDispMedia(avg.disp, avg.dispTurno);
-                return calcularOEE(dispMedia, avg.perf, avg.qual);
+                return Math.round(somaOEEPeriodo / totalDiasPeriodo);
             });
             
             if (shiftChart) shiftChart.destroy();
@@ -3034,11 +3387,31 @@
                         datalabels: {
                             color: '#fff',
                             font: { weight: 'bold', size: 12 },
-                            formatter: val => val > 0 ? val + '%' : ''
+                            formatter: val => val > 0 ? val + '%' : '0%'
                         }
                     }
                 }
             });
+        }
+
+        const perdas = { M1: 0, M2: 0, M3: 0 };
+        data.forEach(r => { if (r.machine && perdas[r.machine] !== undefined) perdas[r.machine] += (r.setup||0) + (r.avaria||0); });
+        const perCtx = document.getElementById('perdasMaquinaChart')?.getContext('2d');
+        if (perCtx) { 
+            if (perdasMaquinaChart) perdasMaquinaChart.destroy(); 
+            perdasMaquinaChart = new Chart(perCtx, { 
+                type: 'bar', 
+                data: { 
+                    labels: ['M1','M2','M3'], 
+                    datasets: [{ label: 'Perdas (min)', data: [perdas.M1, perdas.M2, perdas.M3], backgroundColor: ['#005a2b','#c4121a','#FFD700'] }] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { datalabels: { anchor: 'end', align: 'top', formatter: val => val + ' min', font: { weight: 'bold', size: 10 } } },
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
+                } 
+            }); 
         }
     }
 
@@ -3090,24 +3463,24 @@
         data.sort((a,b)=>new Date(b.data)-new Date(a.data)).forEach(r => {
             const o = calcularOEE(r.dispTurno, r.perf, r.qual);
             tbody.innerHTML += `
-                <tr>
-                    <td class="py-2">${r.data ? r.data.split('-').reverse().join('/') : '-'}</td>
-                    <td class="py-2">${r.machine || '-'}</td>
-                    <td class="py-2">${r.turno || '-'}</td>
-                    <td class="py-2">${r.op || '-'}</td>
-                    <td class="py-2">${r.produto || '-'}</td>
-                    <td class="py-2 text-right">${r.est || 0}</td>
-                    <td class="py-2 text-right">${r.realKgH || 0}</td>
-                    <td class="py-2 text-right">${r.dispTurno || 0}%</td>
-                    <td class="py-2 text-right">${r.perf || 0}%</td>
-                    <td class="py-2 text-right">${r.qual || 0}%</td>
-                    <td class="py-2 text-right font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%</td>
-                    <td class="py-2 text-center"><span class="inline-block px-2 py-1 rounded-full text-[8px] font-bold uppercase ${o>=85?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${o>=85?'✅ META':'⚠️ ABAIXO'}</span></td>
+                <tr class="border-b">
+                    <td class="py-2">${r.data ? r.data.split('-').reverse().join('/') : '-'}<\/td>
+                    <td class="py-2">${r.machine || '-'}<\/td>
+                    <td class="py-2">${r.turno || '-'}<\/td>
+                    <td class="py-2">${r.op || '-'}<\/td>
+                    <td class="py-2">${r.produto || '-'}<\/td>
+                    <td class="py-2 text-right">${r.est || 0}<\/td>
+                    <td class="py-2 text-right">${r.realKgH || 0}<\/td>
+                    <td class="py-2 text-right">${r.dispTurno || 0}%<\/td>
+                    <td class="py-2 text-right">${r.perf || 0}%<\/td>
+                    <td class="py-2 text-right">${r.qual || 0}%<\/td>
+                    <td class="py-2 text-right font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%<\/td>
+                    <td class="py-2 text-center"><span class="inline-block px-2 py-1 rounded-full text-[8px] font-bold uppercase ${o>=85?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${o>=85?'✅ META':'⚠️ ABAIXO'}</span><\/td>
                     <td class="py-2 text-center">
-                        <button onclick="openEditModal(${r.id})" class="edit-btn mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                        <button onclick="apagarRegistro(${r.id})" class="text-red-500 hover:text-red-700 mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                    </td>
-                 </tr>
+                        <button onclick="openEditModal(${r.id})" class="edit-btn mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/><\/svg><\/button>
+                        <button onclick="apagarRegistro(${r.id})" class="text-red-500 hover:text-red-700 mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/><\/svg><\/button>
+                    <\/td>
+                 <\/tr>
             `;
         });
     }
@@ -3210,36 +3583,36 @@
             
             rows += `
                 <tr class="${i%2===0?'bg-white':'bg-slate-50'}">
-                    <td class="py-3">${r.data.split('-').reverse().join('/')}</td>
-                    <td class="py-3 font-bold">${r.turno}</td>
-                    <td class="py-3">${r.op}</td>
-                    <td class="py-3 max-w-xs truncate">${r.produto||'-'}</td>
-                    <td class="py-3 text-center">${r.inicio}</td>
-                    <td class="py-3 text-center">${r.fim}</td>
-                    <td class="py-3 text-center">${h}h</td>
-                    <td class="py-3 text-center ${r.setup>0?'text-orange-600 font-bold':''}">${r.setup||0}</td>
-                    <td class="py-3 text-center ${r.avaria>0?'text-red-600 font-bold':''}">${r.avaria||0}</td>
-                    <td class="py-3 text-center font-bold">${r.disp||0}%</td>
-                    <td class="py-3 text-center">${r.dispTurno||0}%</td>
-                    <td class="py-3 text-center">${r.est||0}</td>
-                    <td class="py-3 text-center">${r.realKgH||0}</td>
-                    <td class="py-3 text-center font-bold ${statusPerf.cor}">${r.perf||0}%</td>
-                    <td class="py-3 text-center font-bold ${r.qual>=98?'text-green-600':'text-yellow-600'}">${r.qual||0}%</td>
-                    <td class="py-3 text-center font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%</td>
-                 </tr>
+                    <td class="py-3">${r.data.split('-').reverse().join('/')}<\/td>
+                    <td class="py-3 font-bold">${r.turno}<\/td>
+                    <td class="py-3">${r.op}<\/td>
+                    <td class="py-3 max-w-xs truncate">${r.produto||'-'}<\/td>
+                    <td class="py-3 text-center">${r.inicio}<\/td>
+                    <td class="py-3 text-center">${r.fim}<\/td>
+                    <td class="py-3 text-center">${h}h<\/td>
+                    <td class="py-3 text-center ${r.setup>0?'text-orange-600 font-bold':''}">${r.setup||0}<\/td>
+                    <td class="py-3 text-center ${r.avaria>0?'text-red-600 font-bold':''}">${r.avaria||0}<\/td>
+                    <td class="py-3 text-center font-bold">${r.disp||0}%<\/td>
+                    <td class="py-3 text-center">${r.dispTurno||0}%<\/td>
+                    <td class="py-3 text-center">${r.est||0}<\/td>
+                    <td class="py-3 text-center">${r.realKgH||0}<\/td>
+                    <td class="py-3 text-center font-bold ${statusPerf.cor}">${r.perf||0}%<\/td>
+                    <td class="py-3 text-center font-bold ${r.qual>=98?'text-green-600':'text-yellow-600'}">${r.qual||0}%<\/td>
+                    <td class="py-3 text-center font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%<\/td>
+                 <\/tr>
             `;
         });
         
         const mDisp = Math.round(tDisp/rs.length), mPerf = Math.round(tPerf/rs.length), mQual = Math.round(tQual/rs.length), mOEE = Math.round(tOEE/rs.length);
         rows += `
             <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
-                <td colspan="4" class="py-3 text-blue-800">📊 MÉDIA DA OP</td>
-                <td colspan="3" class="py-3 text-center"></td><td colspan="2" class="py-3 text-center"></td>
-                <td class="py-3 text-center text-blue-800">${mDisp}%</td><td class="py-3 text-center"></td>
-                <td class="py-3 text-center"></td><td class="py-3 text-center"></td>
-                <td class="py-3 text-center text-blue-800">${mPerf}%</td><td class="py-3 text-center text-blue-800">${mQual}%</td>
-                <td class="py-3 text-center text-blue-800 font-black text-base">${mOEE}%</td>
-             </tr>
+                <td colspan="4" class="py-3 text-blue-800">📊 MÉDIA DA OP<\/td>
+                <td colspan="3" class="py-3 text-center"><\/td><td colspan="2" class="py-3 text-center"><\/td>
+                <td class="py-3 text-center text-blue-800">${mDisp}%<\/td><td class="py-3 text-center"><\/td>
+                <td class="py-3 text-center"><\/td><td class="py-3 text-center"><\/td>
+                <td class="py-3 text-center text-blue-800">${mPerf}%<\/td><td class="py-3 text-center text-blue-800">${mQual}%<\/td>
+                <td class="py-3 text-center text-blue-800 font-black text-base">${mOEE}%<\/td>
+             <\/tr>
         `;
         
         const existente = document.getElementById('detalhesOPModal');
@@ -3254,9 +3627,9 @@
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','TURNO','OP','CLIENTE/PRODUTO','INÍCIO','FIM','DURAÇÃO','SETUP','PARADAS','DISP OP','DISP.TURNO','EST.','REAL','PERF','QUAL','OEE'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}</tr></thead>
-                            <tbody class="divide-y divide-slate-50">${rows}</tbody>
-                         </table>
+                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','TURNO','OP','CLIENTE/PRODUTO','INÍCIO','FIM','DURAÇÃO','SETUP','PARADAS','DISP OP','DISP.TURNO','EST.','REAL','PERF','QUAL','OEE'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}<\/tr><\/thead>
+                            <tbody class="divide-y divide-slate-50">${rows}<\/tbody>
+                         <\/table>
                     </div>
                     <div class="mt-6 flex justify-end"><button onclick="fecharDetalhesOP()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">Fechar</button></div>
                 </div>
@@ -3378,7 +3751,7 @@
                                 <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Real</th>
                                 <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Diferença</th>
                                 <th style="padding: 15px; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Status</th>
-                               </tr>
+                                </tr>
                         </thead>
                         <tbody>
         `;
@@ -3398,22 +3771,22 @@
             
             conteudo += `
                 <tr style="background-color: ${bgColor}; border-bottom: 1px solid #e5e7eb;">
-                    <td style="padding: 12px; text-align: center; font-weight: 700; color: #005a2b;">${r.op}</td>
-                    <td style="padding: 12px; text-align: center;">${dataFormatada}</td>
-                    <td style="padding: 12px; text-align: center; font-weight: 600;">${r.machine}</td>
-                    <td style="padding: 12px; text-align: center;">${r.turno}</td>
-                    <td style="padding: 12px; text-align: left;">${cliente}</td>
-                    <td style="padding: 12px; text-align: right; font-weight: 600;">${r.est} kg/h</td>
-                    <td style="padding: 12px; text-align: right; font-weight: 600;">${r.realKgH} kg/h</td>
-                    <td style="padding: 12px; text-align: right; font-weight: 700; ${diferencaPercentual > 0 ? 'color: #2563eb;' : 'color: #c4121a;'}">${diferencaPercentual > 0 ? '+' : ''}${diferencaPercentual.toFixed(1)}%</td>
-                    <td style="padding: 12px; text-align: center;">${statusBadge}</td>
-                  </tr>
+                    <td style="padding: 12px; text-align: center; font-weight: 700; color: #005a2b;">${r.op}<\/td>
+                    <td style="padding: 12px; text-align: center;">${dataFormatada}<\/td>
+                    <td style="padding: 12px; text-align: center; font-weight: 600;">${r.machine}<\/td>
+                    <td style="padding: 12px; text-align: center;">${r.turno}<\/td>
+                    <td style="padding: 12px; text-align: left;">${cliente}<\/td>
+                    <td style="padding: 12px; text-align: right; font-weight: 600;">${r.est} kg/h<\/td>
+                    <td style="padding: 12px; text-align: right; font-weight: 600;">${r.realKgH} kg/h<\/td>
+                    <td style="padding: 12px; text-align: right; font-weight: 700; ${diferencaPercentual > 0 ? 'color: #2563eb;' : 'color: #c4121a;'}">${diferencaPercentual > 0 ? '+' : ''}${diferencaPercentual.toFixed(1)}%<\/td>
+                    <td style="padding: 12px; text-align: center;">${statusBadge}<\/td>
+                 <\/tr>
             `;
         });
         
         conteudo += `
                         </tbody>
-                     </table>
+                     <\/table>
                 </div>
                 <div style="margin: 20px; padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 15px; border-top: 3px solid #005a2b;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
@@ -4296,36 +4669,36 @@
             
             tbody.innerHTML += `
                 <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'} hover:bg-slate-100" style="border-bottom: 1px solid #e2e8f0;">
-                    <td class="py-3 px-2 text-center" style="font-size: 12px;">${reg.data ? reg.data.split('-').reverse().join('/') : '-'}</td>
-                    <td class="py-3 px-2 text-center font-bold" style="font-size: 12px;">${reg.machine || '-'}</td>
-                    <td class="py-3 px-2 text-center" style="font-size: 12px;">${reg.turno || '-'}</td>
-                    <td class="py-3 px-2 text-center font-medium text-blue-600" style="font-size: 12px;">${reg.op || '-'}</td>
-                    <td class="py-3 px-2 text-left max-w-xs truncate" style="font-size: 12px;" title="${reg.produto || ''}">${produtoDisplay}</td>
-                    <td class="py-3 px-2 text-right" style="font-size: 12px;">${reg.est || 0}</td>
-                    <td class="py-3 px-2 text-right font-medium" style="font-size: 12px;">${reg.realKgH || 0}</td>
-                    <td class="py-3 px-2 text-right ${reg.disp >= 85 ? 'text-green-600 font-bold' : 'text-orange-600'}" style="font-size: 12px;">${reg.disp || 0}%</td>
-                    <td class="py-3 px-2 text-right ${reg.dispTurno >= 85 ? 'text-green-600 font-bold' : 'text-orange-600'}" style="font-size: 12px;">${reg.dispTurno || 0}%</td>
-                    <td class="py-3 px-2 text-right ${reg.perf >= 100 ? 'text-green-600 font-bold' : 'text-orange-600'}" style="font-size: 12px;">${reg.perf || 0}%</td>
-                    <td class="py-3 px-2 text-right ${reg.qual >= 98 ? 'text-green-600 font-bold' : 'text-orange-600'}" style="font-size: 12px;">${reg.qual || 0}%</td>
-                    <td class="py-3 px-2 text-right font-bold ${oee >= 85 ? 'text-green-600' : 'text-red-600'}" style="font-size: 12px;">${oee}%</td>
+                    <td class="py-3 px-2 text-center" style="font-size: 12px;">${reg.data ? reg.data.split('-').reverse().join('/') : '-'}<\/td>
+                    <td class="py-3 px-2 text-center font-bold" style="font-size: 12px;">${reg.machine || '-'}<\/td>
+                    <td class="py-3 px-2 text-center" style="font-size: 12px;">${reg.turno || '-'}<\/td>
+                    <td class="py-3 px-2 text-center font-medium text-blue-600" style="font-size: 12px;">${reg.op || '-'}<\/td>
+                    <td class="py-3 px-2 text-left max-w-xs truncate" style="font-size: 12px;" title="${reg.produto || ''}">${produtoDisplay}<\/td>
+                    <td class="py-3 px-2 text-right" style="font-size: 12px;">${reg.est || 0}<\/td>
+                    <td class="py-3 px-2 text-right font-medium" style="font-size: 12px;">${reg.realKgH || 0}<\/td>
+                    <td class="py-3 px-2 text-right ${reg.disp >= 85 ? 'text-green-600 font-bold' : 'text-orange-600'}" style="font-size: 12px;">${reg.disp || 0}%<\/td>
+                    <td class="py-3 px-2 text-right ${reg.dispTurno >= 85 ? 'text-green-600 font-bold' : 'text-orange-600'}" style="font-size: 12px;">${reg.dispTurno || 0}%<\/td>
+                    <td class="py-3 px-2 text-right ${reg.perf >= 100 ? 'text-green-600 font-bold' : 'text-orange-600'}" style="font-size: 12px;">${reg.perf || 0}%<\/td>
+                    <td class="py-3 px-2 text-right ${reg.qual >= 98 ? 'text-green-600 font-bold' : 'text-orange-600'}" style="font-size: 12px;">${reg.qual || 0}%<\/td>
+                    <td class="py-3 px-2 text-right font-bold ${oee >= 85 ? 'text-green-600' : 'text-red-600'}" style="font-size: 12px;">${oee}%<\/td>
                     <td class="py-3 px-2 text-center">
                         <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase ${statusClass}" style="font-size: 10px;">
                             ${statusText}
-                        </span>
-                    </td>
+                        <\/span>
+                    <\/td>
                     <td class="py-3 px-2 text-center">
                         <button onclick="openEditModal(${reg.id})" class="edit-btn mx-1" title="Editar">
                             <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            </svg>
-                        </button>
+                            <\/svg>
+                        <\/button>
                         <button onclick="apagarRegistro(${reg.id})" class="text-red-500 hover:text-red-700 mx-1" title="Apagar">
                             <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
-                    </td>
-                  </tr>
+                            <\/svg>
+                        <\/button>
+                    <\/td>
+                 <\/tr>
             `;
         });
     }
@@ -4557,11 +4930,17 @@
         renderData(filtered);
         renderPerdasChart(filtered);
         
+        // Atualizar cards de principais perdas no dashboard
+        atualizarCardsPerdasDashboard(filtered);
+        
         const activeView = document.querySelector('.view-content.active').id.replace('view-', '');
         switch(activeView) {
             case 'efficiency': renderEfficiencyView(filtered); break;
             case 'op': renderOPView(filtered); break;
-            case 'history': renderHistoryView(filtered); break;
+            case 'history': renderHistoryView(filtered); 
+                // Esconder container de médias ao mudar período
+                document.getElementById('mediasKgHContainer').style.display = 'none';
+                break;
             case 'clients': filtrarClientesLive(); break;
             case 'perdas': renderPerdasView(filtered); break;
         }
@@ -4573,205 +4952,170 @@
     }
 
     function renderData(data) {
-    const grid = document.getElementById('machine-grid');
-    if (!grid) return;
-    
-    grid.innerHTML = '';
-    let machinesMetrics = [];
-    
-    // Obter o período selecionado
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    
-    // Data de hoje
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    
-    // Calcular todos os dias do período, mas apenas até hoje
-    let totalDiasNoPeriodo = 0;
-    let listaDias = [];
-    
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        let end = new Date(endDate);
+        const grid = document.getElementById('machine-grid');
+        if (!grid) return;
         
-        // Se a data final for maior que hoje, usar hoje como limite
-        if (end > hoje) {
-            end = hoje;
+        grid.innerHTML = '';
+        let machinesMetrics = [];
+        
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        
+        let totalDiasNoPeriodo = 0;
+        let listaDias = [];
+        
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            let end = new Date(endDate);
+            
+            if (end > hoje) {
+                end = hoje;
+            }
+            
+            const diffTime = Math.abs(end - start);
+            totalDiasNoPeriodo = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            
+            const current = new Date(start);
+            while (current <= end) {
+                listaDias.push(current.toISOString().split('T')[0]);
+                current.setDate(current.getDate() + 1);
+            }
         }
         
-        // Calcular diferença em dias
-        const diffTime = Math.abs(end - start);
-        totalDiasNoPeriodo = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        ['M1', 'M2', 'M3'].forEach(mId => {
+            const machineData = data.filter(d => d.machine === mId);
+            
+            let somaOEE = 0;
+            let diasComProducao = 0;
+            
+            if (totalDiasNoPeriodo > 0 && listaDias.length > 0) {
+                const oeePorDia = {};
+                
+                machineData.forEach(d => {
+                    const oee = calcularOEE(d.disp, d.perf, d.qual);
+                    if (!oeePorDia[d.data]) {
+                        oeePorDia[d.data] = [];
+                    }
+                    oeePorDia[d.data].push(oee);
+                });
+                
+                listaDias.forEach(dia => {
+                    if (oeePorDia[dia] && oeePorDia[dia].length > 0) {
+                        const somaOeeDia = oeePorDia[dia].reduce((a, b) => a + b, 0);
+                        const mediaOeeDia = somaOeeDia / oeePorDia[dia].length;
+                        somaOEE += mediaOeeDia;
+                        diasComProducao++;
+                    }
+                });
+                
+                var mediaOEE = Math.round(somaOEE / totalDiasNoPeriodo);
+            } else if (machineData.length > 0) {
+                let somaOeeTemp = 0;
+                machineData.forEach(d => { 
+                    somaOeeTemp += calcularOEE(d.disp, d.perf, d.qual); 
+                });
+                mediaOEE = Math.round(somaOeeTemp / machineData.length);
+                diasComProducao = machineData.length;
+            } else {
+                mediaOEE = 0;
+            }
+            
+            let avgDisp = 0, avgPerf = 0, avgQual = 0, avgDispTurno = 0;
+            if (machineData.length > 0) {
+                let totalDisp = 0, totalPerf = 0, totalQual = 0, totalDispTurno = 0;
+                machineData.forEach(d => {
+                    totalDisp += d.disp || 0;
+                    totalPerf += d.perf || 0;
+                    totalQual += d.qual || 0;
+                    totalDispTurno += d.dispTurno || 0;
+                });
+                avgDisp = Math.round(totalDisp / machineData.length);
+                avgPerf = Math.round(totalPerf / machineData.length);
+                avgQual = Math.round(totalQual / machineData.length);
+                avgDispTurno = Math.round(totalDispTurno / machineData.length);
+            }
+            
+            machinesMetrics.push({ 
+                id: mId, 
+                disp: avgDisp, 
+                perf: avgPerf, 
+                qual: avgQual, 
+                dispTurno: avgDispTurno,
+                oee: mediaOEE,
+                diasComProducao: diasComProducao,
+                totalDias: totalDiasNoPeriodo
+            });
+            
+            const atingida = mediaOEE >= META;
+            const diasSemProducao = totalDiasNoPeriodo - diasComProducao;
+            
+            grid.innerHTML += `
+                <div class="card-machine">
+                    <div class="header-row"><p class="title">${mId}</p></div>
+                    <div class="oee-container">
+                        <span class="oee-number ${atingida ? 'text-green-700' : 'text-red-700'}">${mediaOEE}%</span>
+                        <span class="meta-indicator ${atingida ? 'atingida' : 'nao-atingida'}">${atingida ? '✓ META' : '✗ META'}</span>
+                    </div>
+                    <div class="space-y-3">
+                        ${renderBar('DISP MÉDIA', calcularDispMedia(avgDisp, avgDispTurno))}
+                        ${renderBar('PERF', avgPerf)}
+                        ${renderBar('QUAL', avgQual)}
+                    </div>
+                    <div class="mt-4 text-xs text-slate-400 border-t pt-2">
+                        📊 ${diasComProducao} dias com produção / ${totalDiasNoPeriodo} dias no período (até hoje)
+                        ${diasSemProducao > 0 ? '<span class="text-red-500 ml-2">⚠️ ' + diasSemProducao + ' dias sem produção</span>' : ''}
+                    </div>
+                </div>
+            `;
+        });
         
-        // Gerar lista de todas as datas do período (apenas até hoje)
-        const current = new Date(start);
-        while (current <= end) {
-            listaDias.push(current.toISOString().split('T')[0]);
-            current.setDate(current.getDate() + 1);
-        }
-    }
-    
-    console.log("📅 Período:", startDate, "até", endDate);
-    console.log("📆 Data de hoje:", hoje.toISOString().split('T')[0]);
-    console.log("📆 Total de dias no período (considerando apenas dias até hoje):", totalDiasNoPeriodo);
-    console.log("📋 Lista de dias:", listaDias);
-    
-    ['M1', 'M2', 'M3'].forEach(mId => {
-        const machineData = data.filter(d => d.machine === mId);
-        
-        console.log(`🔍 Máquina ${mId}: ${machineData.length} registros no período`);
-        
-        let somaOEE = 0;
-        let diasComProducao = 0;
-        
+        let globalOee = 0;
         if (totalDiasNoPeriodo > 0 && listaDias.length > 0) {
-            // Mapa para armazenar OEE por dia
-            const oeePorDia = {};
+            let somaGlobal = 0;
+            let totalDiasProcessados = 0;
             
-            // Calcular OEE para cada registro e agrupar por dia
-            machineData.forEach(d => {
-                const oee = calcularOEE(d.disp, d.perf, d.qual);
-                if (!oeePorDia[d.data]) {
-                    oeePorDia[d.data] = [];
-                }
-                oeePorDia[d.data].push(oee);
+            ['M1', 'M2', 'M3'].forEach(m => {
+                const machineData = data.filter(d => d.machine === m);
+                const oeePorDia = {};
+                
+                machineData.forEach(d => {
+                    const oee = calcularOEE(d.disp, d.perf, d.qual);
+                    if (!oeePorDia[d.data]) {
+                        oeePorDia[d.data] = [];
+                    }
+                    oeePorDia[d.data].push(oee);
+                });
+                
+                listaDias.forEach(dia => {
+                    if (oeePorDia[dia] && oeePorDia[dia].length > 0) {
+                        const somaOeeDia = oeePorDia[dia].reduce((a, b) => a + b, 0);
+                        const mediaOeeDia = somaOeeDia / oeePorDia[dia].length;
+                        somaGlobal += mediaOeeDia;
+                    }
+                    totalDiasProcessados++;
+                });
             });
             
-            // Para cada dia do período (apenas dias que já passaram)
-            listaDias.forEach(dia => {
-                if (oeePorDia[dia] && oeePorDia[dia].length > 0) {
-                    // Calcular média dos OEE do dia (caso tenha múltiplos turnos)
-                    const somaOeeDia = oeePorDia[dia].reduce((a, b) => a + b, 0);
-                    const mediaOeeDia = somaOeeDia / oeePorDia[dia].length;
-                    somaOEE += mediaOeeDia;
-                    diasComProducao++;
-                    console.log(`   ✅ ${dia}: ${mediaOeeDia}% (${oeePorDia[dia].length} turnos)`);
-                } else {
-                    // Dia sem produção: contribui com 0
-                    console.log(`   ❌ ${dia}: 0% (sem produção)`);
-                    // somaOEE += 0; (já é 0, não precisa somar)
-                }
+            globalOee = totalDiasProcessados > 0 ? Math.round(somaGlobal / totalDiasProcessados) : 0;
+        } else if (data.length > 0) {
+            let somaOEE = 0;
+            data.forEach(d => { 
+                somaOEE += calcularOEE(d.disp, d.perf, d.qual); 
             });
-            
-            // Média final = soma dos OEE de todos os dias / total de dias (apenas até hoje)
-            var mediaOEE = Math.round(somaOEE / totalDiasNoPeriodo);
-            console.log(`📊 Média OEE ${mId}: ${somaOEE} / ${totalDiasNoPeriodo} = ${mediaOEE}%`);
-        } else if (machineData.length > 0) {
-            // Fallback: sem período definido
-            let somaOeeTemp = 0;
-            machineData.forEach(d => { 
-                somaOeeTemp += calcularOEE(d.disp, d.perf, d.qual); 
-            });
-            mediaOEE = Math.round(somaOeeTemp / machineData.length);
-            diasComProducao = machineData.length;
-            console.log(`📊 Média OEE ${mId} (fallback): ${mediaOEE}%`);
-        } else {
-            mediaOEE = 0;
-            console.log(`📊 Média OEE ${mId}: 0% (sem dados)`);
+            globalOee = Math.round(somaOEE / data.length);
         }
         
-        // Calcular outras médias (disponibilidade, performance, qualidade)
-        let avgDisp = 0, avgPerf = 0, avgQual = 0, avgDispTurno = 0;
-        if (machineData.length > 0) {
-            let totalDisp = 0, totalPerf = 0, totalQual = 0, totalDispTurno = 0;
-            machineData.forEach(d => {
-                totalDisp += d.disp || 0;
-                totalPerf += d.perf || 0;
-                totalQual += d.qual || 0;
-                totalDispTurno += d.dispTurno || 0;
-            });
-            avgDisp = Math.round(totalDisp / machineData.length);
-            avgPerf = Math.round(totalPerf / machineData.length);
-            avgQual = Math.round(totalQual / machineData.length);
-            avgDispTurno = Math.round(totalDispTurno / machineData.length);
-        }
+        const topMachine = machinesMetrics.length > 0 ? machinesMetrics.reduce((a,b) => (a.oee > b.oee) ? a : b) : { id: '--', oee: 0 };
+        document.getElementById('topMachineName').innerText = topMachine.id;
+        document.getElementById('topMachineValue').innerText = topMachine.oee + '%';
+        document.getElementById('avgGlobalOee').innerText = globalOee + '%';
+        document.getElementById('totalReg').innerText = data.length;
         
-        machinesMetrics.push({ 
-            id: mId, 
-            disp: avgDisp, 
-            perf: avgPerf, 
-            qual: avgQual, 
-            dispTurno: avgDispTurno,
-            oee: mediaOEE,
-            diasComProducao: diasComProducao,
-            totalDias: totalDiasNoPeriodo
-        });
-        
-        const atingida = mediaOEE >= META;
-        const diasSemProducao = totalDiasNoPeriodo - diasComProducao;
-        
-        grid.innerHTML += `
-            <div class="card-machine">
-                <div class="header-row"><p class="title">${mId}</p></div>
-                <div class="oee-container">
-                    <span class="oee-number ${atingida ? 'text-green-700' : 'text-red-700'}">${mediaOEE}%</span>
-                    <span class="meta-indicator ${atingida ? 'atingida' : 'nao-atingida'}">${atingida ? '✓ META' : '✗ META'}</span>
-                </div>
-                <div class="space-y-3">
-                    ${renderBar('DISP MÉDIA', calcularDispMedia(avgDisp, avgDispTurno))}
-                    ${renderBar('PERF', avgPerf)}
-                    ${renderBar('QUAL', avgQual)}
-                </div>
-                <div class="mt-4 text-xs text-slate-400 border-t pt-2">
-                    📊 ${diasComProducao} dias com produção / ${totalDiasNoPeriodo} dias no período (até hoje)
-                    ${diasSemProducao > 0 ? '<span class="text-red-500 ml-2">⚠️ ' + diasSemProducao + ' dias sem produção</span>' : ''}
-                </div>
-            </div>
-        `;
-    });
-    
-    // CORREÇÃO: Média Geral OEE considerando apenas dias até hoje
-    let globalOee = 0;
-    if (totalDiasNoPeriodo > 0 && listaDias.length > 0) {
-        let somaGlobal = 0;
-        let totalDiasProcessados = 0;
-        
-        // Para cada máquina
-        ['M1', 'M2', 'M3'].forEach(m => {
-            const machineData = data.filter(d => d.machine === m);
-            const oeePorDia = {};
-            
-            // Agrupar OEE por dia para esta máquina
-            machineData.forEach(d => {
-                const oee = calcularOEE(d.disp, d.perf, d.qual);
-                if (!oeePorDia[d.data]) {
-                    oeePorDia[d.data] = [];
-                }
-                oeePorDia[d.data].push(oee);
-            });
-            
-            // Para cada dia do período (apenas até hoje)
-            listaDias.forEach(dia => {
-                if (oeePorDia[dia] && oeePorDia[dia].length > 0) {
-                    const somaOeeDia = oeePorDia[dia].reduce((a, b) => a + b, 0);
-                    const mediaOeeDia = somaOeeDia / oeePorDia[dia].length;
-                    somaGlobal += mediaOeeDia;
-                }
-                // Dias sem produção: contribuem com 0
-                totalDiasProcessados++;
-            });
-        });
-        
-        globalOee = totalDiasProcessados > 0 ? Math.round(somaGlobal / totalDiasProcessados) : 0;
-        console.log(`🌍 Média Global OEE: ${somaGlobal} / ${totalDiasProcessados} = ${globalOee}%`);
-    } else if (data.length > 0) {
-        // Fallback
-        let somaOEE = 0;
-        data.forEach(d => { 
-            somaOEE += calcularOEE(d.disp, d.perf, d.qual); 
-        });
-        globalOee = Math.round(somaOEE / data.length);
+        updateCharts(data, machinesMetrics);
     }
-    
-    const topMachine = machinesMetrics.length > 0 ? machinesMetrics.reduce((a,b) => (a.oee > b.oee) ? a : b) : { id: '--', oee: 0 };
-    document.getElementById('topMachineName').innerText = topMachine.id;
-    document.getElementById('topMachineValue').innerText = topMachine.oee + '%';
-    document.getElementById('avgGlobalOee').innerText = globalOee + '%';
-    document.getElementById('totalReg').innerText = data.length;
-    
-    updateCharts(data, machinesMetrics);
-}
 
     function renderBar(label, val) {
         const safeVal = !isNaN(val) && val !== null ? Math.min(100, Math.max(0, val)) : 0;
@@ -4906,27 +5250,27 @@
                 
                 tabelaLinhas += `
                     <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} hover:bg-slate-100">
-                                               <td class="py-2 px-2 text-center">${dataFormatada}</td>
-                        <td class="py-2 px-2 text-center font-bold">${r.machine}</td>
-                        <td class="py-2 px-2 text-center">${r.turno}</td>
-                        <td class="py-2 px-2 text-center font-medium text-blue-600">${r.op}</td>
-                        <td class="py-2 px-2 text-center">${r.realKgH || 0}</td>
-                        <td class="py-2 px-2 text-center font-bold ${statusPerf.cor}">${r.perf || 0}%</td>
-                        <td class="py-2 px-2 text-center font-bold ${r.qual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${r.qual || 0}%</td>
-                        <td class="py-2 px-2 text-center font-bold ${statusOEE}">${oee}%</td>
+                        <td class="py-2 px-2 text-center">${dataFormatada}<\/td>
+                        <td class="py-2 px-2 text-center font-bold">${r.machine}<\/td>
+                        <td class="py-2 px-2 text-center">${r.turno}<\/td>
+                        <td class="py-2 px-2 text-center font-medium text-blue-600">${r.op}<\/td>
+                        <td class="py-2 px-2 text-center">${r.realKgH || 0}<\/td>
+                        <td class="py-2 px-2 text-center font-bold ${statusPerf.cor}">${r.perf || 0}%<\/td>
+                        <td class="py-2 px-2 text-center font-bold ${r.qual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${r.qual || 0}%<\/td>
+                        <td class="py-2 px-2 text-center font-bold ${statusOEE}">${oee}%<\/td>
                         <td class="py-2 px-2 text-center">
                             <button onclick="openEditModal(${r.id})" class="edit-btn mx-1" title="Editar">
                                 <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
-                            </button>
+                                <\/svg>
+                            <\/button>
                             <button onclick="apagarRegistro(${r.id})" class="text-red-500 hover:text-red-700 mx-1" title="Apagar">
                                 <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </button>
-                        </td>
-                      </tr>
+                                <\/svg>
+                            <\/button>
+                        <\/td>
+                     <\/tr>
                 `;
             });
             
@@ -4938,31 +5282,31 @@
                     <div class="produto-header-cliente">
                         <span class="produto-nome-cliente">📦 ${produtoKey}</span>
                         <span class="produto-est-cliente">⚙️ Est: ${estDisplay}</span>
-                    </div>
+                    <\/div>
                     
                     <div class="produto-stats-cliente">
                         <div class="produto-stat-item">
                             <div class="produto-stat-label">Produção Total</div>
                             <div class="produto-stat-value text-green-700">${totalKg.toFixed(0)} kg</div>
-                        </div>
+                        <\/div>
                         <div class="produto-stat-item">
                             <div class="produto-stat-label">Horas Produtivas</div>
                             <div class="produto-stat-value text-blue-700">${totalHoras.toFixed(1)}h</div>
-                        </div>
+                        <\/div>
                         <div class="produto-stat-item">
                             <div class="produto-stat-label">Pedidos</div>
                             <div class="produto-stat-value text-purple-700">${registros.length}</div>
-                        </div>
+                        <\/div>
                         <div class="produto-stat-item">
                             <div class="produto-stat-label">OEE Médio</div>
                             <div class="produto-stat-value ${mediaOEE >= 85 ? 'text-green-700' : 'text-red-700'}">${mediaOEE}%</div>
-                        </div>
-                    </div>
+                        <\/div>
+                    <\/div>
                     
                     <div class="overflow-x-auto">
                         <table class="produto-tabela">
                             <thead>
-                                 <tr>
+                                 <tr
                                     <th>DATA</th>
                                     <th>MÁQ</th>
                                     <th>TURNO</th>
@@ -4972,18 +5316,18 @@
                                     <th>QUAL</th>
                                     <th>OEE</th>
                                     <th>AÇÕES</th>
-                                 </tr>
-                            </thead>
+                                 <\/tr>
+                            <\/thead>
                             <tbody>
                                 ${tabelaLinhas}
-                            </tbody>
-                         </table>
-                    </div>
+                            <\/tbody>
+                         <\/table>
+                    <\/div>
                     
                     <div class="mt-3 pt-2 text-right text-xs text-slate-400 border-t">
                         📊 Médias: Disp ${mediaDisp}% | Perf ${mediaPerf}% | Qual ${mediaQual}% | OEE ${mediaOEE}%
-                    </div>
-                </div>
+                    <\/div>
+                <\/div>
             `;
         });
         
@@ -4995,23 +5339,23 @@
                 <div class="bg-white rounded-3xl shadow-2xl w-full max-w-6xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
                     <div class="flex justify-between items-center mb-6 border-b pb-4 sticky top-0 bg-white z-10">
                         <div>
-                            <h2 class="font-black uppercase text-slate-800 text-2xl">${cliente}</h2>
-                            <p class="text-slate-500 text-sm mt-1">📋 Histórico de Produção por Produto</p>
-                        </div>
+                            <h2 class="font-black uppercase text-slate-800 text-2xl">${cliente}<\/h2>
+                            <p class="text-slate-500 text-sm mt-1">📋 Histórico de Produção por Produto<\/p>
+                        <\/div>
                         <button onclick="fecharDetalhesCliente()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
-                    </div>
+                    <\/div>
                     
                     <div class="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
                         ${conteudoHTML}
-                    </div>
+                    <\/div>
                     
                     <div class="mt-6 flex justify-end sticky bottom-0 bg-white pt-4 border-t">
                         <button onclick="fecharDetalhesCliente()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">
                             Fechar
-                        </button>
-                    </div>
-                </div>
-            </div>
+                        <\/button>
+                    <\/div>
+                <\/div>
+            <\/div>
         `);
     }
 
@@ -5453,9 +5797,8 @@
         
         carregarCalendario();
         
-        // Garantir que todas as abas estejam funcionando
         console.log("✅ Sistema inicializado - todas as abas funcionando");
     };
-</script>
+    </script>
 </body>
 </html>

@@ -1997,13 +1997,13 @@
                         <select id="produtoCliente" onchange="mostrarProdutosDoCliente()" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
                             <option value="">Selecionar cliente...</option>
                         </select>
-                        <input type="text" id="novoProduto" placeholder="Ex: 440x70x10" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
+                        <input type="text" id="novoProduto" placeholder="Ex: 1320X23 40KG" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
                         <input type="number" id="produtoEst" placeholder="Kg/h estimado" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
                         <select id="produtoMaquina" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
+                            <option value="M1">M1</option>
+                            <option value="M2">M2</option>
+                            <option value="M3">M3</option>
                             <option value="ALL">Todas as Máquinas</option>
-                            <option value="M1">Máquina 1</option>
-                            <option value="M2">Máquina 2</option>
-                            <option value="M3">Máquina 3</option>
                         </select>
                         <button onclick="adicionarProduto()" class="bg-blue-600 text-white font-black px-6 py-4 rounded-xl uppercase text-xs tracking-widest hover:bg-blue-700">
                             Adicionar
@@ -2090,65 +2090,65 @@
     ];
 
     let produtos = [
-        { cliente: "Cliente Teste", nome: "Produto", est: 90, maquinas: "ALL", displayName: "Cliente Teste - Produto (90 kg/h)" },
-        { cliente: "TEXTIL TRES ELLOS", nome: "2000X25 35KG", est: 190, maquinas: "ALL", displayName: "TEXTIL TRES ELLOS - 2000X25 35KG (190 kg/h)" },
-        { cliente: "AÇO CEARENSE", nome: "1400X50 20KG", est: 140, maquinas: "ALL", displayName: "AÇO CEARENSE - 1400X50 20KG (140 kg/h)" },
-        { cliente: "TCHÊ PACK EMBALAGENS", nome: "500X25 40KG PIG LARANJA", est: 90, maquinas: "ALL", displayName: "TCHÊ PACK EMBALAGENS - 500X25 40KG PIG LARANJA (90 kg/h)" },
-        { cliente: "NEOVIA NUTRIÇÃO", nome: "500X25 16KG PIG VERDE", est: 90, maquinas: "ALL", displayName: "NEOVIA NUTRIÇÃO - 500X25 16KG PIG VERDE (90 kg/h)" },
-        { cliente: "VINIPLAST", nome: "1500X150 50KG SHRINK ENVOLVEDORA", est: 140, maquinas: "ALL", displayName: "VINIPLAST - 1500X150 50KG SHRINK ENVOLVEDORA (140 kg/h)" },
-        { cliente: "TAKFILMS DISTRIBUIDORA", nome: "500X25 50KG PIG VERDE", est: 90, maquinas: "ALL", displayName: "TAKFILMS DISTRIBUIDORA - 500X25 50KG PIG VERDE (90 kg/h)" },
-        { cliente: "LUSITANO IND E COM", nome: "500X25 PIG VERMELHO", est: 90, maquinas: "ALL", displayName: "LUSITANO IND E COM - 500X25 PIG VERMELHO (90 kg/h)" },
-        { cliente: "BB EMBALAGENS", nome: "540X60 85KG SHRINK", est: 120, maquinas: "ALL", displayName: "BB EMBALAGENS - 540X60 85KG SHRINK (120 kg/h)" },
-        { cliente: "BB EMBALAGENS", nome: "620X60 80KG SHRINK", est: 120, maquinas: "ALL", displayName: "BB EMBALAGENS - 620X60 80KG SHRINK (120 kg/h)" },
-        { cliente: "AGRINDUS S/A", nome: "500X60 24KG SHRINK SELADORA", est: 130, maquinas: "ALL", displayName: "AGRINDUS S/A - 500X60 24KG SHRINK SELADORA (130 kg/h)" },
-        { cliente: "KITCHENS IND.", nome: "950X100 30KG SHRINK SELADORA", est: 130, maquinas: "ALL", displayName: "KITCHENS IND. - 950X100 30KG SHRINK SELADORA (130 kg/h)" },
-        { cliente: "PEIXES MEGGS", nome: "730X30 30KG SHRINK SELADORA", est: 130, maquinas: "ALL", displayName: "PEIXES MEGGS - 730X30 30KG SHRINK SELADORA (130 kg/h)" },
-        { cliente: "RALPLAST FILME", nome: "500X25 50KG PIG AZUL", est: 90, maquinas: "ALL", displayName: "RALPLAST FILME - 500X25 50KG PIG AZUL (90 kg/h)" },
-        { cliente: "LUSITANO IND E COM", nome: "480X40 SHRINK COBERTURA", est: 120, maquinas: "ALL", displayName: "LUSITANO IND E COM - 480X40 SHRINK COBERTURA (120 kg/h)" },
-        { cliente: "PH7 DISTR.", nome: "420X60 25KG SHRINK SELADORA", est: 150, maquinas: "ALL", displayName: "PH7 DISTR. - 420X60 25KG SHRINK SELADORA (150 kg/h)" },
-        { cliente: "REFRIX ENVASADORA", nome: "490X55 30KG SHRINK ENVOLVEDORA", est: 120, maquinas: "ALL", displayName: "REFRIX ENVASADORA - 490X55 30KG SHRINK ENVOLVEDORA (120 kg/h)" },
-        { cliente: "KEG IND.", nome: "500X25 15KG", est: 120, maquinas: "ALL", displayName: "KEG IND. - 500X25 15KG (120 kg/h)" },
-        { cliente: "BRAND TEXTIL", nome: "1900X80 25KG SHRINK ENVOLVEDORA", est: 140, maquinas: "ALL", displayName: "BRAND TEXTIL - 1900X80 25KG SHRINK ENVOLVEDORA (140 kg/h)" },
-        { cliente: "POLIPISO DO BRASIL", nome: "500X20 16KG", est: 120, maquinas: "ALL", displayName: "POLIPISO DO BRASIL - 500X20 16KG (120 kg/h)" },
-        { cliente: "FAREVA DES.", nome: "500X25 15KG", est: 120, maquinas: "ALL", displayName: "FAREVA DES. - 500X25 15KG (120 kg/h)" },
-        { cliente: "IBÉRICA CONDUTORES", nome: "500X25 PIG BRANCO", est: 90, maquinas: "ALL", displayName: "IBÉRICA CONDUTORES - 500X25 PIG BRANCO (90 kg/h)" },
-        { cliente: "STEELPACK GROUP", nome: "500X25 50KG PIG BRANCO", est: 90, maquinas: "ALL", displayName: "STEELPACK GROUP - 500X25 50KG PIG BRANCO (90 kg/h)" },
-        { cliente: "MASTER DO BRASIL", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "MASTER DO BRASIL - 500X25 50KG PIG PRETO (90 kg/h)" },
-        { cliente: "EKS ADM", nome: "500X25 50KG PIG VERMELHO", est: 90, maquinas: "ALL", displayName: "EKS ADM - 500X25 50KG PIG VERMELHO (90 kg/h)" },
-        { cliente: "EKS ADM", nome: "500X25 50KG PIG. BRANCO", est: 90, maquinas: "ALL", displayName: "EKS ADM - 500X25 50KG PIG. BRANCO (90 kg/h)" },
-        { cliente: "STEELPACK GROUP", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "STEELPACK GROUP - 500X25 50KG PIG PRETO (90 kg/h)" },
-        { cliente: "CORR PLASTIK", nome: "498X30 PIG AZUL", est: 90, maquinas: "ALL", displayName: "CORR PLASTIK - 498X30 PIG AZUL (90 kg/h)" },
-        { cliente: "IBILUX ILUMINAÇÃO", nome: "180X160 15KG SHRINK TUBULAR", est: 90, maquinas: "ALL", displayName: "IBILUX ILUMINAÇÃO - 180X160 15KG SHRINK TUBULAR (90 kg/h)" },
-        { cliente: "BB EMBALAGENS", nome: "500X55 80KG SHRINK BRANCO", est: 90, maquinas: "ALL", displayName: "BB EMBALAGENS - 500X55 80KG SHRINK BRANCO (90 kg/h)" },
-        { cliente: "BB EMBALAGENS", nome: "500X55 80KG SHRINK", est: 120, maquinas: "ALL", displayName: "BB EMBALAGENS - 500X55 80KG SHRINK (120 kg/h)" },
-        { cliente: "FAREVA DES.", nome: "240X50 15KG SHRINK SELADORA", est: 90, maquinas: "ALL", displayName: "FAREVA DES. - 240X50 15KG SHRINK SELADORA (90 kg/h)" },
-        { cliente: "VINIPLAST", nome: "500X10025KG ENVOLVEDORA", est: 90, maquinas: "ALL", displayName: "VINIPLAST - 500X10025KG ENVOLVEDORA (90 kg/h)" },
-        { cliente: "EKS ADM", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "EKS ADM - 500X25 50KG PIG PRETO (90 kg/h)" },
-        { cliente: "R2 PLAST", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "R2 PLAST - 500X25 50KG PIG PRETO (90 kg/h)" },
-        { cliente: "VINIPLAST", nome: "1640X150 50KG ENVOLVEDORA", est: 140, maquinas: "ALL", displayName: "VINIPLAST - 1640X150 50KG ENVOLVEDORA (140 kg/h)" },
-        { cliente: "TINTURARIA UNIVERSO", nome: "550X70 25KG TUBULAR", est: 120, maquinas: "ALL", displayName: "TINTURARIA UNIVERSO - 550X70 25KG TUBULAR (120 kg/h)" },
-        { cliente: "CPIC BRASIL", nome: "430X40 10KG PIG VERDE", est: 140, maquinas: "ALL", displayName: "CPIC BRASIL - 430X40 10KG PIG VERDE (140 kg/h)" },
-        { cliente: "LUSITANO IND E COM", nome: "460X40 12KG", est: 130, maquinas: "ALL", displayName: "LUSITANO IND E COM - 460X40 12KG (130 kg/h)" },
-        { cliente: "LUSITANO IND E COM", nome: "400X140 TUBULAR", est: 140, maquinas: "ALL", displayName: "LUSITANO IND E COM - 400X140 TUBULAR (140 kg/h)" },
-        { cliente: "LUSITANO IND E COM", nome: "400X200 SANFONA 100", est: 90, maquinas: "ALL", displayName: "LUSITANO IND E COM - 400X200 SANFONA 100 (90 kg/h)" },
-        { cliente: "NOVA RENKO IND.", nome: "400X60 20KG SHRINK SELADORA", est: 150, maquinas: "ALL", displayName: "NOVA RENKO IND. - 400X60 20KG SHRINK SELADORA (150 kg/h)" },
-        { cliente: "TINTURARIA UNIVERSO", nome: "650X70 25KG TUBULAR", est: 130, maquinas: "ALL", displayName: "TINTURARIA UNIVERSO - 650X70 25KG TUBULAR (130 kg/h)" },
-        { cliente: "TINTURARIA UNIVERSO", nome: "450X70 25KG TUBULAR", est: 120, maquinas: "ALL", displayName: "TINTURARIA UNIVERSO - 450X70 25KG TUBULAR (120 kg/h)" },
-        { cliente: "SOLAR MINAS", nome: "1250X160 25KG ENFESTADO", est: 140, maquinas: "ALL", displayName: "SOLAR MINAS - 1250X160 25KG ENFESTADO (140 kg/h)" },
-        { cliente: "MAXIBELL PORTAS", nome: "1200X25 13KG", est: 90, maquinas: "ALL", displayName: "MAXIBELL PORTAS - 1200X25 13KG (90 kg/h)" },
-        { cliente: "KITCHENS IND.", nome: "1250X100 30KG SELADORA", est: 140, maquinas: "ALL", displayName: "KITCHENS IND. - 1250X100 30KG SELADORA (140 kg/h)" },
-        { cliente: "BRAZIL GR", nome: "460X40 12KG", est: 130, maquinas: "ALL", displayName: "BRAZIL GR - 460X40 12KG (130 kg/h)" },
-        { cliente: "CARGILL AGRICOLA", nome: "1320X23 40KG", est: 140, maquinas: "ALL", displayName: "CARGILL AGRICOLA - 1320X23 40KG (140 kg/h)" },
-        { cliente: "ERIPACK EMBALAGENS", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "ERIPACK EMBALAGENS - 500X25 50KG PIG PRETO (90 kg/h)" },
-        { cliente: "DMZ PLAST", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "DMZ PLAST - 500X25 50KG PIG PRETO (90 kg/h)" },
-        { cliente: "TAKFILMS DISTRIBUIDORA", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "TAKFILMS DISTRIBUIDORA - 500X25 50KG PIG PRETO (90 kg/h)" },
-        { cliente: "FLEXFILMS FLEXIBLE", nome: "500x25 50KG PIG PRETO", est: 140, maquinas: "ALL", displayName: "FLEXFILMS FLEXIBLE - 500x25 50KG PIG PRETO (140 kg/h)" },
-        { cliente: "CARGILL AGRICOLA", nome: "750X30 28KG PIG BRANCO", est: 140, maquinas: "ALL", displayName: "CARGILL AGRICOLA - 750X30 28KG PIG BRANCO (140 kg/h)" },
-        { cliente: "TERMOMECANICA", nome: "600X80 PIG BRANCO", est: 120, maquinas: "ALL", displayName: "TERMOMECANICA - 600X80 PIG BRANCO (120 kg/h)" },
-        { cliente: "APARECIDO DONIZETE", nome: "600X12", est: 90, maquinas: "ALL", displayName: "APARECIDO DONIZETE - 600X12 (90 kg/h)" },
-        { cliente: "MARELLI", nome: "500X40", est: 140, maquinas: "ALL", displayName: "MARELLI - 500X40 (140 kg/h)" },
-        { cliente: "QUALITY CENTRAL", nome: "500X17", est: 110, maquinas: "ALL", displayName: "QUALITY CENTRAL - 500X17 (110 kg/h)" },
-        { cliente: "C.VALE", nome: "515X15 PIG AZUL", est: 90, maquinas: "ALL", displayName: "C.VALE - 515X15 PIG AZUL (90 kg/h)" }
+        { cliente: "Cliente Teste", nome: "Produto", est: 90, maquinas: "ALL", displayName: "Cliente Teste - Produto (90 kg/h) [Todas]" },
+        { cliente: "TEXTIL TRES ELLOS", nome: "2000X25 35KG", est: 190, maquinas: "ALL", displayName: "TEXTIL TRES ELLOS - 2000X25 35KG (190 kg/h) [Todas]" },
+        { cliente: "AÇO CEARENSE", nome: "1400X50 20KG", est: 140, maquinas: "ALL", displayName: "AÇO CEARENSE - 1400X50 20KG (140 kg/h) [Todas]" },
+        { cliente: "TCHÊ PACK EMBALAGENS", nome: "500X25 40KG PIG LARANJA", est: 90, maquinas: "ALL", displayName: "TCHÊ PACK EMBALAGENS - 500X25 40KG PIG LARANJA (90 kg/h) [Todas]" },
+        { cliente: "NEOVIA NUTRIÇÃO", nome: "500X25 16KG PIG VERDE", est: 90, maquinas: "ALL", displayName: "NEOVIA NUTRIÇÃO - 500X25 16KG PIG VERDE (90 kg/h) [Todas]" },
+        { cliente: "VINIPLAST", nome: "1500X150 50KG SHRINK ENVOLVEDORA", est: 140, maquinas: "ALL", displayName: "VINIPLAST - 1500X150 50KG SHRINK ENVOLVEDORA (140 kg/h) [Todas]" },
+        { cliente: "TAKFILMS DISTRIBUIDORA", nome: "500X25 50KG PIG VERDE", est: 90, maquinas: "ALL", displayName: "TAKFILMS DISTRIBUIDORA - 500X25 50KG PIG VERDE (90 kg/h) [Todas]" },
+        { cliente: "LUSITANO IND E COM", nome: "500X25 PIG VERMELHO", est: 90, maquinas: "ALL", displayName: "LUSITANO IND E COM - 500X25 PIG VERMELHO (90 kg/h) [Todas]" },
+        { cliente: "BB EMBALAGENS", nome: "540X60 85KG SHRINK", est: 120, maquinas: "ALL", displayName: "BB EMBALAGENS - 540X60 85KG SHRINK (120 kg/h) [Todas]" },
+        { cliente: "BB EMBALAGENS", nome: "620X60 80KG SHRINK", est: 120, maquinas: "ALL", displayName: "BB EMBALAGENS - 620X60 80KG SHRINK (120 kg/h) [Todas]" },
+        { cliente: "AGRINDUS S/A", nome: "500X60 24KG SHRINK SELADORA", est: 130, maquinas: "ALL", displayName: "AGRINDUS S/A - 500X60 24KG SHRINK SELADORA (130 kg/h) [Todas]" },
+        { cliente: "KITCHENS IND.", nome: "950X100 30KG SHRINK SELADORA", est: 130, maquinas: "ALL", displayName: "KITCHENS IND. - 950X100 30KG SHRINK SELADORA (130 kg/h) [Todas]" },
+        { cliente: "PEIXES MEGGS", nome: "730X30 30KG SHRINK SELADORA", est: 130, maquinas: "ALL", displayName: "PEIXES MEGGS - 730X30 30KG SHRINK SELADORA (130 kg/h) [Todas]" },
+        { cliente: "RALPLAST FILME", nome: "500X25 50KG PIG AZUL", est: 90, maquinas: "ALL", displayName: "RALPLAST FILME - 500X25 50KG PIG AZUL (90 kg/h) [Todas]" },
+        { cliente: "LUSITANO IND E COM", nome: "480X40 SHRINK COBERTURA", est: 120, maquinas: "ALL", displayName: "LUSITANO IND E COM - 480X40 SHRINK COBERTURA (120 kg/h) [Todas]" },
+        { cliente: "PH7 DISTR.", nome: "420X60 25KG SHRINK SELADORA", est: 150, maquinas: "ALL", displayName: "PH7 DISTR. - 420X60 25KG SHRINK SELADORA (150 kg/h) [Todas]" },
+        { cliente: "REFRIX ENVASADORA", nome: "490X55 30KG SHRINK ENVOLVEDORA", est: 120, maquinas: "ALL", displayName: "REFRIX ENVASADORA - 490X55 30KG SHRINK ENVOLVEDORA (120 kg/h) [Todas]" },
+        { cliente: "KEG IND.", nome: "500X25 15KG", est: 120, maquinas: "ALL", displayName: "KEG IND. - 500X25 15KG (120 kg/h) [Todas]" },
+        { cliente: "BRAND TEXTIL", nome: "1900X80 25KG SHRINK ENVOLVEDORA", est: 140, maquinas: "ALL", displayName: "BRAND TEXTIL - 1900X80 25KG SHRINK ENVOLVEDORA (140 kg/h) [Todas]" },
+        { cliente: "POLIPISO DO BRASIL", nome: "500X20 16KG", est: 120, maquinas: "ALL", displayName: "POLIPISO DO BRASIL - 500X20 16KG (120 kg/h) [Todas]" },
+        { cliente: "FAREVA DES.", nome: "500X25 15KG", est: 120, maquinas: "ALL", displayName: "FAREVA DES. - 500X25 15KG (120 kg/h) [Todas]" },
+        { cliente: "IBÉRICA CONDUTORES", nome: "500X25 PIG BRANCO", est: 90, maquinas: "ALL", displayName: "IBÉRICA CONDUTORES - 500X25 PIG BRANCO (90 kg/h) [Todas]" },
+        { cliente: "STEELPACK GROUP", nome: "500X25 50KG PIG BRANCO", est: 90, maquinas: "ALL", displayName: "STEELPACK GROUP - 500X25 50KG PIG BRANCO (90 kg/h) [Todas]" },
+        { cliente: "MASTER DO BRASIL", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "MASTER DO BRASIL - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
+        { cliente: "EKS ADM", nome: "500X25 50KG PIG VERMELHO", est: 90, maquinas: "ALL", displayName: "EKS ADM - 500X25 50KG PIG VERMELHO (90 kg/h) [Todas]" },
+        { cliente: "EKS ADM", nome: "500X25 50KG PIG. BRANCO", est: 90, maquinas: "ALL", displayName: "EKS ADM - 500X25 50KG PIG. BRANCO (90 kg/h) [Todas]" },
+        { cliente: "STEELPACK GROUP", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "STEELPACK GROUP - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
+        { cliente: "CORR PLASTIK", nome: "498X30 PIG AZUL", est: 90, maquinas: "ALL", displayName: "CORR PLASTIK - 498X30 PIG AZUL (90 kg/h) [Todas]" },
+        { cliente: "IBILUX ILUMINAÇÃO", nome: "180X160 15KG SHRINK TUBULAR", est: 90, maquinas: "ALL", displayName: "IBILUX ILUMINAÇÃO - 180X160 15KG SHRINK TUBULAR (90 kg/h) [Todas]" },
+        { cliente: "BB EMBALAGENS", nome: "500X55 80KG SHRINK BRANCO", est: 90, maquinas: "ALL", displayName: "BB EMBALAGENS - 500X55 80KG SHRINK BRANCO (90 kg/h) [Todas]" },
+        { cliente: "BB EMBALAGENS", nome: "500X55 80KG SHRINK", est: 120, maquinas: "ALL", displayName: "BB EMBALAGENS - 500X55 80KG SHRINK (120 kg/h) [Todas]" },
+        { cliente: "FAREVA DES.", nome: "240X50 15KG SHRINK SELADORA", est: 90, maquinas: "ALL", displayName: "FAREVA DES. - 240X50 15KG SHRINK SELADORA (90 kg/h) [Todas]" },
+        { cliente: "VINIPLAST", nome: "500X10025KG ENVOLVEDORA", est: 90, maquinas: "ALL", displayName: "VINIPLAST - 500X10025KG ENVOLVEDORA (90 kg/h) [Todas]" },
+        { cliente: "EKS ADM", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "EKS ADM - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
+        { cliente: "R2 PLAST", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "R2 PLAST - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
+        { cliente: "VINIPLAST", nome: "1640X150 50KG ENVOLVEDORA", est: 140, maquinas: "ALL", displayName: "VINIPLAST - 1640X150 50KG ENVOLVEDORA (140 kg/h) [Todas]" },
+        { cliente: "TINTURARIA UNIVERSO", nome: "550X70 25KG TUBULAR", est: 120, maquinas: "ALL", displayName: "TINTURARIA UNIVERSO - 550X70 25KG TUBULAR (120 kg/h) [Todas]" },
+        { cliente: "CPIC BRASIL", nome: "430X40 10KG PIG VERDE", est: 140, maquinas: "ALL", displayName: "CPIC BRASIL - 430X40 10KG PIG VERDE (140 kg/h) [Todas]" },
+        { cliente: "LUSITANO IND E COM", nome: "460X40 12KG", est: 130, maquinas: "ALL", displayName: "LUSITANO IND E COM - 460X40 12KG (130 kg/h) [Todas]" },
+        { cliente: "LUSITANO IND E COM", nome: "400X140 TUBULAR", est: 140, maquinas: "ALL", displayName: "LUSITANO IND E COM - 400X140 TUBULAR (140 kg/h) [Todas]" },
+        { cliente: "LUSITANO IND E COM", nome: "400X200 SANFONA 100", est: 90, maquinas: "ALL", displayName: "LUSITANO IND E COM - 400X200 SANFONA 100 (90 kg/h) [Todas]" },
+        { cliente: "NOVA RENKO IND.", nome: "400X60 20KG SHRINK SELADORA", est: 150, maquinas: "ALL", displayName: "NOVA RENKO IND. - 400X60 20KG SHRINK SELADORA (150 kg/h) [Todas]" },
+        { cliente: "TINTURARIA UNIVERSO", nome: "650X70 25KG TUBULAR", est: 130, maquinas: "ALL", displayName: "TINTURARIA UNIVERSO - 650X70 25KG TUBULAR (130 kg/h) [Todas]" },
+        { cliente: "TINTURARIA UNIVERSO", nome: "450X70 25KG TUBULAR", est: 120, maquinas: "ALL", displayName: "TINTURARIA UNIVERSO - 450X70 25KG TUBULAR (120 kg/h) [Todas]" },
+        { cliente: "SOLAR MINAS", nome: "1250X160 25KG ENFESTADO", est: 140, maquinas: "ALL", displayName: "SOLAR MINAS - 1250X160 25KG ENFESTADO (140 kg/h) [Todas]" },
+        { cliente: "MAXIBELL PORTAS", nome: "1200X25 13KG", est: 90, maquinas: "ALL", displayName: "MAXIBELL PORTAS - 1200X25 13KG (90 kg/h) [Todas]" },
+        { cliente: "KITCHENS IND.", nome: "1250X100 30KG SELADORA", est: 140, maquinas: "ALL", displayName: "KITCHENS IND. - 1250X100 30KG SELADORA (140 kg/h) [Todas]" },
+        { cliente: "BRAZIL GR", nome: "460X40 12KG", est: 130, maquinas: "ALL", displayName: "BRAZIL GR - 460X40 12KG (130 kg/h) [Todas]" },
+        { cliente: "CARGILL AGRICOLA", nome: "1320X23 40KG", est: 140, maquinas: "ALL", displayName: "CARGILL AGRICOLA - 1320X23 40KG (140 kg/h) [Todas]" },
+        { cliente: "ERIPACK EMBALAGENS", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "ERIPACK EMBALAGENS - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
+        { cliente: "DMZ PLAST", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "DMZ PLAST - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
+        { cliente: "TAKFILMS DISTRIBUIDORA", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "TAKFILMS DISTRIBUIDORA - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
+        { cliente: "FLEXFILMS FLEXIBLE", nome: "500x25 50KG PIG PRETO", est: 140, maquinas: "ALL", displayName: "FLEXFILMS FLEXIBLE - 500x25 50KG PIG PRETO (140 kg/h) [Todas]" },
+        { cliente: "CARGILL AGRICOLA", nome: "750X30 28KG PIG BRANCO", est: 140, maquinas: "ALL", displayName: "CARGILL AGRICOLA - 750X30 28KG PIG BRANCO (140 kg/h) [Todas]" },
+        { cliente: "TERMOMECANICA", nome: "600X80 PIG BRANCO", est: 120, maquinas: "ALL", displayName: "TERMOMECANICA - 600X80 PIG BRANCO (120 kg/h) [Todas]" },
+        { cliente: "APARECIDO DONIZETE", nome: "600X12", est: 90, maquinas: "ALL", displayName: "APARECIDO DONIZETE - 600X12 (90 kg/h) [Todas]" },
+        { cliente: "MARELLI", nome: "500X40", est: 140, maquinas: "ALL", displayName: "MARELLI - 500X40 (140 kg/h) [Todas]" },
+        { cliente: "QUALITY CENTRAL", nome: "500X17", est: 110, maquinas: "ALL", displayName: "QUALITY CENTRAL - 500X17 (110 kg/h) [Todas]" },
+        { cliente: "C.VALE", nome: "515X15 PIG AZUL", est: 90, maquinas: "ALL", displayName: "C.VALE - 515X15 PIG AZUL (90 kg/h) [Todas]" }
     ];
 
     // ============================================
@@ -2179,14 +2179,12 @@
             totalAparasKg += reg.aparas || 0;
         });
         
-        // Mostrar card com o resultado
         const card = document.getElementById('totalAparasCard');
         const valorSpan = document.getElementById('totalAparasValor');
         
         valorSpan.innerHTML = totalAparasKg.toFixed(1) + ' kg';
         card.style.display = 'block';
         
-        // Scroll suave até o card
         card.scrollIntoView({ behavior: 'smooth', block: 'start' });
         
         if (totalAparasKg === 0) {
@@ -2418,8 +2416,6 @@
                 document.getElementById(cards[i].idMin).innerText = '0 min';
             }
         }
-        
-        console.log('📊 Total de perdas:', totalGeralPerdas, 'min');
     }
     
     // ============================================
@@ -2481,133 +2477,64 @@
     }
 
     // ============================================
-    // FUNÇÕES DE SELEÇÃO DE CLIENTES (COM VALIDAÇÃO DE MÁQUINA)
+    // FUNÇÕES DE GESTÃO DE CLIENTES E PRODUTOS (CORRIGIDO - PERMITE MESMO PRODUTO EM MÁQUINAS DIFERENTES)
     // ============================================
     
-    function carregarClientesCards() {
-        const container = document.getElementById('clientesCardsContainer');
-        if (!container) return;
+    function adicionarProduto() {
+        const cliente = document.getElementById('produtoCliente').value;
+        const produto = document.getElementById('novoProduto').value.trim();
+        const est = safeNumber(document.getElementById('produtoEst').value);
+        const maquina = document.getElementById('produtoMaquina').value;
         
-        const busca = document.getElementById('buscaClienteCard')?.value.toLowerCase() || '';
-        
-        const clientesMap = new Map();
-        produtos.forEach(p => {
-            if (!clientesMap.has(p.cliente)) {
-                clientesMap.set(p.cliente, []);
-            }
-            clientesMap.get(p.cliente).push(p);
-        });
-        
-        const clientesArray = Array.from(clientesMap.keys())
-            .filter(cliente => cliente.toLowerCase().includes(busca))
-            .sort();
-        
-        clientesFiltradosCards = clientesArray;
-        
-        container.innerHTML = clientesArray.map(cliente => {
-            const produtosCliente = clientesMap.get(cliente);
-            const produtosPreview = produtosCliente.slice(0, 3).map(p => 
-                `<span class="produto-badge-mini">${p.nome}</span>`
-            ).join('');
-            
-            const temMais = produtosCliente.length > 3 ? 
-                `<span class="produto-badge-mini">+${produtosCliente.length - 3}</span>` : '';
-            
-            const isSelected = clienteSelecionado === cliente ? 'selected' : '';
-            const isExpanded = clienteSelecionado === cliente ? 'expanded' : '';
-            
-            return `
-                <div class="cliente-card-select ${isSelected} ${isExpanded}" data-cliente="${cliente.replace(/'/g, "\\'")}">
-                    <div class="cliente-nome" onclick="selecionarCliente('${cliente.replace(/'/g, "\\'")}')">${cliente}</div>
-                    <div class="produtos-preview" onclick="selecionarCliente('${cliente.replace(/'/g, "\\'")}')">
-                        ${produtosPreview}
-                        ${temMais}
-                    </div>
-                    <div class="produtos-lista" id="produtos-${cliente.replace(/\s/g, '')}">
-                        ${produtosCliente.map((p, idx) => `
-                            <div class="produto-item ${produtoSelecionado === p.displayName ? 'selected' : ''}" 
-                                 onclick="event.stopPropagation(); selecionarProduto('${p.displayName.replace(/'/g, "\\'")}', ${p.est})">
-                                <span class="produto-nome">${p.nome}</span>
-                                <span class="produto-est">${p.est} kg/h</span>
-                                ${getMaquinaBadge(p.maquinas)}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    function selecionarCliente(cliente) {
-        console.log("Selecionando cliente:", cliente);
-        clienteSelecionado = cliente;
-        produtoSelecionado = null;
-        document.getElementById('regProduto').value = '';
-        document.getElementById('regEst').value = '90';
-        document.getElementById('regEstDisplay').value = '90';
-        
-        document.querySelectorAll('.cliente-card-select').forEach(c => {
-            const clienteCard = c.getAttribute('data-cliente');
-            if (clienteCard === cliente) {
-                c.classList.add('selected');
-                c.classList.add('expanded');
-            } else {
-                c.classList.remove('selected');
-                c.classList.remove('expanded');
-            }
-        });
-        
-        const produtosLista = document.querySelector(`#produtos-${cliente.replace(/\s/g, '')}`);
-        if (produtosLista) {
-            produtosLista.style.display = 'block';
-        }
-        
-        carregarClientesCards();
-    }
-
-    function selecionarProduto(produtoDisplay, est) {
-        console.log("Selecionando produto:", produtoDisplay, "Est:", est);
-        
-        const maquinaSelecionada = document.getElementById('regMachine').value;
-        if (maquinaSelecionada && !verificarMaquinaProduto(produtoDisplay, maquinaSelecionada)) {
-            showErrorToast(`⚠️ Este produto não pode ser usado na máquina ${maquinaSelecionada}!`);
+        if (!cliente || !produto || est <= 0) {
+            alert('Preencha todos os campos corretamente!');
             return;
         }
         
-        produtoSelecionado = produtoDisplay;
-        document.getElementById('regProduto').value = produtoDisplay;
-        document.getElementById('regEst').value = est;
-        document.getElementById('regEstDisplay').value = est;
+        // Verificar se já existe o MESMO produto para o MESMO cliente na MESMA máquina
+        const produtoExistente = produtos.find(p => 
+            p.cliente === cliente && 
+            p.nome.toLowerCase() === produto.toLowerCase() && 
+            p.maquinas === maquina
+        );
         
-        document.getElementById('clienteSelecionadoDisplay').style.display = 'flex';
-        document.getElementById('clienteSelecionadoNome').innerHTML = clienteSelecionado;
+        if (produtoExistente) {
+            showErrorToast(`⚠️ Este produto já existe para o cliente ${cliente} na máquina ${maquina}!`);
+            return;
+        }
         
-        const nomeProduto = produtoDisplay.split(' - ')[1] || produtoDisplay;
-        document.getElementById('produtoSelecionadoInfo').innerHTML = `📦 ${nomeProduto} (${est} kg/h)`;
+        // Obter o nome da máquina para exibição
+        let nomeMaquina = "";
+        if (maquina === "M1") nomeMaquina = "M1";
+        else if (maquina === "M2") nomeMaquina = "M2";
+        else if (maquina === "M3") nomeMaquina = "M3";
+        else nomeMaquina = "Todas";
         
-        document.getElementById('selecaoClientesArea').style.display = 'none';
+        produtos.push({
+            cliente,
+            nome: produto,
+            est,
+            maquinas: maquina,
+            displayName: `${cliente} - ${produto} (${est} kg/h) [${nomeMaquina}]`
+        });
         
-        atualizarPreview();
+        localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
+        atualizarSelectClientesProduto();
+        atualizarListaClientesProdutos();
+        mostrarProdutosDoCliente();
+        
+        document.getElementById('novoProduto').value = '';
+        document.getElementById('produtoEst').value = '';
+        document.getElementById('produtoMaquina').value = 'M1';
+        showToast(`✅ Produto adicionado na máquina ${nomeMaquina} com sucesso!`);
+        
+        const buscaInput = document.getElementById('buscaClientesGerenciamento');
+        if (buscaInput) {
+            buscaInput.value = '';
+            filtrarClientesGerenciamento('');
+        }
     }
 
-    function mostrarSelecaoClientes() {
-        document.getElementById('selecaoClientesArea').style.display = 'block';
-        document.getElementById('clienteSelecionadoDisplay').style.display = 'none';
-        clienteSelecionado = null;
-        produtoSelecionado = null;
-        document.getElementById('regProduto').value = '';
-        document.getElementById('regEst').value = '90';
-        document.getElementById('regEstDisplay').value = '90';
-        carregarClientesCards();
-    }
-
-    function filtrarClientesCards() {
-        carregarClientesCards();
-    }
-
-    // ============================================
-    // FUNÇÕES DE GESTÃO DE CLIENTES E PRODUTOS (COM MÁQUINA)
-    // ============================================
     function mostrarProdutosDoCliente() {
         const cliente = document.getElementById('produtoCliente').value;
         const container = document.getElementById('produtosPreviewContainer');
@@ -2631,11 +2558,17 @@
         
         lista.innerHTML = produtosDoCliente.map((p, index) => {
             const produtoNum = (produtos.indexOf(p) % 8) + 1;
+            let badgeMaquina = '';
+            if (p.maquinas === "M1") badgeMaquina = '<span class="maquina-badge m1" style="margin-left: 8px;">M1</span>';
+            else if (p.maquinas === "M2") badgeMaquina = '<span class="maquina-badge m2" style="margin-left: 8px;">M2</span>';
+            else if (p.maquinas === "M3") badgeMaquina = '<span class="maquina-badge m3" style="margin-left: 8px;">M3</span>';
+            else if (p.maquinas === "ALL") badgeMaquina = '<span class="maquina-badge all" style="margin-left: 8px;">Todas</span>';
+            
             return `
                 <div class="flex items-center justify-between bg-slate-50 p-2 rounded">
                     <div>
                         <span class="product-badge product-${produtoNum}">${p.nome}</span>
-                        ${getMaquinaBadge(p.maquinas)}
+                        ${badgeMaquina}
                     </div>
                     <span class="text-sm font-bold">${p.est} kg/h</span>
                 </div>
@@ -2684,47 +2617,6 @@
         }
     }
 
-    function adicionarProduto() {
-        const cliente = document.getElementById('produtoCliente').value;
-        const produto = document.getElementById('novoProduto').value.trim();
-        const est = safeNumber(document.getElementById('produtoEst').value);
-        const maquina = document.getElementById('produtoMaquina').value;
-        
-        if (!cliente || !produto || est <= 0) {
-            alert('Preencha todos os campos corretamente!');
-            return;
-        }
-        
-        if (produtos.find(p => p.cliente === cliente && p.nome.toLowerCase() === produto.toLowerCase())) {
-            showErrorToast('Este produto já existe para este cliente!');
-            return;
-        }
-        
-        produtos.push({
-            cliente,
-            nome: produto,
-            est,
-            maquinas: maquina,
-            displayName: `${cliente} - ${produto} (${est} kg/h)`
-        });
-        
-        localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
-        atualizarSelectClientesProduto();
-        atualizarListaClientesProdutos();
-        mostrarProdutosDoCliente();
-        
-        document.getElementById('novoProduto').value = '';
-        document.getElementById('produtoEst').value = '';
-        document.getElementById('produtoMaquina').value = 'ALL';
-        showToast('Produto adicionado com sucesso!');
-        
-        const buscaInput = document.getElementById('buscaClientesGerenciamento');
-        if (buscaInput) {
-            buscaInput.value = '';
-            filtrarClientesGerenciamento('');
-        }
-    }
-
     function removerCliente(cliente) {
         if (confirm(`Deseja remover o cliente "${cliente}" e todos os seus produtos?`)) {
             clientes = clientes.filter(c => c !== cliente);
@@ -2749,9 +2641,9 @@
         }
     }
 
-    function removerProduto(produtoNome, cliente) {
-        if (confirm(`Deseja remover o produto "${produtoNome}"?`)) {
-            produtos = produtos.filter(p => p.nome !== produtoNome || p.cliente !== cliente);
+    function removerProduto(produtoNome, cliente, maquina) {
+        if (confirm(`Deseja remover o produto "${produtoNome}" da máquina ${maquina}?`)) {
+            produtos = produtos.filter(p => !(p.nome === produtoNome && p.cliente === cliente && p.maquinas === maquina));
             localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
             atualizarSelectClientesProduto();
             atualizarListaClientesProdutos();
@@ -2788,18 +2680,26 @@
             const produtosCliente = produtos.filter(p => p.cliente === cliente);
             const produtosHTML = produtosCliente.map((p, idx) => {
                 const produtoNum = (produtos.indexOf(p) % 8) + 1;
+                let badgeMaquina = '';
+                if (p.maquinas === "M1") badgeMaquina = '<span class="maquina-badge m1" style="margin-left: 8px;">M1</span>';
+                else if (p.maquinas === "M2") badgeMaquina = '<span class="maquina-badge m2" style="margin-left: 8px;">M2</span>';
+                else if (p.maquinas === "M3") badgeMaquina = '<span class="maquina-badge m3" style="margin-left: 8px;">M3</span>';
+                else if (p.maquinas === "ALL") badgeMaquina = '<span class="maquina-badge all" style="margin-left: 8px;">Todas</span>';
+                
                 return `
-                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded">
+                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded mb-1">
                         <div>
                             <span class="product-badge product-${produtoNum}">${p.nome}</span>
-                            ${getMaquinaBadge(p.maquinas)}
+                            ${badgeMaquina}
                         </div>
-                        <span class="text-sm font-bold">${p.est} kg/h</span>
-                        <button onclick="removerProduto('${p.nome}', '${cliente}')" class="text-red-500 hover:text-red-700 ml-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold">${p.est} kg/h</span>
+                            <button onclick="removerProduto('${p.nome}', '${cliente}', '${p.maquinas}')" class="text-red-500 hover:text-red-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -2836,18 +2736,26 @@
             const produtosCliente = produtos.filter(p => p.cliente === cliente);
             const produtosHTML = produtosCliente.map((p, idx) => {
                 const produtoNum = (produtos.indexOf(p) % 8) + 1;
+                let badgeMaquina = '';
+                if (p.maquinas === "M1") badgeMaquina = '<span class="maquina-badge m1" style="margin-left: 8px;">M1</span>';
+                else if (p.maquinas === "M2") badgeMaquina = '<span class="maquina-badge m2" style="margin-left: 8px;">M2</span>';
+                else if (p.maquinas === "M3") badgeMaquina = '<span class="maquina-badge m3" style="margin-left: 8px;">M3</span>';
+                else if (p.maquinas === "ALL") badgeMaquina = '<span class="maquina-badge all" style="margin-left: 8px;">Todas</span>';
+                
                 return `
-                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded">
+                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded mb-1">
                         <div>
                             <span class="product-badge product-${produtoNum}">${p.nome}</span>
-                            ${getMaquinaBadge(p.maquinas)}
+                            ${badgeMaquina}
                         </div>
-                        <span class="text-sm font-bold">${p.est} kg/h</span>
-                        <button onclick="removerProduto('${p.nome}', '${cliente}')" class="text-red-500 hover:text-red-700 ml-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold">${p.est} kg/h</span>
+                            <button onclick="removerProduto('${p.nome}', '${cliente}', '${p.maquinas}')" class="text-red-500 hover:text-red-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -2870,6 +2778,147 @@
         if (clientesFiltrados.length === 0) {
             tbody.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-slate-400">Nenhum cliente encontrado<\/td><\/tr>';
         }
+    }
+
+    // ============================================
+    // FUNÇÕES DE SELEÇÃO DE CLIENTES (COM VALIDAÇÃO DE MÁQUINA)
+    // ============================================
+    
+    function carregarClientesCards() {
+        const container = document.getElementById('clientesCardsContainer');
+        if (!container) return;
+        
+        const busca = document.getElementById('buscaClienteCard')?.value.toLowerCase() || '';
+        
+        const clientesMap = new Map();
+        produtos.forEach(p => {
+            if (!clientesMap.has(p.cliente)) {
+                clientesMap.set(p.cliente, []);
+            }
+            clientesMap.get(p.cliente).push(p);
+        });
+        
+        const clientesArray = Array.from(clientesMap.keys())
+            .filter(cliente => cliente.toLowerCase().includes(busca))
+            .sort();
+        
+        clientesFiltradosCards = clientesArray;
+        
+        container.innerHTML = clientesArray.map(cliente => {
+            const produtosCliente = clientesMap.get(cliente);
+            const produtosPreview = produtosCliente.slice(0, 3).map(p => {
+                let badgePreview = '';
+                if (p.maquinas === "M1") badgePreview = ' 🔴M1';
+                else if (p.maquinas === "M2") badgePreview = ' 🟢M2';
+                else if (p.maquinas === "M3") badgePreview = ' 🟡M3';
+                else badgePreview = ' ⚪Todas';
+                return `<span class="produto-badge-mini">${p.nome}${badgePreview}</span>`;
+            }).join('');
+            
+            const temMais = produtosCliente.length > 3 ? 
+                `<span class="produto-badge-mini">+${produtosCliente.length - 3}</span>` : '';
+            
+            const isSelected = clienteSelecionado === cliente ? 'selected' : '';
+            const isExpanded = clienteSelecionado === cliente ? 'expanded' : '';
+            
+            return `
+                <div class="cliente-card-select ${isSelected} ${isExpanded}" data-cliente="${cliente.replace(/'/g, "\\'")}">
+                    <div class="cliente-nome" onclick="selecionarCliente('${cliente.replace(/'/g, "\\'")}')">${cliente}</div>
+                    <div class="produtos-preview" onclick="selecionarCliente('${cliente.replace(/'/g, "\\'")}')">
+                        ${produtosPreview}
+                        ${temMais}
+                    </div>
+                    <div class="produtos-lista" id="produtos-${cliente.replace(/\s/g, '')}">
+                        ${produtosCliente.map((p, idx) => {
+                            let badgeItem = '';
+                            if (p.maquinas === "M1") badgeItem = '<span class="maquina-badge m1" style="margin-left: 8px;">M1</span>';
+                            else if (p.maquinas === "M2") badgeItem = '<span class="maquina-badge m2" style="margin-left: 8px;">M2</span>';
+                            else if (p.maquinas === "M3") badgeItem = '<span class="maquina-badge m3" style="margin-left: 8px;">M3</span>';
+                            else if (p.maquinas === "ALL") badgeItem = '<span class="maquina-badge all" style="margin-left: 8px;">Todas</span>';
+                            
+                            return `
+                                <div class="produto-item ${produtoSelecionado === p.displayName ? 'selected' : ''}" 
+                                     onclick="event.stopPropagation(); selecionarProduto('${p.displayName.replace(/'/g, "\\'")}', ${p.est})">
+                                    <span class="produto-nome">${p.nome}</span>
+                                    <span class="produto-est">${p.est} kg/h</span>
+                                    ${badgeItem}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function selecionarCliente(cliente) {
+        clienteSelecionado = cliente;
+        produtoSelecionado = null;
+        document.getElementById('regProduto').value = '';
+        document.getElementById('regEst').value = '90';
+        document.getElementById('regEstDisplay').value = '90';
+        
+        document.querySelectorAll('.cliente-card-select').forEach(c => {
+            const clienteCard = c.getAttribute('data-cliente');
+            if (clienteCard === cliente) {
+                c.classList.add('selected');
+                c.classList.add('expanded');
+            } else {
+                c.classList.remove('selected');
+                c.classList.remove('expanded');
+            }
+        });
+        
+        const produtosLista = document.querySelector(`#produtos-${cliente.replace(/\s/g, '')}`);
+        if (produtosLista) {
+            produtosLista.style.display = 'block';
+        }
+        
+        carregarClientesCards();
+    }
+
+    function selecionarProduto(produtoDisplay, est) {
+        const maquinaSelecionada = document.getElementById('regMachine').value;
+        if (maquinaSelecionada && !verificarMaquinaProduto(produtoDisplay, maquinaSelecionada)) {
+            showErrorToast(`⚠️ Este produto não pode ser usado na máquina ${maquinaSelecionada}!`);
+            return;
+        }
+        
+        produtoSelecionado = produtoDisplay;
+        document.getElementById('regProduto').value = produtoDisplay;
+        document.getElementById('regEst').value = est;
+        document.getElementById('regEstDisplay').value = est;
+        
+        document.getElementById('clienteSelecionadoDisplay').style.display = 'flex';
+        document.getElementById('clienteSelecionadoNome').innerHTML = clienteSelecionado;
+        
+        let nomeProduto = produtoDisplay.split(' - ')[1] || produtoDisplay;
+        let maquinaInfo = '';
+        if (produtoDisplay.includes('[M1]')) maquinaInfo = ' (M1)';
+        else if (produtoDisplay.includes('[M2]')) maquinaInfo = ' (M2)';
+        else if (produtoDisplay.includes('[M3]')) maquinaInfo = ' (M3)';
+        else if (produtoDisplay.includes('[Todas]')) maquinaInfo = ' (Todas máquinas)';
+        
+        document.getElementById('produtoSelecionadoInfo').innerHTML = `📦 ${nomeProduto} (${est} kg/h)${maquinaInfo}`;
+        
+        document.getElementById('selecaoClientesArea').style.display = 'none';
+        
+        atualizarPreview();
+    }
+
+    function mostrarSelecaoClientes() {
+        document.getElementById('selecaoClientesArea').style.display = 'block';
+        document.getElementById('clienteSelecionadoDisplay').style.display = 'none';
+        clienteSelecionado = null;
+        produtoSelecionado = null;
+        document.getElementById('regProduto').value = '';
+        document.getElementById('regEst').value = '90';
+        document.getElementById('regEstDisplay').value = '90';
+        carregarClientesCards();
+    }
+
+    function filtrarClientesCards() {
+        carregarClientesCards();
     }
 
     // ============================================
@@ -3055,7 +3104,7 @@
     }
 
     // ============================================
-    // FUNÇÃO RENDER PERDAS VIEW (COM APARAS EM KG)
+    // FUNÇÃO RENDER PERDAS VIEW
     // ============================================
     function renderPerdasView(data) {
         const perdasMaq = { 
@@ -3153,7 +3202,7 @@
         tbody.innerHTML = '';
         
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-slate-400">Nenhum dado encontrado no período.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-slate-400">Nenhum dado encontrado no período.</td </tr';
             return;
         }
         
@@ -3896,7 +3945,7 @@
                                 <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Real</th>
                                 <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Diferença</th>
                                 <th style="padding: 15px; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Status</th>
-                                </tr>
+                                </table>
                         </thead>
                         <tbody>
         `;
@@ -4534,8 +4583,6 @@
     // FUNÇÃO CALCULAR E SALVAR
     // ============================================
     async function calcularESalvar() {
-        console.log("🟢 Salvando dados...");
-        
         if (!document.getElementById('regProduto').value) {
             showErrorToast('Selecione um cliente e produto!');
             return;
@@ -4549,8 +4596,6 @@
     }
 
     async function salvarTurnoUnico() {
-        console.log("📝 Salvando turno único...");
-        
         const data = document.getElementById('regDate').value;
         const machine = document.getElementById('regMachine').value;
         const turno = document.getElementById('regTurno').value;
@@ -4628,8 +4673,6 @@
             timestamp: new Date().toISOString()
         };
         
-        console.log("Salvando turno único:", novoRegistro);
-        
         const resultado = await inserirRegistro(novoRegistro);
         
         if (resultado && resultado.length > 0) {
@@ -4668,8 +4711,6 @@
     }
 
     async function salvarMultiplosTurnos() {
-        console.log("🟢 Salvando múltiplos turnos...");
-        
         if (turnosTemp.length === 0) {
             showErrorToast('Adicione pelo menos um turno!');
             return;
@@ -4794,7 +4835,7 @@
         tbody.innerHTML = '';
         
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="14" class="text-center py-8 text-slate-400">Nenhum registro encontrado no período.</td><\/tr>';
+            tbody.innerHTML = '<tr><td colspan="14" class="text-center py-8 text-slate-400">Nenhum registro encontrado no período.</td </tr';
             return;
         }
         
@@ -5075,7 +5116,6 @@
         renderData(filtered);
         renderPerdasChart(filtered);
         
-        // Atualizar cards de principais perdas no dashboard
         atualizarCardsPerdasDashboard(filtered);
         
         const activeView = document.querySelector('.view-content.active').id.replace('view-', '');
@@ -5094,7 +5134,6 @@
             periodInfo.innerHTML = `PERÍODO: ${start.split('-').reverse().join('/')} até ${end.split('-').reverse().join('/')}`;
         }
         
-        // Esconder card de total de aparas ao mudar período/filtros
         const aparasCard = document.getElementById('totalAparasCard');
         if (aparasCard) {
             aparasCard.style.display = 'none';
@@ -5343,7 +5382,6 @@
         
         renderPerdasView(dadosFiltrados);
         
-        // Esconder card de total de aparas ao mudar os filtros
         const aparasCard = document.getElementById('totalAparasCard');
         if (aparasCard) {
             aparasCard.style.display = 'none';
@@ -5547,26 +5585,16 @@
     // FUNÇÃO DE LOGOUT
     // ============================================
     window.fazerLogout = function() {
-        console.log("🔵 Fazendo logout...");
-        
         if (!window.supabase) {
-            console.error("❌ Supabase não encontrado!");
             window.location.href = "login.html";
             return;
         }
         
         window.supabase.auth.signOut()
-            .then(({ error }) => {
-                if (error) {
-                    console.error("Erro:", error);
-                    alert("Erro ao sair. Redirecionando...");
-                } else {
-                    console.log("✅ Logout OK!");
-                }
+            .then(() => {
                 window.location.href = "login.html";
             })
-            .catch(erro => {
-                console.error("Erro inesperado:", erro);
+            .catch(() => {
                 window.location.href = "login.html";
             });
     };
@@ -5576,7 +5604,6 @@
     // ============================================
     window.supabase.auth.getUser().then(({ data: { user } }) => {
         if (!user) {
-            console.log("❌ Sem usuário - redirecionando");
             window.location.href = "login.html";
         } else {
             console.log("✅ Usuário logado:", user.email);
@@ -5623,13 +5650,10 @@
         }
         
         if(botaoSair) {
-            console.log("✅ Botão de logout encontrado e configurado");
             botaoSair.onclick = function(e) {
                 e.preventDefault();
                 window.fazerLogout();
             };
-        } else {
-            console.error("❌ Botão de logout não encontrado");
         }
     }, 1000);
 
@@ -5678,18 +5702,12 @@
     }
 
     async function autoSalvar() {
-        console.log("🔄 Autosave: Tentando salvar dados pendentes...");
-        
-        if (!dadosPendentes) {
-            console.log("📝 Sem dados pendentes");
-            return;
-        }
+        if (!dadosPendentes) return;
         
         const modal = document.getElementById('modal');
         if (modal && modal.style.display === 'flex') {
             await calcularESalvar();
         } else {
-            console.log("❌ Modal fechado, não há dados para salvar");
             dadosPendentes = false;
         }
     }
@@ -5698,8 +5716,6 @@
     // FUNÇÃO VERIFICAR SOBREPOSIÇÃO
     // ============================================
     function verificarSobreposicao(data, maquina, inicio, fim, idIgnorar = null) {
-        console.log(`🔍 Verificando sobreposição para: Data=${data}, Máquina=${maquina}, Horário=${inicio}-${fim}`);
-        
         const novoInicio = horaParaMinutos(inicio);
         let novoFim = horaParaMinutos(fim);
         
@@ -5772,8 +5788,6 @@
                 criado_em: novo.timestamp
             };
             
-            console.log("📤 Enviando para o banco:", registroParaBanco);
-            
             const { data, error } = await window.supabase
                 .from("oee_registros")
                 .insert([registroParaBanco])
@@ -5785,7 +5799,6 @@
                 return null;
             }
             
-            console.log("✅ Registro inserido com ID:", data?.[0]?.id);
             return data;
         } catch (error) {
             console.error("❌ Erro inesperado:", error);
@@ -5812,8 +5825,6 @@
     // FUNÇÃO CARREGAR DADOS
     // ============================================
     async function carregarDados() {
-        console.log("📥 Carregando dados do banco...");
-        
         const clientesSalvos = localStorage.getItem('lusitano_clientes');
         const produtosSalvos = localStorage.getItem('lusitano_produtos');
         
@@ -5826,7 +5837,6 @@
         }
         
         const registrosBanco = await listarRegistros();
-        console.log(`📊 Encontrados ${registrosBanco.length} registros no banco`);
         
         if (registrosBanco && registrosBanco.length > 0) {
             historico = registrosBanco.map(reg => {
@@ -5887,8 +5897,6 @@
                 };
             });
             
-            console.log(`✅ Processados ${historico.length} registros`);
-            
             const grupos = {};
             historico.forEach(reg => {
                 const key = `${reg.data}-${reg.machine}-${reg.turno}`;
@@ -5904,11 +5912,8 @@
                     });
                 }
             });
-            
-            console.log("✅ Dados carregados com sucesso!");
         } else {
             historico = [];
-            console.log("📭 Nenhum registro encontrado no banco");
         }
         
         filterByRange();
@@ -5918,17 +5923,13 @@
     // INICIALIZAÇÃO
     // ============================================
     window.onload = async function() {
-        console.log("🚀 Inicializando sistema...");
         reiniciarTimer();
         
         await carregarDados();
         
         setTimeout(() => {
             if (historico.length === 0) {
-                console.log("⚠️ Nenhum dado carregado. Tentando novamente...");
                 carregarDados();
-            } else {
-                console.log(`✅ Sistema pronto com ${historico.length} registros!`);
             }
         }, 1000);
         
@@ -5952,8 +5953,6 @@
         document.getElementById('regTurno').addEventListener('change', atualizarHorarioPorTurno);
         
         carregarCalendario();
-        
-        console.log("✅ Sistema inicializado - todas as abas funcionando");
     };
     </script>
 </body>

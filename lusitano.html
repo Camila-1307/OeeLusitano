@@ -393,6 +393,96 @@
             color: #f59e0b;
         }
 
+        /* ESTILOS PARA CARDS DE QUANTIDADES */
+        .quantidades-card-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .quantidade-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -2px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            border-bottom: 4px solid;
+        }
+
+        .quantidade-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        .quantidade-card.card-m1 { border-bottom-color: #005a2b; }
+        .quantidade-card.card-m2 { border-bottom-color: #c4121a; }
+        .quantidade-card.card-m3 { border-bottom-color: #FFD700; }
+        .quantidade-card.card-total { border-bottom-color: #7c3aed; }
+
+        .quantidade-card .card-titulo {
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .quantidade-card .card-valor {
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+
+        /* ESTILOS PARA LISTA DE PERDAS POR MOTIVO (SÓ PARADAS) - MELHORADA */
+        .perdas-motivo-lista {
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .perda-motivo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .perda-motivo-item:last-child {
+            border-bottom: none;
+        }
+
+        .perda-motivo-nome {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .perda-motivo-stats {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .perda-motivo-minutos {
+            font-size: 0.8rem;
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .perda-motivo-pct {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 600;
+            background: #f1f5f9;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+        }
+
         .footer-credit {
             position: fixed;
             bottom: 8px;
@@ -413,7 +503,7 @@
             color: #94a3b8;
         }
 
-        #modal, #clientModal, #editModal, #turnosModal, #detalhesOPModal, #detalhesClienteModal, #modalDiaDetalhes {
+        #modal, #clientModal, #editModal, #turnosModal, #detalhesOPModal, #detalhesClienteModal, #modalDiaDetalhes, #modalQuantidades, #modalTotalAparas {
             display: none;
             position: fixed;
             inset: 0;
@@ -803,6 +893,31 @@
             transform: scale(1.1);
         }
 
+        .delete-op-btn, .delete-turno-btn {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .delete-op-btn:hover, .delete-turno-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* ESTILOS PARA BUSCA DE OP */
+        .op-search-box {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .op-search-box:focus {
+            border-color: var(--lusitano-green);
+            box-shadow: 0 0 0 3px rgba(0,90,43,0.1);
+        }
+
         @media print {
             @page {
                 size: A4 landscape;
@@ -1180,50 +1295,6 @@
             background: var(--lusitano-green);
             color: white;
         }
-
-        /* ESTILOS PARA MÁQUINAS DO PRODUTO */
-        .maquina-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-left: 5px;
-        }
-        .maquina-badge.m1 { background-color: #005a2b; color: white; }
-        .maquina-badge.m2 { background-color: #c4121a; color: white; }
-        .maquina-badge.m3 { background-color: #FFD700; color: black; }
-        .maquina-badge.all { background-color: #64748b; color: white; }
-
-        /* ESTILOS PARA CARD DE TOTAL DE APARAS */
-        .aparas-card {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border-radius: 1rem;
-            padding: 1rem 1.5rem;
-            text-align: center;
-            box-shadow: 0 4px 6px -2px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .aparas-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px -3px rgba(0,0,0,0.2);
-        }
-        .aparas-card .aparas-label {
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: rgba(255,255,255,0.8);
-            margin-bottom: 0.25rem;
-        }
-        .aparas-card .aparas-valor {
-            font-size: 2rem;
-            font-weight: 900;
-            color: white;
-            line-height: 1;
-        }
     </style>
 </head>
 <body>
@@ -1360,7 +1431,7 @@
                         <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">🔍 Análise Detalhada de Perdas</h3>
                         <p class="text-slate-400 text-sm font-medium">Visão consolidada por máquina, motivo e período</p>
                     </div>
-                    <div class="flex gap-3 flex-wrap">
+                    <div class="flex gap-3">
                         <select id="perdasTurnoFilter" onchange="filtrarPerdasPorTurno()" class="bg-slate-100 border-2 border-slate-200 p-3 rounded-xl font-black text-slate-700 outline-none focus:border-green-600 transition-all">
                             <option value="ALL">TODOS OS TURNOS</option>
                             <option value="A">TURNO A</option>
@@ -1373,21 +1444,14 @@
                             <option value="M2">M2</option>
                             <option value="M3">M3</option>
                         </select>
-                        <!-- BOTÃO PARA CALCULAR TOTAL DE APARAS EM KG -->
-                        <button onclick="calcularTotalAparas()" class="btn-action" style="background-color: #10b981; border-color: #059669;">
+                        <button onclick="calcularTotalAparas()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl transition-colors flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
-                            Calcular Total Aparas (kg)
+                            📊 TOTAL APARAS
                         </button>
                     </div>
                 </div>
-            </div>
-            
-            <!-- CARD PARA EXIBIR TOTAL DE APARAS -->
-            <div id="totalAparasCard" class="aparas-card mb-6" style="display: none;" onclick="scrollToDetalheAparas()">
-                <div class="aparas-label">📊 TOTAL DE APARAS NO PERÍODO</div>
-                <div class="aparas-valor" id="totalAparasValor">0 kg</div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -1421,11 +1485,11 @@
                     <div class="h-[250px]"><canvas id="perdasMaquinaDetalheChart"></canvas></div>
                 </div>
                 <div class="chart-container">
-                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Perdas por Motivo (min)</h3>
+                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Perdas por Motivo (min) - APENAS PARADAS</h3>
                     <div class="h-[250px]"><canvas id="perdasMotivoChart"></canvas></div>
                 </div>
             </div>
-            
+                        
             <div class="grid grid-cols-1 gap-8 mb-8">
                 <div class="chart-container">
                     <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Perdas por Tipo - Setup, Paradas e Aparas (min)</h3>
@@ -1453,10 +1517,10 @@
                                 <th class="pb-4">Cliente/Produto</th>
                                 <th class="pb-4 text-center">Setup (min)</th>
                                 <th class="pb-4 text-center">Paradas (min)</th>
-                                <th class="pb-4 text-center">Aparas (kg)</th>
+                                <th class="pb-4 text-center">Aparas (min)</th>
                                 <th class="pb-4 text-center">Total Perda</th>
                                 <th class="pb-4">Motivo Principal</th>
-                               <tr>
+                              </tr>
                         </thead>
                         <tbody id="perdas-detail-rows"></tbody>
                     </table>
@@ -1532,7 +1596,7 @@
                                 <th class="py-2 text-right">OEE</th>
                                 <th class="py-2 text-center">Status</th>
                                 <th class="py-2 text-center">Ações</th>
-                               </tr>
+                              </tr>
                         </thead>
                         <tbody id="efficiency-selection-rows" class="divide-y divide-slate-50 text-slate-600 font-medium"></tbody>
                     </table>
@@ -1547,12 +1611,21 @@
                         <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Análise por OP - Cards Consolidados</h3>
                         <p class="text-slate-400 text-sm font-medium">Clique nos cards para ver detalhes</p>
                     </div>
-                    <button onclick="gerarRelatorioPCP()" class="btn-action btn-pcp">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        RELATÓRIO PCP
-                    </button>
+                    <div class="flex gap-3">
+                        <input type="text" id="opSearchInput" placeholder="🔍 Buscar OP..." class="op-search-box w-64" onkeyup="filtrarOps()">
+                        <button onclick="mostrarQuantidadesPeriodo()" class="btn-action" style="background-color: #7c3aed; border-color: #8b5cf6;">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            QUANTIDADES
+                        </button>
+                        <button onclick="gerarRelatorioPCP()" class="btn-action btn-pcp">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            RELATÓRIO PCP
+                        </button>
+                    </div>
                 </div>
             </div>
             <div id="opTimelineContainer" class="space-y-4"></div>
@@ -1644,7 +1717,7 @@
                                 <th class="pb-4 text-right">OEE</th>
                                 <th class="pb-4 text-center">Status</th>
                                 <th class="pb-4 text-center">Ações</th>
-                               </tr>
+                              </tr>
                         </thead>
                         <tbody id="history-rows" class="divide-y divide-slate-50"></tbody>
                     </table>
@@ -1993,18 +2066,12 @@
 
                 <div class="bg-blue-50 p-6 rounded-xl">
                     <h3 class="font-bold text-sm mb-4">📦 Adicionar Produto a Cliente</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                         <select id="produtoCliente" onchange="mostrarProdutosDoCliente()" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
                             <option value="">Selecionar cliente...</option>
                         </select>
-                        <input type="text" id="novoProduto" placeholder="Ex: 1320X23 40KG" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
+                        <input type="text" id="novoProduto" placeholder="Ex: 440x70x10" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
                         <input type="number" id="produtoEst" placeholder="Kg/h estimado" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
-                        <select id="produtoMaquina" class="border-2 border-slate-200 p-4 rounded-xl text-sm focus:border-green-600">
-                            <option value="M1">M1</option>
-                            <option value="M2">M2</option>
-                            <option value="M3">M3</option>
-                            <option value="ALL">Todas as Máquinas</option>
-                        </select>
                         <button onclick="adicionarProduto()" class="bg-blue-600 text-white font-black px-6 py-4 rounded-xl uppercase text-xs tracking-widest hover:bg-blue-700">
                             Adicionar
                         </button>
@@ -2028,6 +2095,52 @@
                         <tbody id="clientes-produtos-list" class="divide-y"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Quantidades -->
+    <div id="modalQuantidades">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="font-black uppercase text-slate-800 text-xl">📊 Quantidades de Produção</h2>
+                <button onclick="fecharModalQuantidades()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
+            </div>
+            
+            <div class="quantidades-card-container" id="quantidadesCardsContainer">
+                <div class="quantidade-card card-m1">
+                    <div class="card-titulo">🔧 M1</div>
+                    <div class="card-valor" id="qtdRealM1">0 kg</div>
+                </div>
+                <div class="quantidade-card card-m2">
+                    <div class="card-titulo">🔧 M2</div>
+                    <div class="card-valor" id="qtdRealM2">0 kg</div>
+                </div>
+                <div class="quantidade-card card-m3">
+                    <div class="card-titulo">🔧 M3</div>
+                    <div class="card-valor" id="qtdRealM3">0 kg</div>
+                </div>
+                <div class="quantidade-card card-total">
+                    <div class="card-titulo">📊 TOTAL</div>
+                    <div class="card-valor" id="qtdRealTotal">0 kg</div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-slate-50 rounded-xl">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase">📈 Estimado (meta)</p>
+                    <p class="text-lg font-bold text-blue-600" id="qtdEstimadoTotal">0 kg</p>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase">📉 Real produzido</p>
+                    <p class="text-lg font-bold text-green-600" id="qtdRealTotalGrande">0 kg</p>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-end">
+                <button onclick="fecharModalQuantidades()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">
+                    Fechar
+                </button>
             </div>
         </div>
     </div>
@@ -2057,6 +2170,8 @@
     let paradasDetalhadas = [];
     let autoSaveTimer = null;
     let dadosPendentes = false;
+    let opsCache = [];
+    let opSearchTerm = '';
     
     let trendChart, pillarChart, shiftChart, perdasMaquinaChart;
     let perdasMaquinaDetalheChart, perdasMotivoChart, perdasEvolucaoChart, perdasTipoChart;
@@ -2090,146 +2205,66 @@
     ];
 
     let produtos = [
-        { cliente: "Cliente Teste", nome: "Produto", est: 90, maquinas: "ALL", displayName: "Cliente Teste - Produto (90 kg/h) [Todas]" },
-        { cliente: "TEXTIL TRES ELLOS", nome: "2000X25 35KG", est: 190, maquinas: "ALL", displayName: "TEXTIL TRES ELLOS - 2000X25 35KG (190 kg/h) [Todas]" },
-        { cliente: "AÇO CEARENSE", nome: "1400X50 20KG", est: 140, maquinas: "ALL", displayName: "AÇO CEARENSE - 1400X50 20KG (140 kg/h) [Todas]" },
-        { cliente: "TCHÊ PACK EMBALAGENS", nome: "500X25 40KG PIG LARANJA", est: 90, maquinas: "ALL", displayName: "TCHÊ PACK EMBALAGENS - 500X25 40KG PIG LARANJA (90 kg/h) [Todas]" },
-        { cliente: "NEOVIA NUTRIÇÃO", nome: "500X25 16KG PIG VERDE", est: 90, maquinas: "ALL", displayName: "NEOVIA NUTRIÇÃO - 500X25 16KG PIG VERDE (90 kg/h) [Todas]" },
-        { cliente: "VINIPLAST", nome: "1500X150 50KG SHRINK ENVOLVEDORA", est: 140, maquinas: "ALL", displayName: "VINIPLAST - 1500X150 50KG SHRINK ENVOLVEDORA (140 kg/h) [Todas]" },
-        { cliente: "TAKFILMS DISTRIBUIDORA", nome: "500X25 50KG PIG VERDE", est: 90, maquinas: "ALL", displayName: "TAKFILMS DISTRIBUIDORA - 500X25 50KG PIG VERDE (90 kg/h) [Todas]" },
-        { cliente: "LUSITANO IND E COM", nome: "500X25 PIG VERMELHO", est: 90, maquinas: "ALL", displayName: "LUSITANO IND E COM - 500X25 PIG VERMELHO (90 kg/h) [Todas]" },
-        { cliente: "BB EMBALAGENS", nome: "540X60 85KG SHRINK", est: 120, maquinas: "ALL", displayName: "BB EMBALAGENS - 540X60 85KG SHRINK (120 kg/h) [Todas]" },
-        { cliente: "BB EMBALAGENS", nome: "620X60 80KG SHRINK", est: 120, maquinas: "ALL", displayName: "BB EMBALAGENS - 620X60 80KG SHRINK (120 kg/h) [Todas]" },
-        { cliente: "AGRINDUS S/A", nome: "500X60 24KG SHRINK SELADORA", est: 130, maquinas: "ALL", displayName: "AGRINDUS S/A - 500X60 24KG SHRINK SELADORA (130 kg/h) [Todas]" },
-        { cliente: "KITCHENS IND.", nome: "950X100 30KG SHRINK SELADORA", est: 130, maquinas: "ALL", displayName: "KITCHENS IND. - 950X100 30KG SHRINK SELADORA (130 kg/h) [Todas]" },
-        { cliente: "PEIXES MEGGS", nome: "730X30 30KG SHRINK SELADORA", est: 130, maquinas: "ALL", displayName: "PEIXES MEGGS - 730X30 30KG SHRINK SELADORA (130 kg/h) [Todas]" },
-        { cliente: "RALPLAST FILME", nome: "500X25 50KG PIG AZUL", est: 90, maquinas: "ALL", displayName: "RALPLAST FILME - 500X25 50KG PIG AZUL (90 kg/h) [Todas]" },
-        { cliente: "LUSITANO IND E COM", nome: "480X40 SHRINK COBERTURA", est: 120, maquinas: "ALL", displayName: "LUSITANO IND E COM - 480X40 SHRINK COBERTURA (120 kg/h) [Todas]" },
-        { cliente: "PH7 DISTR.", nome: "420X60 25KG SHRINK SELADORA", est: 150, maquinas: "ALL", displayName: "PH7 DISTR. - 420X60 25KG SHRINK SELADORA (150 kg/h) [Todas]" },
-        { cliente: "REFRIX ENVASADORA", nome: "490X55 30KG SHRINK ENVOLVEDORA", est: 120, maquinas: "ALL", displayName: "REFRIX ENVASADORA - 490X55 30KG SHRINK ENVOLVEDORA (120 kg/h) [Todas]" },
-        { cliente: "KEG IND.", nome: "500X25 15KG", est: 120, maquinas: "ALL", displayName: "KEG IND. - 500X25 15KG (120 kg/h) [Todas]" },
-        { cliente: "BRAND TEXTIL", nome: "1900X80 25KG SHRINK ENVOLVEDORA", est: 140, maquinas: "ALL", displayName: "BRAND TEXTIL - 1900X80 25KG SHRINK ENVOLVEDORA (140 kg/h) [Todas]" },
-        { cliente: "POLIPISO DO BRASIL", nome: "500X20 16KG", est: 120, maquinas: "ALL", displayName: "POLIPISO DO BRASIL - 500X20 16KG (120 kg/h) [Todas]" },
-        { cliente: "FAREVA DES.", nome: "500X25 15KG", est: 120, maquinas: "ALL", displayName: "FAREVA DES. - 500X25 15KG (120 kg/h) [Todas]" },
-        { cliente: "IBÉRICA CONDUTORES", nome: "500X25 PIG BRANCO", est: 90, maquinas: "ALL", displayName: "IBÉRICA CONDUTORES - 500X25 PIG BRANCO (90 kg/h) [Todas]" },
-        { cliente: "STEELPACK GROUP", nome: "500X25 50KG PIG BRANCO", est: 90, maquinas: "ALL", displayName: "STEELPACK GROUP - 500X25 50KG PIG BRANCO (90 kg/h) [Todas]" },
-        { cliente: "MASTER DO BRASIL", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "MASTER DO BRASIL - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
-        { cliente: "EKS ADM", nome: "500X25 50KG PIG VERMELHO", est: 90, maquinas: "ALL", displayName: "EKS ADM - 500X25 50KG PIG VERMELHO (90 kg/h) [Todas]" },
-        { cliente: "EKS ADM", nome: "500X25 50KG PIG. BRANCO", est: 90, maquinas: "ALL", displayName: "EKS ADM - 500X25 50KG PIG. BRANCO (90 kg/h) [Todas]" },
-        { cliente: "STEELPACK GROUP", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "STEELPACK GROUP - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
-        { cliente: "CORR PLASTIK", nome: "498X30 PIG AZUL", est: 90, maquinas: "ALL", displayName: "CORR PLASTIK - 498X30 PIG AZUL (90 kg/h) [Todas]" },
-        { cliente: "IBILUX ILUMINAÇÃO", nome: "180X160 15KG SHRINK TUBULAR", est: 90, maquinas: "ALL", displayName: "IBILUX ILUMINAÇÃO - 180X160 15KG SHRINK TUBULAR (90 kg/h) [Todas]" },
-        { cliente: "BB EMBALAGENS", nome: "500X55 80KG SHRINK BRANCO", est: 90, maquinas: "ALL", displayName: "BB EMBALAGENS - 500X55 80KG SHRINK BRANCO (90 kg/h) [Todas]" },
-        { cliente: "BB EMBALAGENS", nome: "500X55 80KG SHRINK", est: 120, maquinas: "ALL", displayName: "BB EMBALAGENS - 500X55 80KG SHRINK (120 kg/h) [Todas]" },
-        { cliente: "FAREVA DES.", nome: "240X50 15KG SHRINK SELADORA", est: 90, maquinas: "ALL", displayName: "FAREVA DES. - 240X50 15KG SHRINK SELADORA (90 kg/h) [Todas]" },
-        { cliente: "VINIPLAST", nome: "500X10025KG ENVOLVEDORA", est: 90, maquinas: "ALL", displayName: "VINIPLAST - 500X10025KG ENVOLVEDORA (90 kg/h) [Todas]" },
-        { cliente: "EKS ADM", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "EKS ADM - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
-        { cliente: "R2 PLAST", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "R2 PLAST - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
-        { cliente: "VINIPLAST", nome: "1640X150 50KG ENVOLVEDORA", est: 140, maquinas: "ALL", displayName: "VINIPLAST - 1640X150 50KG ENVOLVEDORA (140 kg/h) [Todas]" },
-        { cliente: "TINTURARIA UNIVERSO", nome: "550X70 25KG TUBULAR", est: 120, maquinas: "ALL", displayName: "TINTURARIA UNIVERSO - 550X70 25KG TUBULAR (120 kg/h) [Todas]" },
-        { cliente: "CPIC BRASIL", nome: "430X40 10KG PIG VERDE", est: 140, maquinas: "ALL", displayName: "CPIC BRASIL - 430X40 10KG PIG VERDE (140 kg/h) [Todas]" },
-        { cliente: "LUSITANO IND E COM", nome: "460X40 12KG", est: 130, maquinas: "ALL", displayName: "LUSITANO IND E COM - 460X40 12KG (130 kg/h) [Todas]" },
-        { cliente: "LUSITANO IND E COM", nome: "400X140 TUBULAR", est: 140, maquinas: "ALL", displayName: "LUSITANO IND E COM - 400X140 TUBULAR (140 kg/h) [Todas]" },
-        { cliente: "LUSITANO IND E COM", nome: "400X200 SANFONA 100", est: 90, maquinas: "ALL", displayName: "LUSITANO IND E COM - 400X200 SANFONA 100 (90 kg/h) [Todas]" },
-        { cliente: "NOVA RENKO IND.", nome: "400X60 20KG SHRINK SELADORA", est: 150, maquinas: "ALL", displayName: "NOVA RENKO IND. - 400X60 20KG SHRINK SELADORA (150 kg/h) [Todas]" },
-        { cliente: "TINTURARIA UNIVERSO", nome: "650X70 25KG TUBULAR", est: 130, maquinas: "ALL", displayName: "TINTURARIA UNIVERSO - 650X70 25KG TUBULAR (130 kg/h) [Todas]" },
-        { cliente: "TINTURARIA UNIVERSO", nome: "450X70 25KG TUBULAR", est: 120, maquinas: "ALL", displayName: "TINTURARIA UNIVERSO - 450X70 25KG TUBULAR (120 kg/h) [Todas]" },
-        { cliente: "SOLAR MINAS", nome: "1250X160 25KG ENFESTADO", est: 140, maquinas: "ALL", displayName: "SOLAR MINAS - 1250X160 25KG ENFESTADO (140 kg/h) [Todas]" },
-        { cliente: "MAXIBELL PORTAS", nome: "1200X25 13KG", est: 90, maquinas: "ALL", displayName: "MAXIBELL PORTAS - 1200X25 13KG (90 kg/h) [Todas]" },
-        { cliente: "KITCHENS IND.", nome: "1250X100 30KG SELADORA", est: 140, maquinas: "ALL", displayName: "KITCHENS IND. - 1250X100 30KG SELADORA (140 kg/h) [Todas]" },
-        { cliente: "BRAZIL GR", nome: "460X40 12KG", est: 130, maquinas: "ALL", displayName: "BRAZIL GR - 460X40 12KG (130 kg/h) [Todas]" },
-        { cliente: "CARGILL AGRICOLA", nome: "1320X23 40KG", est: 140, maquinas: "ALL", displayName: "CARGILL AGRICOLA - 1320X23 40KG (140 kg/h) [Todas]" },
-        { cliente: "ERIPACK EMBALAGENS", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "ERIPACK EMBALAGENS - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
-        { cliente: "DMZ PLAST", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "DMZ PLAST - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
-        { cliente: "TAKFILMS DISTRIBUIDORA", nome: "500X25 50KG PIG PRETO", est: 90, maquinas: "ALL", displayName: "TAKFILMS DISTRIBUIDORA - 500X25 50KG PIG PRETO (90 kg/h) [Todas]" },
-        { cliente: "FLEXFILMS FLEXIBLE", nome: "500x25 50KG PIG PRETO", est: 140, maquinas: "ALL", displayName: "FLEXFILMS FLEXIBLE - 500x25 50KG PIG PRETO (140 kg/h) [Todas]" },
-        { cliente: "CARGILL AGRICOLA", nome: "750X30 28KG PIG BRANCO", est: 140, maquinas: "ALL", displayName: "CARGILL AGRICOLA - 750X30 28KG PIG BRANCO (140 kg/h) [Todas]" },
-        { cliente: "TERMOMECANICA", nome: "600X80 PIG BRANCO", est: 120, maquinas: "ALL", displayName: "TERMOMECANICA - 600X80 PIG BRANCO (120 kg/h) [Todas]" },
-        { cliente: "APARECIDO DONIZETE", nome: "600X12", est: 90, maquinas: "ALL", displayName: "APARECIDO DONIZETE - 600X12 (90 kg/h) [Todas]" },
-        { cliente: "MARELLI", nome: "500X40", est: 140, maquinas: "ALL", displayName: "MARELLI - 500X40 (140 kg/h) [Todas]" },
-        { cliente: "QUALITY CENTRAL", nome: "500X17", est: 110, maquinas: "ALL", displayName: "QUALITY CENTRAL - 500X17 (110 kg/h) [Todas]" },
-        { cliente: "C.VALE", nome: "515X15 PIG AZUL", est: 90, maquinas: "ALL", displayName: "C.VALE - 515X15 PIG AZUL (90 kg/h) [Todas]" }
+        { cliente: "Cliente Teste", nome: "Produto", est: 90, displayName: "Cliente Teste - Produto (90 kg/h)" },
+        { cliente: "TEXTIL TRES ELLOS", nome: "2000X25 35KG", est: 190, displayName: "TEXTIL TRES ELLOS - 2000X25 35KG (190 kg/h)" },
+        { cliente: "AÇO CEARENSE", nome: "1400X50 20KG", est: 140, displayName: "AÇO CEARENSE - 1400X50 20KG (140 kg/h)" },
+        { cliente: "TCHÊ PACK EMBALAGENS", nome: "500X25 40KG PIG LARANJA", est: 90, displayName: "TCHÊ PACK EMBALAGENS - 500X25 40KG PIG LARANJA (90 kg/h)" },
+        { cliente: "NEOVIA NUTRIÇÃO", nome: "500X25 16KG PIG VERDE", est: 90, displayName: "NEOVIA NUTRIÇÃO - 500X25 16KG PIG VERDE (90 kg/h)" },
+        { cliente: "VINIPLAST", nome: "1500X150 50KG SHRINK ENVOLVEDORA", est: 140, displayName: "VINIPLAST - 1500X150 50KG SHRINK ENVOLVEDORA (140 kg/h)" },
+        { cliente: "TAKFILMS DISTRIBUIDORA", nome: "500X25 50KG PIG VERDE", est: 90, displayName: "TAKFILMS DISTRIBUIDORA - 500X25 50KG PIG VERDE (90 kg/h)" },
+        { cliente: "LUSITANO IND E COM", nome: "500X25 PIG VERMELHO", est: 90, displayName: "LUSITANO IND E COM - 500X25 PIG VERMELHO (90 kg/h)" },
+        { cliente: "BB EMBALAGENS", nome: "540X60 85KG SHRINK", est: 120, displayName: "BB EMBALAGENS - 540X60 85KG SHRINK (120 kg/h)" },
+        { cliente: "BB EMBALAGENS", nome: "620X60 80KG SHRINK", est: 120, displayName: "BB EMBALAGENS - 620X60 80KG SHRINK (120 kg/h)" },
+        { cliente: "AGRINDUS S/A", nome: "500X60 24KG SHRINK SELADORA", est: 130, displayName: "AGRINDUS S/A - 500X60 24KG SHRINK SELADORA (130 kg/h)" },
+        { cliente: "KITCHENS IND.", nome: "950X100 30KG SHRINK SELADORA", est: 130, displayName: "KITCHENS IND. - 950X100 30KG SHRINK SELADORA (130 kg/h)" },
+        { cliente: "PEIXES MEGGS", nome: "730X30 30KG SHRINK SELADORA", est: 130, displayName: "PEIXES MEGGS - 730X30 30KG SHRINK SELADORA (130 kg/h)" },
+        { cliente: "RALPLAST FILME", nome: "500X25 50KG PIG AZUL", est: 90, displayName: "RALPLAST FILME - 500X25 50KG PIG AZUL (90 kg/h)" },
+        { cliente: "LUSITANO IND E COM", nome: "480X40 SHRINK COBERTURA", est: 120, displayName: "LUSITANO IND E COM - 480X40 SHRINK COBERTURA (120 kg/h)" },
+        { cliente: "PH7 DISTR.", nome: "420X60 25KG SHRINK SELADORA", est: 150, displayName: "PH7 DISTR. - 420X60 25KG SHRINK SELADORA (150 kg/h)" },
+        { cliente: "REFRIX ENVASADORA", nome: "490X55 30KG SHRINK ENVOLVEDORA", est: 120, displayName: "REFRIX ENVASADORA - 490X55 30KG SHRINK ENVOLVEDORA (120 kg/h)" },
+        { cliente: "KEG IND.", nome: "500X25 15KG", est: 120, displayName: "KEG IND. - 500X25 15KG (120 kg/h)" },
+        { cliente: "BRAND TEXTIL", nome: "1900X80 25KG SHRINK ENVOLVEDORA", est: 140, displayName: "BRAND TEXTIL - 1900X80 25KG SHRINK ENVOLVEDORA (140 kg/h)" },
+        { cliente: "POLIPISO DO BRASIL", nome: "500X20 16KG", est: 120, displayName: "POLIPISO DO BRASIL - 500X20 16KG (120 kg/h)" },
+        { cliente: "FAREVA DES.", nome: "500X25 15KG", est: 120, displayName: "FAREVA DES. - 500X25 15KG (120 kg/h)" },
+        { cliente: "IBÉRICA CONDUTORES", nome: "500X25 PIG BRANCO", est: 90, displayName: "IBÉRICA CONDUTORES - 500X25 PIG BRANCO (90 kg/h)" },
+        { cliente: "STEELPACK GROUP", nome: "500X25 50KG PIG BRANCO", est: 90, displayName: "STEELPACK GROUP - 500X25 50KG PIG BRANCO (90 kg/h)" },
+        { cliente: "MASTER DO BRASIL", nome: "500X25 50KG PIG PRETO", est: 90, displayName: "MASTER DO BRASIL - 500X25 50KG PIG PRETO (90 kg/h)" },
+        { cliente: "EKS ADM", nome: "500X25 50KG PIG VERMELHO", est: 90, displayName: "EKS ADM - 500X25 50KG PIG VERMELHO (90 kg/h)" },
+        { cliente: "EKS ADM", nome: "500X25 50KG PIG. BRANCO", est: 90, displayName: "EKS ADM - 500X25 50KG PIG. BRANCO (90 kg/h)" },
+        { cliente: "STEELPACK GROUP", nome: "500X25 50KG PIG PRETO", est: 90, displayName: "STEELPACK GROUP - 500X25 50KG PIG PRETO (90 kg/h)" },
+        { cliente: "CORR PLASTIK", nome: "498X30 PIG AZUL", est: 90, displayName: "CORR PLASTIK - 498X30 PIG AZUL (90 kg/h)" },
+        { cliente: "IBILUX ILUMINAÇÃO", nome: "180X160 15KG SHRINK TUBULAR", est: 90, displayName: "IBILUX ILUMINAÇÃO - 180X160 15KG SHRINK TUBULAR (90 kg/h)" },
+        { cliente: "BB EMBALAGENS", nome: "500X55 80KG SHRINK BRANCO", est: 90, displayName: "BB EMBALAGENS - 500X55 80KG SHRINK BRANCO (90 kg/h)" },
+        { cliente: "BB EMBALAGENS", nome: "500X55 80KG SHRINK", est: 120, displayName: "BB EMBALAGENS - 500X55 80KG SHRINK (120 kg/h)" },
+        { cliente: "FAREVA DES.", nome: "240X50 15KG SHRINK SELADORA", est: 90, displayName: "FAREVA DES. - 240X50 15KG SHRINK SELADORA (90 kg/h)" },
+        { cliente: "VINIPLAST", nome: "500X10025KG ENVOLVEDORA", est: 90, displayName: "VINIPLAST - 500X10025KG ENVOLVEDORA (90 kg/h)" },
+        { cliente: "EKS ADM", nome: "500X25 50KG PIG PRETO", est: 90, displayName: "EKS ADM - 500X25 50KG PIG PRETO (90 kg/h)" },
+        { cliente: "R2 PLAST", nome: "500X25 50KG PIG PRETO", est: 90, displayName: "R2 PLAST - 500X25 50KG PIG PRETO (90 kg/h)" },
+        { cliente: "VINIPLAST", nome: "1640X150 50KG ENVOLVEDORA", est: 140, displayName: "VINIPLAST - 1640X150 50KG ENVOLVEDORA (140 kg/h)" },
+        { cliente: "TINTURARIA UNIVERSO", nome: "550X70 25KG TUBULAR", est: 120, displayName: "TINTURARIA UNIVERSO - 550X70 25KG TUBULAR (120 kg/h)" },
+        { cliente: "CPIC BRASIL", nome: "430X40 10KG PIG VERDE", est: 140, displayName: "CPIC BRASIL - 430X40 10KG PIG VERDE (140 kg/h)" },
+        { cliente: "LUSITANO IND E COM", nome: "460X40 12KG", est: 130, displayName: "LUSITANO IND E COM - 460X40 12KG (130 kg/h)" },
+        { cliente: "LUSITANO IND E COM", nome: "400X140 TUBULAR", est: 140, displayName: "LUSITANO IND E COM - 400X140 TUBULAR (140 kg/h)" },
+        { cliente: "LUSITANO IND E COM", nome: "400X200 SANFONA 100", est: 90, displayName: "LUSITANO IND E COM - 400X200 SANFONA 100 (90 kg/h)" },
+        { cliente: "NOVA RENKO IND.", nome: "400X60 20KG SHRINK SELADORA", est: 150, displayName: "NOVA RENKO IND. - 400X60 20KG SHRINK SELADORA (150 kg/h)" },
+        { cliente: "TINTURARIA UNIVERSO", nome: "650X70 25KG TUBULAR", est: 130, displayName: "TINTURARIA UNIVERSO - 650X70 25KG TUBULAR (130 kg/h)" },
+        { cliente: "TINTURARIA UNIVERSO", nome: "450X70 25KG TUBULAR", est: 120, displayName: "TINTURARIA UNIVERSO - 450X70 25KG TUBULAR (120 kg/h)" },
+        { cliente: "SOLAR MINAS", nome: "1250X160 25KG ENFESTADO", est: 140, displayName: "SOLAR MINAS - 1250X160 25KG ENFESTADO (140 kg/h)" },
+        { cliente: "MAXIBELL PORTAS", nome: "1200X25 13KG", est: 90, displayName: "MAXIBELL PORTAS - 1200X25 13KG (90 kg/h)" },
+        { cliente: "KITCHENS IND.", nome: "1250X100 30KG SELADORA", est: 140, displayName: "KITCHENS IND. - 1250X100 30KG SELADORA (140 kg/h)" },
+        { cliente: "BRAZIL GR", nome: "460X40 12KG", est: 130, displayName: "BRAZIL GR - 460X40 12KG (130 kg/h)" },
+        { cliente: "CARGILL AGRICOLA", nome: "1320X23 40KG", est: 140, displayName: "CARGILL AGRICOLA - 1320X23 40KG (140 kg/h)" },
+        { cliente: "ERIPACK EMBALAGENS", nome: "500X25 50KG PIG PRETO", est: 90, displayName: "ERIPACK EMBALAGENS - 500X25 50KG PIG PRETO (90 kg/h)" },
+        { cliente: "DMZ PLAST", nome: "500X25 50KG PIG PRETO", est: 90, displayName: "DMZ PLAST - 500X25 50KG PIG PRETO (90 kg/h)" },
+        { cliente: "TAKFILMS DISTRIBUIDORA", nome: "500X25 50KG PIG PRETO", est: 90, displayName: "TAKFILMS DISTRIBUIDORA - 500X25 50KG PIG PRETO (90 kg/h)" },
+        { cliente: "FLEXFILMS FLEXIBLE", nome: "500x25 50KG PIG PRETO", est: 140, displayName: "FLEXFILMS FLEXIBLE - 500x25 50KG PIG PRETO (140 kg/h)" },
+        { cliente: "CARGILL AGRICOLA", nome: "750X30 28KG PIG BRANCO", est: 140, displayName: "CARGILL AGRICOLA - 750X30 28KG PIG BRANCO (140 kg/h)" },
+        { cliente: "TERMOMECANICA", nome: "600X80 PIG BRANCO", est: 120, displayName: "TERMOMECANICA - 600X80 PIG BRANCO (120 kg/h)" },
+        { cliente: "APARECIDO DONIZETE", nome: "600X12", est: 90, displayName: "APARECIDO DONIZETE - 600X12 (90 kg/h)" },
+        { cliente: "MARELLI", nome: "500X40", est: 140, displayName: "MARELLI - 500X40 (140 kg/h)" },
+        { cliente: "QUALITY CENTRAL", nome: "500X17", est: 110, displayName: "QUALITY CENTRAL - 500X17 (110 kg/h)" },
+        { cliente: "C.VALE", nome: "515X15 PIG AZUL", est: 90, displayName: "C.VALE - 515X15 PIG AZUL (90 kg/h)" }
     ];
-
-    // ============================================
-    // FUNÇÃO PARA CALCULAR TOTAL DE APARAS EM KG
-    // ============================================
-    function calcularTotalAparas() {
-        const start = document.getElementById('startDate').value;
-        const end = document.getElementById('endDate').value;
-        const turnoFilter = document.getElementById('perdasTurnoFilter')?.value || 'ALL';
-        const maquinaFilter = document.getElementById('perdasMaquinaFilter')?.value || 'ALL';
-        
-        let dadosFiltrados = [...historico];
-        
-        if (start && end) {
-            dadosFiltrados = dadosFiltrados.filter(h => h.data >= start && h.data <= end);
-        }
-        
-        if (turnoFilter !== 'ALL') {
-            dadosFiltrados = dadosFiltrados.filter(h => h.turno === turnoFilter);
-        }
-        
-        if (maquinaFilter !== 'ALL') {
-            dadosFiltrados = dadosFiltrados.filter(h => h.machine === maquinaFilter);
-        }
-        
-        let totalAparasKg = 0;
-        dadosFiltrados.forEach(reg => {
-            totalAparasKg += reg.aparas || 0;
-        });
-        
-        const card = document.getElementById('totalAparasCard');
-        const valorSpan = document.getElementById('totalAparasValor');
-        
-        valorSpan.innerHTML = totalAparasKg.toFixed(1) + ' kg';
-        card.style.display = 'block';
-        
-        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        
-        if (totalAparasKg === 0) {
-            showWarningToast('Nenhuma aparas registrada no período selecionado!');
-        } else {
-            showToast(`📊 Total de Aparas: ${totalAparasKg.toFixed(1)} kg`);
-        }
-    }
-    
-    function scrollToDetalheAparas() {
-        const tabela = document.querySelector('#perdas-detail-rows');
-        if (tabela) {
-            tabela.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }
-
-    // ============================================
-    // FUNÇÃO PARA VERIFICAR SE PRODUTO PODE SER USADO NA MÁQUINA SELECIONADA
-    // ============================================
-    function verificarMaquinaProduto(produtoDisplay, maquinaSelecionada) {
-        const produto = produtos.find(p => p.displayName === produtoDisplay);
-        if (!produto) {
-            return true;
-        }
-        
-        const maquinasPermitidas = produto.maquinas || "ALL";
-        
-        if (maquinasPermitidas === "ALL") {
-            return true;
-        }
-        
-        if (maquinasPermitidas === maquinaSelecionada) {
-            return true;
-        }
-        
-        return false;
-    }
-
-    function getMaquinaBadge(maquinas) {
-        if (maquinas === "ALL") return '<span class="maquina-badge all">Todas</span>';
-        if (maquinas === "M1") return '<span class="maquina-badge m1">M1</span>';
-        if (maquinas === "M2") return '<span class="maquina-badge m2">M2</span>';
-        if (maquinas === "M3") return '<span class="maquina-badge m3">M3</span>';
-        return '';
-    }
 
     // ============================================
     // FUNÇÕES DE UTILIDADE
@@ -2349,33 +2384,402 @@
     }
 
     // ============================================
-    // FUNÇÃO ATUALIZAR CARDS DE PRINCIPAIS PERDAS NO DASHBOARD
+    // FUNÇÃO CALCULAR TOTAL DE APARAS
+    // ============================================
+    function calcularTotalAparas() {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        
+        let dadosPeriodo = historico;
+        if (start && end) {
+            dadosPeriodo = historico.filter(h => h.data >= start && h.data <= end);
+        }
+        
+        if (dadosPeriodo.length === 0) {
+            showWarningToast('Nenhum dado no período selecionado!');
+            return;
+        }
+        
+        let totalAparasKg = 0;
+        let totalAparasMin = 0;
+        const porMaquina = {
+            M1: { kg: 0, min: 0 },
+            M2: { kg: 0, min: 0 },
+            M3: { kg: 0, min: 0 }
+        };
+        
+        dadosPeriodo.forEach(reg => {
+            const aparasKg = reg.aparas || 0;
+            totalAparasKg += aparasKg;
+            
+            if (reg.machine && porMaquina[reg.machine]) {
+                porMaquina[reg.machine].kg += aparasKg;
+            }
+            
+            const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
+            const aparasMin = calcularAparasEmMinutos(aparasKg, reg.realKgH || reg.est || 90, horas);
+            totalAparasMin += aparasMin;
+            
+            if (reg.machine && porMaquina[reg.machine]) {
+                porMaquina[reg.machine].min += aparasMin;
+            }
+        });
+        
+        const dataInicio = start ? start.split('-').reverse().join('/') : 'início';
+        const dataFim = end ? end.split('-').reverse().join('/') : 'hoje';
+        
+        const modalExistente = document.getElementById('modalTotalAparas');
+        if (modalExistente) modalExistente.remove();
+        
+        const modal = document.createElement('div');
+        modal.id = 'modalTotalAparas';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[200]';
+        modal.style.display = 'flex';
+        
+        modal.innerHTML = `
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-6 m-4 modal-content">
+                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                    <h2 class="font-black uppercase text-slate-800 text-xl">📊 TOTAL DE APARAS</h2>
+                    <button onclick="this.closest('#modalTotalAparas').remove()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <p class="text-slate-500 text-sm">Período: ${dataInicio} a ${dataFim}</p>
+                    <p class="text-slate-500 text-sm">Total de registros: ${dadosPeriodo.length}</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-red-50 rounded-2xl p-6 text-center border border-red-200">
+                        <div class="text-red-500 text-sm font-bold uppercase mb-2">TOTAL APARAS (KG)</div>
+                        <div class="text-4xl font-black text-red-600">${totalAparasKg.toFixed(1)} kg</div>
+                    </div>
+                    <div class="bg-orange-50 rounded-2xl p-6 text-center border border-orange-200">
+                        <div class="text-orange-500 text-sm font-bold uppercase mb-2">TOTAL APARAS (MIN)</div>
+                        <div class="text-4xl font-black text-orange-600">${Math.round(totalAparasMin)} min</div>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-50 rounded-2xl p-4 mb-4">
+                    <h3 class="font-bold text-slate-700 mb-3 text-center">📈 DETALHAMENTO POR MÁQUINA</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="text-center p-3 bg-white rounded-xl">
+                            <div class="font-bold text-green-700">M1</div>
+                            <div class="text-sm mt-1">${porMaquina.M1.kg.toFixed(1)} kg</div>
+                            <div class="text-xs text-slate-500">${Math.round(porMaquina.M1.min)} min</div>
+                        </div>
+                        <div class="text-center p-3 bg-white rounded-xl">
+                            <div class="font-bold text-red-700">M2</div>
+                            <div class="text-sm mt-1">${porMaquina.M2.kg.toFixed(1)} kg</div>
+                            <div class="text-xs text-slate-500">${Math.round(porMaquina.M2.min)} min</div>
+                        </div>
+                        <div class="text-center p-3 bg-white rounded-xl">
+                            <div class="font-bold text-yellow-700">M3</div>
+                            <div class="text-sm mt-1">${porMaquina.M3.kg.toFixed(1)} kg</div>
+                            <div class="text-xs text-slate-500">${Math.round(porMaquina.M3.min)} min</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-2">
+                    <button onclick="this.closest('#modalTotalAparas').remove()" class="px-4 py-2 bg-slate-200 text-slate-800 font-bold rounded-lg hover:bg-slate-300">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    }
+
+    // ============================================
+    // FUNÇÃO RENDER PERDAS MOTIVO CHART (MELHORADA - SÓ PARADAS)
+    // ============================================
+    function renderPerdasMotivoChart(perdasMot) {
+        const ctx = document.getElementById('perdasMotivoChart')?.getContext('2d');
+        if (!ctx) return;
+        
+        if (perdasMotivoChart) perdasMotivoChart.destroy();
+        
+        // Filtrar apenas paradas (avarias) - excluir Setup e Aparas
+        const apenasParadas = {};
+        Object.entries(perdasMot).forEach(([motivo, valor]) => {
+            if (motivo !== 'Setup' && motivo !== 'Aparas' && valor > 0) {
+                apenasParadas[motivo] = valor;
+            }
+        });
+        
+        if (Object.keys(apenasParadas).length === 0) {
+            perdasMotivoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Sem paradas'],
+                    datasets: [{
+                        label: 'Minutos',
+                        data: [0],
+                        backgroundColor: ['#e5e7eb'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: () => 'Nenhuma parada registrada' } },
+                        datalabels: { display: false }
+                    }
+                }
+            });
+            renderPerdasMotivoLista({});
+            return;
+        }
+        
+        const motivosOrdenados = Object.entries(apenasParadas).sort((a, b) => b[1] - a[1]);
+        const totalParadas = motivosOrdenados.reduce((sum, [_, val]) => sum + val, 0);
+        
+        const cores = [
+            '#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', 
+            '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16', 
+            '#a855f7', '#eab308', '#d946ef', '#22c55e', '#6b7280'
+        ];
+        
+        perdasMotivoChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: motivosOrdenados.map(m => m[0]),
+                datasets: [{
+                    label: 'Minutos de Parada',
+                    data: motivosOrdenados.map(m => m[1]),
+                    backgroundColor: motivosOrdenados.map((_, i) => cores[i % cores.length]),
+                    borderRadius: 8,
+                    barPercentage: 0.7,
+                    categoryPercentage: 0.8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const valor = context.raw;
+                                const percentual = totalParadas > 0 ? ((valor / totalParadas) * 100).toFixed(1) : 0;
+                                return [`📊 ${valor} minutos`, `📈 ${percentual}% do total de paradas`];
+                            }
+                        },
+                        backgroundColor: '#1f2937',
+                        titleColor: '#f3f4f6',
+                        bodyColor: '#d1d5db',
+                        padding: 10,
+                        cornerRadius: 8
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'right',
+                        formatter: (val, context) => {
+                            const percentual = totalParadas > 0 ? ((val / totalParadas) * 100).toFixed(1) : 0;
+                            return `${Math.round(val)} min (${percentual}%)`;
+                        },
+                        font: { weight: 'bold', size: 10 },
+                        color: '#374151',
+                        backgroundColor: '#f3f4f6',
+                        padding: { left: 4, right: 4, top: 2, bottom: 2 },
+                        borderRadius: 4
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Minutos de Parada',
+                            font: { weight: 'bold', size: 12 },
+                            color: '#6b7280'
+                        },
+                        grid: {
+                            display: true,
+                            color: '#e5e7eb',
+                            drawBorder: true
+                        },
+                        ticks: {
+                            callback: (val) => val + ' min',
+                            color: '#4b5563'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Motivos de Parada',
+                            font: { weight: 'bold', size: 12 },
+                            color: '#6b7280'
+                        },
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: { size: 11, weight: '500' },
+                            color: '#374151'
+                        }
+                    }
+                },
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 10,
+                        top: 20,
+                        bottom: 10
+                    }
+                }
+            }
+        });
+        
+        renderPerdasMotivoLista(apenasParadas);
+    }
+
+    // ============================================
+    // FUNÇÃO RENDER PERDAS MOTIVO LISTA (MELHORADA)
+    // ============================================
+    function renderPerdasMotivoLista(apenasParadas) {
+        const container = document.getElementById('perdasMotivoListaContainer');
+        if (!container) return;
+        
+        const totalParadas = Object.values(apenasParadas).reduce((a, b) => a + b, 0);
+        
+        if (Object.keys(apenasParadas).length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <svg class="w-12 h-12 mx-auto text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <p class="text-slate-400 text-sm">Nenhuma parada registrada no período</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const motivosOrdenados = Object.entries(apenasParadas).sort((a, b) => b[1] - a[1]);
+        
+        const coresBadge = [
+            'bg-red-100 text-red-700',
+            'bg-orange-100 text-orange-700',
+            'bg-blue-100 text-blue-700',
+            'bg-green-100 text-green-700',
+            'bg-purple-100 text-purple-700',
+            'bg-pink-100 text-pink-700',
+            'bg-teal-100 text-teal-700',
+            'bg-amber-100 text-amber-700'
+        ];
+        
+        container.innerHTML = `
+            <div class="space-y-2">
+                ${motivosOrdenados.map(([motivo, minutos], idx) => {
+                    const percentual = totalParadas > 0 ? ((minutos / totalParadas) * 100).toFixed(1) : 0;
+                    const larguraBarra = (minutos / totalParadas) * 100;
+                    const corBadge = coresBadge[idx % coresBadge.length];
+                    
+                    return `
+                        <div class="bg-white rounded-xl p-3 border border-slate-100 hover:shadow-sm transition-shadow">
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full ${corBadge.split(' ')[0].replace('bg-', 'bg-')}" style="background-color: ${['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'][idx % 5]}"></span>
+                                    <span class="font-semibold text-slate-700">${motivo}</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full ${corBadge}">${percentual}%</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm font-bold text-red-600">${Math.round(minutos)} min</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-500" style="width: ${larguraBarra}%; background-color: ${['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'][idx % 5]}"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-200 text-center">
+                <p class="text-xs text-slate-400">
+                    📊 Total de paradas: <span class="font-bold text-slate-600">${Math.round(totalParadas)} minutos</span>
+                </p>
+            </div>
+        `;
+    }
+
+    // ============================================
+    // FUNÇÃO MOSTRAR QUANTIDADES NO PERÍODO
+    // ============================================
+    function mostrarQuantidadesPeriodo() {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        
+        let dadosPeriodo = historico;
+        if (start && end) {
+            dadosPeriodo = historico.filter(h => h.data >= start && h.data <= end);
+        }
+        
+        if (dadosPeriodo.length === 0) {
+            showWarningToast('Nenhum dado no período selecionado!');
+            return;
+        }
+        
+        const quantidades = {
+            M1: { real: 0, estimado: 0 },
+            M2: { real: 0, estimado: 0 },
+            M3: { real: 0, estimado: 0 }
+        };
+        
+        dadosPeriodo.forEach(reg => {
+            const maq = reg.machine;
+            if (quantidades[maq]) {
+                quantidades[maq].real += reg.produzido || 0;
+                const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
+                const estimado = (reg.est || 0) * horas;
+                quantidades[maq].estimado += estimado;
+            }
+        });
+        
+        const totalReal = quantidades.M1.real + quantidades.M2.real + quantidades.M3.real;
+        const totalEstimado = quantidades.M1.estimado + quantidades.M2.estimado + quantidades.M3.estimado;
+        const totalDiferenca = totalReal - totalEstimado;
+        
+        document.getElementById('qtdRealM1').innerHTML = quantidades.M1.real.toFixed(0) + ' kg';
+        document.getElementById('qtdRealM2').innerHTML = quantidades.M2.real.toFixed(0) + ' kg';
+        document.getElementById('qtdRealM3').innerHTML = quantidades.M3.real.toFixed(0) + ' kg';
+        document.getElementById('qtdRealTotal').innerHTML = totalReal.toFixed(0) + ' kg';
+        document.getElementById('qtdEstimadoTotal').innerHTML = totalEstimado.toFixed(0) + ' kg';
+        document.getElementById('qtdRealTotalGrande').innerHTML = totalReal.toFixed(0) + ' kg';
+        
+        const diffM1 = quantidades.M1.real - quantidades.M1.estimado;
+        const diffM2 = quantidades.M2.real - quantidades.M2.estimado;
+        const diffM3 = quantidades.M3.real - quantidades.M3.estimado;
+        
+        
+        document.getElementById('modalQuantidades').style.display = 'flex';
+    }
+    
+    function fecharModalQuantidades() {
+        document.getElementById('modalQuantidades').style.display = 'none';
+    }
+
+    // ============================================
+    // FUNÇÃO ATUALIZAR CARDS DE PRINCIPAIS PERDAS NO DASHBOARD (SÓ PARADAS)
     // ============================================
     function atualizarCardsPerdasDashboard(data) {
         const perdasPorMotivo = {};
         let totalGeralPerdas = 0;
         
         data.forEach(reg => {
-            const setup = reg.setup || 0;
             const avaria = reg.avaria || 0;
-            const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
-            const aparasMin = calcularAparasEmMinutos(reg.aparas || 0, reg.realKgH || reg.est || 90, horas);
-            
-            if (setup > 0) {
-                perdasPorMotivo['Setup'] = (perdasPorMotivo['Setup'] || 0) + setup;
-                totalGeralPerdas += setup;
-            }
-            
-            if (aparasMin > 0) {
-                perdasPorMotivo['Aparas'] = (perdasPorMotivo['Aparas'] || 0) + aparasMin;
-                totalGeralPerdas += aparasMin;
-            }
             
             if (avaria > 0) {
                 let motivo = reg.motivoPerda;
+                
                 if (!motivo || motivo === 'Setup') {
                     motivo = 'Paradas não especificadas';
                 }
+                
                 perdasPorMotivo[motivo] = (perdasPorMotivo[motivo] || 0) + avaria;
                 totalGeralPerdas += avaria;
             }
@@ -2419,7 +2823,7 @@
     }
     
     // ============================================
-    // FUNÇÃO MOSTRAR MÉDIAS KG/H
+    // FUNÇÃO MOSTRAR MÉDIAS KG/H (CARDS VISUAIS)
     // ============================================
     function mostrarMediasKgH() {
         const container = document.getElementById('mediasKgHContainer');
@@ -2454,8 +2858,10 @@
         
         const mediaRealM1 = medias.M1.count > 0 ? Math.round(medias.M1.real / medias.M1.count) : 0;
         const mediaEstM1 = medias.M1.count > 0 ? Math.round(medias.M1.est / medias.M1.count) : 0;
+        
         const mediaRealM2 = medias.M2.count > 0 ? Math.round(medias.M2.real / medias.M2.count) : 0;
         const mediaEstM2 = medias.M2.count > 0 ? Math.round(medias.M2.est / medias.M2.count) : 0;
+        
         const mediaRealM3 = medias.M3.count > 0 ? Math.round(medias.M3.real / medias.M3.count) : 0;
         const mediaEstM3 = medias.M3.count > 0 ? Math.round(medias.M3.est / medias.M3.count) : 0;
         
@@ -2477,64 +2883,249 @@
     }
 
     // ============================================
-    // FUNÇÕES DE GESTÃO DE CLIENTES E PRODUTOS (CORRIGIDO - PERMITE MESMO PRODUTO EM MÁQUINAS DIFERENTES)
+    // FUNÇÃO FILTRAR OPS
     // ============================================
+    function filtrarOps() {
+        const searchInput = document.getElementById('opSearchInput');
+        if (searchInput) {
+            opSearchTerm = searchInput.value.toLowerCase();
+            renderOPViewFiltrada();
+        }
+    }
     
-    function adicionarProduto() {
-        const cliente = document.getElementById('produtoCliente').value;
-        const produto = document.getElementById('novoProduto').value.trim();
-        const est = safeNumber(document.getElementById('produtoEst').value);
-        const maquina = document.getElementById('produtoMaquina').value;
+    function renderOPViewFiltrada() {
+        const container = document.getElementById('opTimelineContainer');
+        if (!container) return;
         
-        if (!cliente || !produto || est <= 0) {
-            alert('Preencha todos os campos corretamente!');
+        let opsParaMostrar = opsCache;
+        if (opSearchTerm) {
+            opsParaMostrar = opsCache.filter(opData => opData.op.toLowerCase().includes(opSearchTerm));
+        }
+        
+        if (opsParaMostrar.length === 0) {
+            container.innerHTML = '<p class="text-center text-slate-400 py-8">Nenhuma OP encontrada.</p>';
             return;
         }
         
-        // Verificar se já existe o MESMO produto para o MESMO cliente na MESMA máquina
-        const produtoExistente = produtos.find(p => 
-            p.cliente === cliente && 
-            p.nome.toLowerCase() === produto.toLowerCase() && 
-            p.maquinas === maquina
-        );
+        container.innerHTML = '';
         
-        if (produtoExistente) {
-            showErrorToast(`⚠️ Este produto já existe para o cliente ${cliente} na máquina ${maquina}!`);
-            return;
-        }
-        
-        // Obter o nome da máquina para exibição
-        let nomeMaquina = "";
-        if (maquina === "M1") nomeMaquina = "M1";
-        else if (maquina === "M2") nomeMaquina = "M2";
-        else if (maquina === "M3") nomeMaquina = "M3";
-        else nomeMaquina = "Todas";
-        
-        produtos.push({
-            cliente,
-            nome: produto,
-            est,
-            maquinas: maquina,
-            displayName: `${cliente} - ${produto} (${est} kg/h) [${nomeMaquina}]`
+        opsParaMostrar.forEach(({ op, rs }) => {
+            let totalProd = 0, totalPed = 0, sDisp=0, sPerf=0, sQual=0, totalH=0;
+            let totalEst = 0, totalReal = 0;
+            
+            rs.forEach(r => {
+                totalProd += r.produzido||0;
+                totalPed = r.pedido||totalPed;
+                sDisp += r.disp||0;
+                sPerf += r.perf||0;
+                sQual += r.qual||0;
+                const horas = calcularDuracaoHoras(r.inicio, r.fim);
+                totalH += horas;
+                
+                totalEst += (r.est || 0) * horas;
+                totalReal += (r.realKgH || 0) * horas;
+            });
+            
+            const mDisp = Math.round(sDisp/rs.length);
+            const mPerf = Math.round(sPerf/rs.length);
+            const mQual = Math.round(sQual/rs.length);
+            const mOEE = calcularOEE(mDisp, mPerf, mQual);
+            
+            const estMedio = totalH > 0 ? totalEst / totalH : 0;
+            const realMedio = totalH > 0 ? totalReal / totalH : 0;
+            const statusPerf = getPerformanceStatus(estMedio, realMedio);
+            
+            const p = rs[0];
+            const per = p.data===rs[rs.length-1].data ? p.data.split('-').reverse().join('/') : `${p.data.split('-').reverse().join('/')} a ${rs[rs.length-1].data.split('-').reverse().join('/')}`;
+            
+            container.innerHTML += `
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesOP('${op}')">
+                    <div class="flex justify-between items-start mb-3">
+                        <div><span class="font-black text-xl text-green-700">OP ${op}</span><span class="ml-3 text-sm font-medium text-slate-500">${p.produto||'-'}</span></div>
+                        <div class="flex gap-2">
+                            <span class="text-sm font-bold px-3 py-1 rounded-full ${statusPerf.bgCor} ${statusPerf.cor}">
+                                ${statusPerf.icone} ${statusPerf.texto}
+                            </span>
+                            <button onclick="event.stopPropagation(); apagarOPCompleta('${op}')" class="delete-op-btn text-red-500 hover:text-red-700" title="Apagar OP completa">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 mb-4">
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">DISP OP</span><div class="text-2xl font-black ${mDisp>=85?'text-green-600':'text-red-600'}">${mDisp}%</div></div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">PERF</span><div class="text-2xl font-black ${statusPerf.cor}">${mPerf}%</div></div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">QUAL</span><div class="text-2xl font-black ${mQual>=98?'text-green-600':'text-yellow-600'}">${mQual}%</div></div>
+                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">OEE</span><div class="text-2xl font-black ${mOEE>=85?'text-green-600':'text-red-600'}">${mOEE}%</div></div>
+                    </div>
+                    <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
+                        <div><span class="font-medium">📦 ${totalProd.toFixed(0)} kg</span><span class="mx-2">•</span><span>🎯 ${totalPed} kg</span><span class="mx-2">•</span><span>🕒 ${totalH.toFixed(1)}h</span></div>
+                        <div><span>📅 ${per}</span><span class="ml-4 text-blue-600 font-medium">👆 Clique para detalhes</span></div>
+                    </div>
+                </div>
+            `;
         });
-        
-        localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
-        atualizarSelectClientesProduto();
-        atualizarListaClientesProdutos();
-        mostrarProdutosDoCliente();
-        
-        document.getElementById('novoProduto').value = '';
-        document.getElementById('produtoEst').value = '';
-        document.getElementById('produtoMaquina').value = 'M1';
-        showToast(`✅ Produto adicionado na máquina ${nomeMaquina} com sucesso!`);
-        
-        const buscaInput = document.getElementById('buscaClientesGerenciamento');
-        if (buscaInput) {
-            buscaInput.value = '';
-            filtrarClientesGerenciamento('');
+    }
+    
+    async function apagarOPCompleta(op) {
+        if (confirm(`⚠️ ATENÇÃO! Você está prestes a apagar TODOS os registros da OP ${op}. Esta ação é irreversível!\n\nDeseja continuar?`)) {
+            const registrosParaApagar = historico.filter(r => r.op === op);
+            
+            if (registrosParaApagar.length === 0) {
+                showErrorToast('Nenhum registro encontrado para esta OP!');
+                return;
+            }
+            
+            let apagados = 0;
+            for (const reg of registrosParaApagar) {
+                const sucesso = await apagarRegistroBanco(reg.id);
+                if (sucesso) apagados++;
+            }
+            
+            if (apagados === registrosParaApagar.length) {
+                historico = historico.filter(r => r.op !== op);
+                filterByRange();
+                showToast(`✅ OP ${op} apagada com sucesso! (${apagados} registros)`);
+            } else {
+                showErrorToast(`❌ Erro ao apagar alguns registros da OP ${op}`);
+            }
+        }
+    }
+    
+    async function apagarTurnoDaOP(id, op) {
+        if (confirm(`Deseja apagar este turno da OP ${op}?`)) {
+            const sucesso = await apagarRegistroBanco(id);
+            if (sucesso) {
+                historico = historico.filter(r => r.id !== id);
+                filterByRange();
+                showToast(`✅ Turno removido da OP ${op}!`);
+            } else {
+                showErrorToast('❌ Erro ao apagar turno!');
+            }
         }
     }
 
+    // ============================================
+    // FUNÇÕES DE SELEÇÃO DE CLIENTES
+    // ============================================
+    
+    function carregarClientesCards() {
+        const container = document.getElementById('clientesCardsContainer');
+        if (!container) return;
+        
+        const busca = document.getElementById('buscaClienteCard')?.value.toLowerCase() || '';
+        
+        const clientesMap = new Map();
+        produtos.forEach(p => {
+            if (!clientesMap.has(p.cliente)) {
+                clientesMap.set(p.cliente, []);
+            }
+            clientesMap.get(p.cliente).push(p);
+        });
+        
+        const clientesArray = Array.from(clientesMap.keys())
+            .filter(cliente => cliente.toLowerCase().includes(busca))
+            .sort();
+        
+        clientesFiltradosCards = clientesArray;
+        
+        container.innerHTML = clientesArray.map(cliente => {
+            const produtosCliente = clientesMap.get(cliente);
+            const produtosPreview = produtosCliente.slice(0, 3).map(p => 
+                `<span class="produto-badge-mini">${p.nome}</span>`
+            ).join('');
+            
+            const temMais = produtosCliente.length > 3 ? 
+                `<span class="produto-badge-mini">+${produtosCliente.length - 3}</span>` : '';
+            
+            const isSelected = clienteSelecionado === cliente ? 'selected' : '';
+            const isExpanded = clienteSelecionado === cliente ? 'expanded' : '';
+            
+            return `
+                <div class="cliente-card-select ${isSelected} ${isExpanded}" data-cliente="${cliente.replace(/'/g, "\\'")}">
+                    <div class="cliente-nome" onclick="selecionarCliente('${cliente.replace(/'/g, "\\'")}')">${cliente}</div>
+                    <div class="produtos-preview" onclick="selecionarCliente('${cliente.replace(/'/g, "\\'")}')">
+                        ${produtosPreview}
+                        ${temMais}
+                    </div>
+                    <div class="produtos-lista" id="produtos-${cliente.replace(/\s/g, '')}">
+                        ${produtosCliente.map((p, idx) => `
+                            <div class="produto-item ${produtoSelecionado === p.displayName ? 'selected' : ''}" 
+                                 onclick="event.stopPropagation(); selecionarProduto('${p.displayName.replace(/'/g, "\\'")}', ${p.est})">
+                                <span class="produto-nome">${p.nome}</span>
+                                <span class="produto-est">${p.est} kg/h</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function selecionarCliente(cliente) {
+        console.log("Selecionando cliente:", cliente);
+        clienteSelecionado = cliente;
+        produtoSelecionado = null;
+        document.getElementById('regProduto').value = '';
+        document.getElementById('regEst').value = '90';
+        document.getElementById('regEstDisplay').value = '90';
+        
+        document.querySelectorAll('.cliente-card-select').forEach(c => {
+            const clienteCard = c.getAttribute('data-cliente');
+            if (clienteCard === cliente) {
+                c.classList.add('selected');
+                c.classList.add('expanded');
+            } else {
+                c.classList.remove('selected');
+                c.classList.remove('expanded');
+            }
+        });
+        
+        const produtosLista = document.querySelector(`#produtos-${cliente.replace(/\s/g, '')}`);
+        if (produtosLista) {
+            produtosLista.style.display = 'block';
+        }
+        
+        carregarClientesCards();
+    }
+
+    function selecionarProduto(produtoDisplay, est) {
+        console.log("Selecionando produto:", produtoDisplay, "Est:", est);
+        produtoSelecionado = produtoDisplay;
+        document.getElementById('regProduto').value = produtoDisplay;
+        document.getElementById('regEst').value = est;
+        document.getElementById('regEstDisplay').value = est;
+        
+        document.getElementById('clienteSelecionadoDisplay').style.display = 'flex';
+        document.getElementById('clienteSelecionadoNome').innerHTML = clienteSelecionado;
+        
+        const nomeProduto = produtoDisplay.split(' - ')[1] || produtoDisplay;
+        document.getElementById('produtoSelecionadoInfo').innerHTML = `📦 ${nomeProduto} (${est} kg/h)`;
+        
+        document.getElementById('selecaoClientesArea').style.display = 'none';
+        
+        atualizarPreview();
+    }
+
+    function mostrarSelecaoClientes() {
+        document.getElementById('selecaoClientesArea').style.display = 'block';
+        document.getElementById('clienteSelecionadoDisplay').style.display = 'none';
+        clienteSelecionado = null;
+        produtoSelecionado = null;
+        document.getElementById('regProduto').value = '';
+        document.getElementById('regEst').value = '90';
+        document.getElementById('regEstDisplay').value = '90';
+        carregarClientesCards();
+    }
+
+    function filtrarClientesCards() {
+        carregarClientesCards();
+    }
+
+    // ============================================
+    // FUNÇÕES DE GESTÃO DE CLIENTES E PRODUTOS
+    // ============================================
     function mostrarProdutosDoCliente() {
         const cliente = document.getElementById('produtoCliente').value;
         const container = document.getElementById('produtosPreviewContainer');
@@ -2558,18 +3149,9 @@
         
         lista.innerHTML = produtosDoCliente.map((p, index) => {
             const produtoNum = (produtos.indexOf(p) % 8) + 1;
-            let badgeMaquina = '';
-            if (p.maquinas === "M1") badgeMaquina = '<span class="maquina-badge m1" style="margin-left: 8px;">M1</span>';
-            else if (p.maquinas === "M2") badgeMaquina = '<span class="maquina-badge m2" style="margin-left: 8px;">M2</span>';
-            else if (p.maquinas === "M3") badgeMaquina = '<span class="maquina-badge m3" style="margin-left: 8px;">M3</span>';
-            else if (p.maquinas === "ALL") badgeMaquina = '<span class="maquina-badge all" style="margin-left: 8px;">Todas</span>';
-            
             return `
                 <div class="flex items-center justify-between bg-slate-50 p-2 rounded">
-                    <div>
-                        <span class="product-badge product-${produtoNum}">${p.nome}</span>
-                        ${badgeMaquina}
-                    </div>
+                    <span class="product-badge product-${produtoNum}">${p.nome}</span>
                     <span class="text-sm font-bold">${p.est} kg/h</span>
                 </div>
             `;
@@ -2617,6 +3199,44 @@
         }
     }
 
+    function adicionarProduto() {
+        const cliente = document.getElementById('produtoCliente').value;
+        const produto = document.getElementById('novoProduto').value.trim();
+        const est = safeNumber(document.getElementById('produtoEst').value);
+        
+        if (!cliente || !produto || est <= 0) {
+            alert('Preencha todos os campos corretamente!');
+            return;
+        }
+        
+        if (produtos.find(p => p.cliente === cliente && p.nome.toLowerCase() === produto.toLowerCase())) {
+            showErrorToast('Este produto já existe para este cliente!');
+            return;
+        }
+        
+        produtos.push({
+            cliente,
+            nome: produto,
+            est,
+            displayName: `${cliente} - ${produto} (${est} kg/h)`
+        });
+        
+        localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
+        atualizarSelectClientesProduto();
+        atualizarListaClientesProdutos();
+        mostrarProdutosDoCliente();
+        
+        document.getElementById('novoProduto').value = '';
+        document.getElementById('produtoEst').value = '';
+        showToast('Produto adicionado com sucesso!');
+        
+        const buscaInput = document.getElementById('buscaClientesGerenciamento');
+        if (buscaInput) {
+            buscaInput.value = '';
+            filtrarClientesGerenciamento('');
+        }
+    }
+
     function removerCliente(cliente) {
         if (confirm(`Deseja remover o cliente "${cliente}" e todos os seus produtos?`)) {
             clientes = clientes.filter(c => c !== cliente);
@@ -2641,9 +3261,9 @@
         }
     }
 
-    function removerProduto(produtoNome, cliente, maquina) {
-        if (confirm(`Deseja remover o produto "${produtoNome}" da máquina ${maquina}?`)) {
-            produtos = produtos.filter(p => !(p.nome === produtoNome && p.cliente === cliente && p.maquinas === maquina));
+    function removerProduto(produtoNome, cliente) {
+        if (confirm(`Deseja remover o produto "${produtoNome}"?`)) {
+            produtos = produtos.filter(p => p.nome !== produtoNome || p.cliente !== cliente);
             localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
             atualizarSelectClientesProduto();
             atualizarListaClientesProdutos();
@@ -2680,26 +3300,15 @@
             const produtosCliente = produtos.filter(p => p.cliente === cliente);
             const produtosHTML = produtosCliente.map((p, idx) => {
                 const produtoNum = (produtos.indexOf(p) % 8) + 1;
-                let badgeMaquina = '';
-                if (p.maquinas === "M1") badgeMaquina = '<span class="maquina-badge m1" style="margin-left: 8px;">M1</span>';
-                else if (p.maquinas === "M2") badgeMaquina = '<span class="maquina-badge m2" style="margin-left: 8px;">M2</span>';
-                else if (p.maquinas === "M3") badgeMaquina = '<span class="maquina-badge m3" style="margin-left: 8px;">M3</span>';
-                else if (p.maquinas === "ALL") badgeMaquina = '<span class="maquina-badge all" style="margin-left: 8px;">Todas</span>';
-                
                 return `
-                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded mb-1">
-                        <div>
-                            <span class="product-badge product-${produtoNum}">${p.nome}</span>
-                            ${badgeMaquina}
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold">${p.est} kg/h</span>
-                            <button onclick="removerProduto('${p.nome}', '${cliente}', '${p.maquinas}')" class="text-red-500 hover:text-red-700">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </button>
-                        </div>
+                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded">
+                        <span class="product-badge product-${produtoNum}">${p.nome}</span>
+                        <span class="text-sm font-bold">${p.est} kg/h</span>
+                        <button onclick="removerProduto('${p.nome}', '${cliente}')" class="text-red-500 hover:text-red-700 ml-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
                     </div>
                 `;
             }).join('');
@@ -2736,26 +3345,15 @@
             const produtosCliente = produtos.filter(p => p.cliente === cliente);
             const produtosHTML = produtosCliente.map((p, idx) => {
                 const produtoNum = (produtos.indexOf(p) % 8) + 1;
-                let badgeMaquina = '';
-                if (p.maquinas === "M1") badgeMaquina = '<span class="maquina-badge m1" style="margin-left: 8px;">M1</span>';
-                else if (p.maquinas === "M2") badgeMaquina = '<span class="maquina-badge m2" style="margin-left: 8px;">M2</span>';
-                else if (p.maquinas === "M3") badgeMaquina = '<span class="maquina-badge m3" style="margin-left: 8px;">M3</span>';
-                else if (p.maquinas === "ALL") badgeMaquina = '<span class="maquina-badge all" style="margin-left: 8px;">Todas</span>';
-                
                 return `
-                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded mb-1">
-                        <div>
-                            <span class="product-badge product-${produtoNum}">${p.nome}</span>
-                            ${badgeMaquina}
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold">${p.est} kg/h</span>
-                            <button onclick="removerProduto('${p.nome}', '${cliente}', '${p.maquinas}')" class="text-red-500 hover:text-red-700">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </button>
-                        </div>
+                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded">
+                        <span class="product-badge product-${produtoNum}">${p.nome}</span>
+                        <span class="text-sm font-bold">${p.est} kg/h</span>
+                        <button onclick="removerProduto('${p.nome}', '${cliente}')" class="text-red-500 hover:text-red-700 ml-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
                     </div>
                 `;
             }).join('');
@@ -2776,149 +3374,8 @@
         }).join('');
         
         if (clientesFiltrados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-slate-400">Nenhum cliente encontrado<\/td><\/tr>';
+            tbody.innerHTML = '.<td colspan="3" class="text-center py-8 text-slate-400">Nenhum cliente encontrado<\/td><\/tr>';
         }
-    }
-
-    // ============================================
-    // FUNÇÕES DE SELEÇÃO DE CLIENTES (COM VALIDAÇÃO DE MÁQUINA)
-    // ============================================
-    
-    function carregarClientesCards() {
-        const container = document.getElementById('clientesCardsContainer');
-        if (!container) return;
-        
-        const busca = document.getElementById('buscaClienteCard')?.value.toLowerCase() || '';
-        
-        const clientesMap = new Map();
-        produtos.forEach(p => {
-            if (!clientesMap.has(p.cliente)) {
-                clientesMap.set(p.cliente, []);
-            }
-            clientesMap.get(p.cliente).push(p);
-        });
-        
-        const clientesArray = Array.from(clientesMap.keys())
-            .filter(cliente => cliente.toLowerCase().includes(busca))
-            .sort();
-        
-        clientesFiltradosCards = clientesArray;
-        
-        container.innerHTML = clientesArray.map(cliente => {
-            const produtosCliente = clientesMap.get(cliente);
-            const produtosPreview = produtosCliente.slice(0, 3).map(p => {
-                let badgePreview = '';
-                if (p.maquinas === "M1") badgePreview = ' 🔴M1';
-                else if (p.maquinas === "M2") badgePreview = ' 🟢M2';
-                else if (p.maquinas === "M3") badgePreview = ' 🟡M3';
-                else badgePreview = ' ⚪Todas';
-                return `<span class="produto-badge-mini">${p.nome}${badgePreview}</span>`;
-            }).join('');
-            
-            const temMais = produtosCliente.length > 3 ? 
-                `<span class="produto-badge-mini">+${produtosCliente.length - 3}</span>` : '';
-            
-            const isSelected = clienteSelecionado === cliente ? 'selected' : '';
-            const isExpanded = clienteSelecionado === cliente ? 'expanded' : '';
-            
-            return `
-                <div class="cliente-card-select ${isSelected} ${isExpanded}" data-cliente="${cliente.replace(/'/g, "\\'")}">
-                    <div class="cliente-nome" onclick="selecionarCliente('${cliente.replace(/'/g, "\\'")}')">${cliente}</div>
-                    <div class="produtos-preview" onclick="selecionarCliente('${cliente.replace(/'/g, "\\'")}')">
-                        ${produtosPreview}
-                        ${temMais}
-                    </div>
-                    <div class="produtos-lista" id="produtos-${cliente.replace(/\s/g, '')}">
-                        ${produtosCliente.map((p, idx) => {
-                            let badgeItem = '';
-                            if (p.maquinas === "M1") badgeItem = '<span class="maquina-badge m1" style="margin-left: 8px;">M1</span>';
-                            else if (p.maquinas === "M2") badgeItem = '<span class="maquina-badge m2" style="margin-left: 8px;">M2</span>';
-                            else if (p.maquinas === "M3") badgeItem = '<span class="maquina-badge m3" style="margin-left: 8px;">M3</span>';
-                            else if (p.maquinas === "ALL") badgeItem = '<span class="maquina-badge all" style="margin-left: 8px;">Todas</span>';
-                            
-                            return `
-                                <div class="produto-item ${produtoSelecionado === p.displayName ? 'selected' : ''}" 
-                                     onclick="event.stopPropagation(); selecionarProduto('${p.displayName.replace(/'/g, "\\'")}', ${p.est})">
-                                    <span class="produto-nome">${p.nome}</span>
-                                    <span class="produto-est">${p.est} kg/h</span>
-                                    ${badgeItem}
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    function selecionarCliente(cliente) {
-        clienteSelecionado = cliente;
-        produtoSelecionado = null;
-        document.getElementById('regProduto').value = '';
-        document.getElementById('regEst').value = '90';
-        document.getElementById('regEstDisplay').value = '90';
-        
-        document.querySelectorAll('.cliente-card-select').forEach(c => {
-            const clienteCard = c.getAttribute('data-cliente');
-            if (clienteCard === cliente) {
-                c.classList.add('selected');
-                c.classList.add('expanded');
-            } else {
-                c.classList.remove('selected');
-                c.classList.remove('expanded');
-            }
-        });
-        
-        const produtosLista = document.querySelector(`#produtos-${cliente.replace(/\s/g, '')}`);
-        if (produtosLista) {
-            produtosLista.style.display = 'block';
-        }
-        
-        carregarClientesCards();
-    }
-
-    function selecionarProduto(produtoDisplay, est) {
-        const maquinaSelecionada = document.getElementById('regMachine').value;
-        if (maquinaSelecionada && !verificarMaquinaProduto(produtoDisplay, maquinaSelecionada)) {
-            showErrorToast(`⚠️ Este produto não pode ser usado na máquina ${maquinaSelecionada}!`);
-            return;
-        }
-        
-        produtoSelecionado = produtoDisplay;
-        document.getElementById('regProduto').value = produtoDisplay;
-        document.getElementById('regEst').value = est;
-        document.getElementById('regEstDisplay').value = est;
-        
-        document.getElementById('clienteSelecionadoDisplay').style.display = 'flex';
-        document.getElementById('clienteSelecionadoNome').innerHTML = clienteSelecionado;
-        
-        let nomeProduto = produtoDisplay.split(' - ')[1] || produtoDisplay;
-        let maquinaInfo = '';
-        if (produtoDisplay.includes('[M1]')) maquinaInfo = ' (M1)';
-        else if (produtoDisplay.includes('[M2]')) maquinaInfo = ' (M2)';
-        else if (produtoDisplay.includes('[M3]')) maquinaInfo = ' (M3)';
-        else if (produtoDisplay.includes('[Todas]')) maquinaInfo = ' (Todas máquinas)';
-        
-        document.getElementById('produtoSelecionadoInfo').innerHTML = `📦 ${nomeProduto} (${est} kg/h)${maquinaInfo}`;
-        
-        document.getElementById('selecaoClientesArea').style.display = 'none';
-        
-        atualizarPreview();
-    }
-
-    function mostrarSelecaoClientes() {
-        document.getElementById('selecaoClientesArea').style.display = 'block';
-        document.getElementById('clienteSelecionadoDisplay').style.display = 'none';
-        clienteSelecionado = null;
-        produtoSelecionado = null;
-        document.getElementById('regProduto').value = '';
-        document.getElementById('regEst').value = '90';
-        document.getElementById('regEstDisplay').value = '90';
-        carregarClientesCards();
-    }
-
-    function filtrarClientesCards() {
-        carregarClientesCards();
     }
 
     // ============================================
@@ -3164,7 +3621,7 @@
         
         let topMot = '--', topMotVal = 0;
         Object.entries(perdasMot).forEach(([m, v]) => { 
-            if (v > topMotVal) { 
+            if (v > topMotVal && m !== 'Setup' && m !== 'Aparas') { 
                 topMotVal = v; 
                 topMot = m; 
             } 
@@ -3172,14 +3629,14 @@
         
         if (topMotVal === 0) {
             Object.entries(perdasMot).forEach(([m, v]) => { 
-                if (v > topMotVal) { 
+                if (v > topMotVal && m !== 'Setup' && m !== 'Aparas') { 
                     topMotVal = v; 
                     topMot = m; 
                 } 
             });
         }
         
-        document.getElementById('topMotivoNome').innerText = topMot;
+        document.getElementById('topMotivoNome').innerText = topMot || '--';
         document.getElementById('topMotivoMinutos').innerText = Math.round(topMotVal) + ' min';
         
         let topDia = '--', topDiaVal = 0;
@@ -3202,16 +3659,15 @@
         tbody.innerHTML = '';
         
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-slate-400">Nenhum dado encontrado no período.</td </tr';
+            tbody.innerHTML = '.<td colspan="10" class="text-center py-4 text-slate-400">Nenhum dado encontrado no período.</td </tr';
             return;
         }
         
         data.sort((a, b) => new Date(b.data) - new Date(a.data)).forEach(reg => {
             const setup = reg.setup || 0;
             const avaria = reg.avaria || 0;
-            const aparasKg = reg.aparas || 0;
             const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
-            const aparasMin = calcularAparasEmMinutos(aparasKg, reg.realKgH || reg.est || 90, horas);
+            const aparasMin = calcularAparasEmMinutos(reg.aparas || 0, reg.realKgH || reg.est || 90, horas);
             const total = setup + avaria + aparasMin;
             
             if (total > 0) {
@@ -3224,9 +3680,9 @@
                         <td class="py-2">${reg.produto || '-'}<\/td>
                         <td class="py-2 text-center ${setup > 0 ? 'text-orange-600 font-bold' : ''}">${setup}<\/td>
                         <td class="py-2 text-center ${avaria > 0 ? 'text-red-600 font-bold' : ''}">${avaria}<\/td>
-                        <td class="py-2 text-center ${aparasKg > 0 ? 'text-green-600 font-bold' : ''}">${aparasKg}<\/td>
+                        <td class="py-2 text-center ${aparasMin > 0 ? 'text-green-600 font-bold' : ''}">${aparasMin}<\/td>
                         <td class="py-2 text-center font-bold text-red-600">${total}<\/td>
-                        <td class="py-2">${reg.motivoPerda || (setup > 0 ? 'Setup' : (aparasKg > 0 ? 'Aparas' : '-'))}<\/td>
+                        <td class="py-2">${reg.motivoPerda || (setup > 0 ? 'Setup' : (aparasMin > 0 ? 'Aparas' : '-'))}<\/td>
                     <\/tr>
                 `;
             }
@@ -3305,70 +3761,6 @@
                 scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
             }
         });
-    }
-
-    function renderPerdasMotivoChart(perdasMot) {
-        const ctx = document.getElementById('perdasMotivoChart')?.getContext('2d');
-        if (!ctx) return;
-        
-        if (perdasMotivoChart) perdasMotivoChart.destroy();
-        
-        const motivosFiltrados = {};
-        Object.entries(perdasMot).forEach(([motivo, valor]) => {
-            if (valor > 0) {
-                motivosFiltrados[motivo] = valor;
-            }
-        });
-        
-        if (Object.keys(motivosFiltrados).length === 0) {
-            perdasMotivoChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Sem dados'],
-                    datasets: [{ data: [1], backgroundColor: ['#e5e7eb'] }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        datalabels: { 
-                            color: '#fff', 
-                            font: { weight: 'bold', size: 10 }, 
-                            formatter: () => 'Sem dados' 
-                        } 
-                    }
-                }
-            });
-        } else {
-            const motivosOrdenados = Object.entries(motivosFiltrados)
-                .sort((a, b) => b[1] - a[1])
-                .reduce((obj, [key, value]) => {
-                    obj[key] = value;
-                    return obj;
-                }, {});
-            
-            perdasMotivoChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(motivosOrdenados),
-                    datasets: [{ 
-                        data: Object.values(motivosOrdenados), 
-                        backgroundColor: ['#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#f59e0b', '#64748b'] 
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        datalabels: { 
-                            color: '#fff', 
-                            font: { weight: 'bold', size: 10 }, 
-                            formatter: val => Math.round(val) + ' min' 
-                        } 
-                    }
-                }
-            });
-        }
     }
 
     function renderPerdasTipoChart(perdasMaq) {
@@ -3699,66 +4091,18 @@
         const ops = {};
         data.forEach(r => { if (!ops[r.op]) ops[r.op] = []; ops[r.op].push(r); });
         
-        const container = document.getElementById('opTimelineContainer');
-        if (!container) return;
-        container.innerHTML = '';
-        
-        if (Object.keys(ops).length === 0) {
-            container.innerHTML = '<p class="text-center text-slate-400 py-8">Nenhuma OP encontrada no período.</p>';
-            return;
-        }
-        
-        Object.entries(ops).forEach(([op, rs]) => {
-            rs.sort((a,b)=>new Date(a.data+' '+a.inicio)-new Date(b.data+' '+b.inicio));
-            let totalProd = 0, totalPed = 0, sDisp=0, sPerf=0, sQual=0, totalH=0;
-            let totalEst = 0, totalReal = 0;
-            
-            rs.forEach(r => {
-                totalProd += r.produzido||0;
-                totalPed = r.pedido||totalPed;
-                sDisp += r.disp||0;
-                sPerf += r.perf||0;
-                sQual += r.qual||0;
-                const horas = calcularDuracaoHoras(r.inicio, r.fim);
-                totalH += horas;
-                
-                totalEst += (r.est || 0) * horas;
-                totalReal += (r.realKgH || 0) * horas;
-            });
-            
-            const mDisp = Math.round(sDisp/rs.length);
-            const mPerf = Math.round(sPerf/rs.length);
-            const mQual = Math.round(sQual/rs.length);
-            const mOEE = calcularOEE(mDisp, mPerf, mQual);
-            
-            const estMedio = totalH > 0 ? totalEst / totalH : 0;
-            const realMedio = totalH > 0 ? totalReal / totalH : 0;
-            const statusPerf = getPerformanceStatus(estMedio, realMedio);
-            
-            const p = rs[0];
-            const per = p.data===rs[rs.length-1].data ? p.data.split('-').reverse().join('/') : `${p.data.split('-').reverse().join('/')} a ${rs[rs.length-1].data.split('-').reverse().join('/')}`;
-            
-            container.innerHTML += `
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesOP('${op}')">
-                    <div class="flex justify-between items-start mb-3">
-                        <div><span class="font-black text-xl text-green-700">OP ${op}</span><span class="ml-3 text-sm font-medium text-slate-500">${p.produto||'-'}</span></div>
-                        <span class="text-sm font-bold px-3 py-1 rounded-full ${statusPerf.bgCor} ${statusPerf.cor}">
-                            ${statusPerf.icone} ${statusPerf.texto}
-                        </span>
-                    </div>
-                    <div class="grid grid-cols-4 gap-4 mb-4">
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">DISP OP</span><div class="text-2xl font-black ${mDisp>=85?'text-green-600':'text-red-600'}">${mDisp}%</div></div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">PERF</span><div class="text-2xl font-black ${statusPerf.cor}">${mPerf}%</div></div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">QUAL</span><div class="text-2xl font-black ${mQual>=98?'text-green-600':'text-yellow-600'}">${mQual}%</div></div>
-                        <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">OEE</span><div class="text-2xl font-black ${mOEE>=85?'text-green-600':'text-red-600'}">${mOEE}%</div></div>
-                    </div>
-                    <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
-                        <div><span class="font-medium">📦 ${totalProd.toFixed(0)} kg</span><span class="mx-2">•</span><span>🎯 ${totalPed} kg</span><span class="mx-2">•</span><span>🕒 ${totalH.toFixed(1)}h</span></div>
-                        <div><span>📅 ${per}</span><span class="ml-4 text-blue-600 font-medium">👆 Clique para detalhes</span></div>
-                    </div>
-                </div>
-            `;
+        opsCache = Object.entries(ops).map(([op, rs]) => {
+            rs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            return { op, rs };
         });
+        
+        opsCache.sort((a, b) => {
+            const dateA = a.rs[0]?.timestamp || '';
+            const dateB = b.rs[0]?.timestamp || '';
+            return new Date(dateB) - new Date(dateA);
+        });
+        
+        renderOPViewFiltrada();
     }
 
     function abrirDetalhesOP(op) {
@@ -3793,6 +4137,13 @@
                     <td class="py-3 text-center font-bold ${statusPerf.cor}">${r.perf||0}%<\/td>
                     <td class="py-3 text-center font-bold ${r.qual>=98?'text-green-600':'text-yellow-600'}">${r.qual||0}%<\/td>
                     <td class="py-3 text-center font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%<\/td>
+                    <td class="py-3 text-center">
+                        <button onclick="event.stopPropagation(); apagarTurnoDaOP(${r.id}, '${op}')" class="delete-turno-btn text-red-500 hover:text-red-700" title="Apagar este turno">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    <\/td>
                  <\/tr>
             `;
         });
@@ -3806,6 +4157,7 @@
                 <td class="py-3 text-center"><\/td><td class="py-3 text-center"><\/td>
                 <td class="py-3 text-center text-blue-800">${mPerf}%<\/td><td class="py-3 text-center text-blue-800">${mQual}%<\/td>
                 <td class="py-3 text-center text-blue-800 font-black text-base">${mOEE}%<\/td>
+                <td class="py-3 text-center"><\/td>
              <\/tr>
         `;
         
@@ -3821,11 +4173,13 @@
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','TURNO','OP','CLIENTE/PRODUTO','INÍCIO','FIM','DURAÇÃO','SETUP','PARADAS','DISP OP','DISP.TURNO','EST.','REAL','PERF','QUAL','OEE'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}<\/tr><\/thead>
+                            <thead><tr class="text-[10px] uppercase text-slate-400 border-b">${['DATA','TURNO','OP','CLIENTE/PRODUTO','INÍCIO','FIM','DURAÇÃO','SETUP','PARADAS','DISP OP','DISP.TURNO','EST.','REAL','PERF','QUAL','OEE','AÇÕES'].map(c=>`<th class="pb-4 text-center">${c}</th>`).join('')}<\/tr><\/thead>
                             <tbody class="divide-y divide-slate-50">${rows}<\/tbody>
                          <\/table>
                     </div>
-                    <div class="mt-6 flex justify-end"><button onclick="fecharDetalhesOP()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">Fechar</button></div>
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="fecharDetalhesOP()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">Fechar</button>
+                    </div>
                 </div>
             </div>
         `);
@@ -3945,7 +4299,7 @@
                                 <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Real</th>
                                 <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Diferença</th>
                                 <th style="padding: 15px; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Status</th>
-                                </table>
+                                <tr>
                         </thead>
                         <tbody>
         `;
@@ -4583,6 +4937,8 @@
     // FUNÇÃO CALCULAR E SALVAR
     // ============================================
     async function calcularESalvar() {
+        console.log("🟢 Salvando dados...");
+        
         if (!document.getElementById('regProduto').value) {
             showErrorToast('Selecione um cliente e produto!');
             return;
@@ -4596,6 +4952,8 @@
     }
 
     async function salvarTurnoUnico() {
+        console.log("📝 Salvando turno único...");
+        
         const data = document.getElementById('regDate').value;
         const machine = document.getElementById('regMachine').value;
         const turno = document.getElementById('regTurno').value;
@@ -4673,6 +5031,8 @@
             timestamp: new Date().toISOString()
         };
         
+        console.log("Salvando turno único:", novoRegistro);
+        
         const resultado = await inserirRegistro(novoRegistro);
         
         if (resultado && resultado.length > 0) {
@@ -4711,6 +5071,8 @@
     }
 
     async function salvarMultiplosTurnos() {
+        console.log("🟢 Salvando múltiplos turnos...");
+        
         if (turnosTemp.length === 0) {
             showErrorToast('Adicione pelo menos um turno!');
             return;
@@ -4835,7 +5197,7 @@
         tbody.innerHTML = '';
         
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="14" class="text-center py-8 text-slate-400">Nenhum registro encontrado no período.</td </tr';
+            tbody.innerHTML = '.<td colspan="14" class="text-center py-8 text-slate-400">Nenhum registro encontrado no período.</td </tr';
             return;
         }
         
@@ -5133,11 +5495,6 @@
         if (start && end) {
             periodInfo.innerHTML = `PERÍODO: ${start.split('-').reverse().join('/')} até ${end.split('-').reverse().join('/')}`;
         }
-        
-        const aparasCard = document.getElementById('totalAparasCard');
-        if (aparasCard) {
-            aparasCard.style.display = 'none';
-        }
     }
 
     function renderData(data) {
@@ -5381,11 +5738,6 @@
         }
         
         renderPerdasView(dadosFiltrados);
-        
-        const aparasCard = document.getElementById('totalAparasCard');
-        if (aparasCard) {
-            aparasCard.style.display = 'none';
-        }
     }
 
     // ============================================
@@ -5585,16 +5937,26 @@
     // FUNÇÃO DE LOGOUT
     // ============================================
     window.fazerLogout = function() {
+        console.log("🔵 Fazendo logout...");
+        
         if (!window.supabase) {
+            console.error("❌ Supabase não encontrado!");
             window.location.href = "login.html";
             return;
         }
         
         window.supabase.auth.signOut()
-            .then(() => {
+            .then(({ error }) => {
+                if (error) {
+                    console.error("Erro:", error);
+                    alert("Erro ao sair. Redirecionando...");
+                } else {
+                    console.log("✅ Logout OK!");
+                }
                 window.location.href = "login.html";
             })
-            .catch(() => {
+            .catch(erro => {
+                console.error("Erro inesperado:", erro);
                 window.location.href = "login.html";
             });
     };
@@ -5604,6 +5966,7 @@
     // ============================================
     window.supabase.auth.getUser().then(({ data: { user } }) => {
         if (!user) {
+            console.log("❌ Sem usuário - redirecionando");
             window.location.href = "login.html";
         } else {
             console.log("✅ Usuário logado:", user.email);
@@ -5650,10 +6013,13 @@
         }
         
         if(botaoSair) {
+            console.log("✅ Botão de logout encontrado e configurado");
             botaoSair.onclick = function(e) {
                 e.preventDefault();
                 window.fazerLogout();
             };
+        } else {
+            console.error("❌ Botão de logout não encontrado");
         }
     }, 1000);
 
@@ -5702,12 +6068,18 @@
     }
 
     async function autoSalvar() {
-        if (!dadosPendentes) return;
+        console.log("🔄 Autosave: Tentando salvar dados pendentes...");
+        
+        if (!dadosPendentes) {
+            console.log("📝 Sem dados pendentes");
+            return;
+        }
         
         const modal = document.getElementById('modal');
         if (modal && modal.style.display === 'flex') {
             await calcularESalvar();
         } else {
+            console.log("❌ Modal fechado, não há dados para salvar");
             dadosPendentes = false;
         }
     }
@@ -5716,6 +6088,8 @@
     // FUNÇÃO VERIFICAR SOBREPOSIÇÃO
     // ============================================
     function verificarSobreposicao(data, maquina, inicio, fim, idIgnorar = null) {
+        console.log(`🔍 Verificando sobreposição para: Data=${data}, Máquina=${maquina}, Horário=${inicio}-${fim}`);
+        
         const novoInicio = horaParaMinutos(inicio);
         let novoFim = horaParaMinutos(fim);
         
@@ -5788,6 +6162,8 @@
                 criado_em: novo.timestamp
             };
             
+            console.log("📤 Enviando para o banco:", registroParaBanco);
+            
             const { data, error } = await window.supabase
                 .from("oee_registros")
                 .insert([registroParaBanco])
@@ -5799,6 +6175,7 @@
                 return null;
             }
             
+            console.log("✅ Registro inserido com ID:", data?.[0]?.id);
             return data;
         } catch (error) {
             console.error("❌ Erro inesperado:", error);
@@ -5825,6 +6202,8 @@
     // FUNÇÃO CARREGAR DADOS
     // ============================================
     async function carregarDados() {
+        console.log("📥 Carregando dados do banco...");
+        
         const clientesSalvos = localStorage.getItem('lusitano_clientes');
         const produtosSalvos = localStorage.getItem('lusitano_produtos');
         
@@ -5837,6 +6216,7 @@
         }
         
         const registrosBanco = await listarRegistros();
+        console.log(`📊 Encontrados ${registrosBanco.length} registros no banco`);
         
         if (registrosBanco && registrosBanco.length > 0) {
             historico = registrosBanco.map(reg => {
@@ -5897,6 +6277,8 @@
                 };
             });
             
+            console.log(`✅ Processados ${historico.length} registros`);
+            
             const grupos = {};
             historico.forEach(reg => {
                 const key = `${reg.data}-${reg.machine}-${reg.turno}`;
@@ -5912,8 +6294,11 @@
                     });
                 }
             });
+            
+            console.log("✅ Dados carregados com sucesso!");
         } else {
             historico = [];
+            console.log("📭 Nenhum registro encontrado no banco");
         }
         
         filterByRange();
@@ -5923,13 +6308,17 @@
     // INICIALIZAÇÃO
     // ============================================
     window.onload = async function() {
+        console.log("🚀 Inicializando sistema...");
         reiniciarTimer();
         
         await carregarDados();
         
         setTimeout(() => {
             if (historico.length === 0) {
+                console.log("⚠️ Nenhum dado carregado. Tentando novamente...");
                 carregarDados();
+            } else {
+                console.log(`✅ Sistema pronto com ${historico.length} registros!`);
             }
         }, 1000);
         
@@ -5953,6 +6342,8 @@
         document.getElementById('regTurno').addEventListener('change', atualizarHorarioPorTurno);
         
         carregarCalendario();
+        
+        console.log("✅ Sistema inicializado - todas as funcionalidades ativas!");
     };
     </script>
 </body>

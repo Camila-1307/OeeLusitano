@@ -436,7 +436,6 @@
             line-height: 1.2;
         }
 
-
         /* ESTILOS PARA LISTA DE PERDAS POR MOTIVO (SÓ PARADAS) - MELHORADA */
         .perdas-motivo-lista {
             background: white;
@@ -1924,7 +1923,7 @@
                         </svg>
                         SALVAR DADOS
                     </button>
-                    <button type="button" onclick="closeModal()" class="px-8 bg-slate-200 text-slate-800 font-black py-4 rounded-2xl uppercase text-xs tracking-widest hover:bg-slate-300 transition-colors">
+                    <button type="button" onclick="cancelarInserirDados()" class="px-8 bg-slate-200 text-slate-800 font-black py-4 rounded-2xl uppercase text-xs tracking-widest hover:bg-slate-300 transition-colors">
                         Cancelar
                     </button>
                 </div>
@@ -2267,6 +2266,545 @@
     ];
 
     // ============================================
+    // FUNÇÃO PARA FORMATAR NÚMEROS COM PONTO DE MILHAR
+    // ============================================
+    function formatarNumeroComPonto(valor) {
+        if (valor === undefined || valor === null) return '0';
+        const numero = typeof valor === 'number' ? valor : parseFloat(valor);
+        if (isNaN(numero)) return '0';
+        return numero.toLocaleString('pt-BR');
+    }
+
+    // ============================================
+    // FUNÇÃO DE CANCELAR INSERIR DADOS (CORRIGIDA)
+    // ============================================
+    function cancelarInserirDados() {
+        if (turnosTemp.length > 0 || paradasDetalhadas.length > 0 || 
+            document.getElementById('regProduzido').value != 0 || 
+            document.getElementById('regOP').value != '') {
+            
+            if (confirm('⚠️ Dados não salvos! Tem certeza que deseja cancelar? Os dados serão perdidos.')) {
+                closeModal();
+            }
+        } else {
+            closeModal();
+        }
+    }
+
+    // ============================================
+    // FUNÇÃO VALIDAR SE PODE ADICIONAR TURNO C (CORRIGIDA - PERMITE MÚLTIPLOS TURNOS C)
+    // ============================================
+    function podeAdicionarTurno(data, turno, inicio, fim) {
+        const turnosExistentesNaData = turnosTemp.filter(t => t.data === data);
+        
+        if (turno !== 'C') {
+            const turnoJaExiste = turnosExistentesNaData.some(t => t.turno === turno);
+            if (turnoJaExiste) {
+                showErrorToast(`Turno ${turno} da data ${data.split('-').reverse().join('/')} já foi adicionado!`);
+                return false;
+            }
+            return true;
+        }
+        
+        const turnosCExistentes = turnosExistentesNaData.filter(t => t.turno === 'C');
+        
+        for (let t of turnosCExistentes) {
+            const existenteInicio = horaParaMinutos(t.inicio);
+            let existenteFim = horaParaMinutos(t.fim);
+            if (existenteFim < existenteInicio) existenteFim += 24 * 60;
+            
+            const novoInicio = horaParaMinutos(inicio);
+            let novoFim = horaParaMinutos(fim);
+            if (novoFim < novoInicio) novoFim += 24 * 60;
+            
+            if (novoInicio < existenteFim && novoFim > existenteInicio) {
+                showErrorToast(`Horário do Turno C sobrepõe com outro Turno C existente (${t.inicio} - ${t.fim})!`);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // ============================================
+    // FUNÇÃO ADICIONAR TURNO MODAL (CORRIGIDA)
+    // ============================================
+    function adicionarTurnoModal() {
+        const data = document.getElementById('regDate').value;
+        const machine = document.getElementById('regMachine').value;
+        const op = document.getElementById('regOP').value;
+        const pedido = safeNumber(document.getElementById('regPedido').value);
+        const produtoDisplay = document.getElementById('regProduto').value;
+        const est = safeNumber(document.getElementById('regEst').value);
+        
+        const turno = document.getElementById('regTurno').value;
+        const inicio = document.getElementById('regInicio').value;
+        const fim = document.getElementById('regFim').value;
+        const setup = safeNumber(document.getElementById('regSetup').value);
+        const avaria = safeNumber(document.getElementById('regAvaria').value);
+        const produzido = safeNumber(document.getElementById('regProduzido').value);
+        const rejeicao = safeNumber(document.getElementById('regRejeicao').value);
+        const aparas = safeNumber(document.getElementById('regAparas').value);
+        
+        if (!data || !machine || !op || !produtoDisplay || !turno || !inicio || !fim) {
+            showErrorToast('Preencha todos os campos obrigatórios!');
+            return;
+        }
+        
+        if (!podeAdicionarTurno(data, turno, inicio, fim)) {
+            return;
+        }
+        
+        const paradasDesteTurno = [];
+        paradasDetalhadas.forEach((p, idx) => {
+            const inicioParada = document.getElementById(`parada-inicio-${idx}`)?.value;
+            const fimParada = document.getElementById(`parada-fim-${idx}`)?.value;
+            const motivoParada = obterMotivoParada(idx);
+            
+            if (inicioParada && fimParada) {
+                paradasDesteTurno.push({
+                    inicio: inicioParada,
+                    fim: fimParada,
+                    motivo: motivoParada
+                });
+            }
+        });
+        
+        turnosTemp.push({
+            data, machine, turno, op, pedido, produtoDisplay, est,
+            inicio, fim, setup, avaria,
+            produzido, rejeicao, aparas,
+            paradasDetalhadas: paradasDesteTurno
+        });
+        
+        document.getElementById('regTurno').value = '';
+        document.getElementById('regInicio').value = '06:00';
+        document.getElementById('regFim').value = '14:00';
+        document.getElementById('regSetup').value = '0';
+        document.getElementById('regAvaria').value = '0';
+        document.getElementById('regProduzido').value = '0';
+        document.getElementById('regRejeicao').value = '0';
+        document.getElementById('regAparas').value = '0';
+        
+        paradasDetalhadas = [];
+        document.getElementById('paradas-detalhadas-container').innerHTML = '';
+        
+        atualizarListaTurnos();
+        marcarDadosPendentes();
+        atualizarPreview();
+        
+        showToast(`✅ Turno ${turno} (${data.split('-').reverse().join('/')}) adicionado à lista!`);
+    }
+
+    // ============================================
+    // FUNÇÃO MOSTRAR QUANTIDADES (COM FORMATAÇÃO DE PONTO)
+    // ============================================
+    function mostrarQuantidadesPeriodo() {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        
+        let dadosPeriodo = historico;
+        if (start && end) {
+            dadosPeriodo = historico.filter(h => h.data >= start && h.data <= end);
+        }
+        
+        if (dadosPeriodo.length === 0) {
+            showWarningToast('Nenhum dado no período selecionado!');
+            return;
+        }
+        
+        const quantidades = {
+            M1: { real: 0, estimado: 0 },
+            M2: { real: 0, estimado: 0 },
+            M3: { real: 0, estimado: 0 }
+        };
+        
+        dadosPeriodo.forEach(reg => {
+            const maq = reg.machine;
+            if (quantidades[maq]) {
+                quantidades[maq].real += reg.produzido || 0;
+                const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
+                const estimado = (reg.est || 0) * horas;
+                quantidades[maq].estimado += estimado;
+            }
+        });
+        
+        const totalReal = quantidades.M1.real + quantidades.M2.real + quantidades.M3.real;
+        const totalEstimado = quantidades.M1.estimado + quantidades.M2.estimado + quantidades.M3.estimado;
+        
+        document.getElementById('qtdRealM1').innerHTML = formatarNumeroComPonto(quantidades.M1.real) + ' kg';
+        document.getElementById('qtdRealM2').innerHTML = formatarNumeroComPonto(quantidades.M2.real) + ' kg';
+        document.getElementById('qtdRealM3').innerHTML = formatarNumeroComPonto(quantidades.M3.real) + ' kg';
+        document.getElementById('qtdRealTotal').innerHTML = formatarNumeroComPonto(totalReal) + ' kg';
+        document.getElementById('qtdEstimadoTotal').innerHTML = formatarNumeroComPonto(totalEstimado) + ' kg';
+        document.getElementById('qtdRealTotalGrande').innerHTML = formatarNumeroComPonto(totalReal) + ' kg';
+        
+        document.getElementById('modalQuantidades').style.display = 'flex';
+    }
+
+    // ============================================
+    // FUNÇÃO RENDER PERDAS MOTIVO CHART (CORRIGIDA - NÃO CORTA INFORMAÇÕES)
+    // ============================================
+    function renderPerdasMotivoChart(perdasMot) {
+        const ctx = document.getElementById('perdasMotivoChart')?.getContext('2d');
+        if (!ctx) return;
+        
+        if (perdasMotivoChart) perdasMotivoChart.destroy();
+        
+        const apenasParadas = {};
+        Object.entries(perdasMot).forEach(([motivo, valor]) => {
+            if (motivo !== 'Setup' && motivo !== 'Aparas' && valor > 0) {
+                apenasParadas[motivo] = valor;
+            }
+        });
+        
+        if (Object.keys(apenasParadas).length === 0) {
+            perdasMotivoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Sem paradas'],
+                    datasets: [{
+                        label: 'Minutos',
+                        data: [0],
+                        backgroundColor: ['#e5e7eb'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: () => 'Nenhuma parada registrada' } },
+                        datalabels: { display: false }
+                    }
+                }
+            });
+            return;
+        }
+        
+        const motivosOrdenados = Object.entries(apenasParadas).sort((a, b) => b[1] - a[1]);
+        const totalParadas = motivosOrdenados.reduce((sum, [_, val]) => sum + val, 0);
+        
+        const cores = [
+            '#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', 
+            '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16', 
+            '#a855f7', '#eab308', '#d946ef', '#22c55e', '#6b7280'
+        ];
+        
+        const labels = motivosOrdenados.map(m => {
+            const nome = m[0];
+            return nome.length > 30 ? nome.substring(0, 27) + '...' : nome;
+        });
+        
+        perdasMotivoChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Minutos de Parada',
+                    data: motivosOrdenados.map(m => m[1]),
+                    backgroundColor: motivosOrdenados.map((_, i) => cores[i % cores.length]),
+                    borderRadius: 8,
+                    barPercentage: 0.7,
+                    categoryPercentage: 0.8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const valor = context.raw;
+                                const motivoOriginal = motivosOrdenados[context.dataIndex][0];
+                                const percentual = totalParadas > 0 ? ((valor / totalParadas) * 100).toFixed(1) : 0;
+                                return [`${motivoOriginal}: ${Math.round(valor)} minutos`, `${percentual}% do total de paradas`];
+                            }
+                        },
+                        backgroundColor: '#1f2937',
+                        titleColor: '#f3f4f6',
+                        bodyColor: '#d1d5db',
+                        padding: 10,
+                        cornerRadius: 8
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'right',
+                        formatter: (val, context) => {
+                            const percentual = totalParadas > 0 ? ((val / totalParadas) * 100).toFixed(1) : 0;
+                            return `${Math.round(val)} min (${percentual}%)`;
+                        },
+                        font: { weight: 'bold', size: 10 },
+                        color: '#374151',
+                        backgroundColor: '#f3f4f6',
+                        padding: { left: 4, right: 4, top: 2, bottom: 2 },
+                        borderRadius: 4
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Minutos de Parada',
+                            font: { weight: 'bold', size: 12 },
+                            color: '#6b7280'
+                        },
+                        grid: {
+                            display: true,
+                            color: '#e5e7eb',
+                            drawBorder: true
+                        },
+                        ticks: {
+                            callback: (val) => val + ' min',
+                            color: '#4b5563'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Motivos de Parada',
+                            font: { weight: 'bold', size: 12 },
+                            color: '#6b7280'
+                        },
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: { size: 11, weight: '500' },
+                            color: '#374151'
+                        }
+                    }
+                },
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 80,
+                        top: 20,
+                        bottom: 10
+                    }
+                }
+            }
+        });
+    }
+
+    // ============================================
+    // FUNÇÃO ATUALIZAR CARDS DE QUANTIDADES (COM FORMATAÇÃO)
+    // ============================================
+    function atualizarQuantidadesCards(data) {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        
+        let dadosPeriodo = data;
+        if (start && end) {
+            dadosPeriodo = data.filter(h => h.data >= start && h.data <= end);
+        }
+        
+        const quantidades = {
+            M1: 0, M2: 0, M3: 0
+        };
+        
+        dadosPeriodo.forEach(reg => {
+            if (reg.machine && quantidades[reg.machine] !== undefined) {
+                quantidades[reg.machine] += reg.produzido || 0;
+            }
+        });
+        
+        const total = quantidades.M1 + quantidades.M2 + quantidades.M3;
+        
+        const qtdCards = document.getElementById('quantidadesCardsContainer');
+        if (qtdCards) {
+            document.getElementById('qtdRealM1').innerHTML = formatarNumeroComPonto(quantidades.M1) + ' kg';
+            document.getElementById('qtdRealM2').innerHTML = formatarNumeroComPonto(quantidades.M2) + ' kg';
+            document.getElementById('qtdRealM3').innerHTML = formatarNumeroComPonto(quantidades.M3) + ' kg';
+            document.getElementById('qtdRealTotal').innerHTML = formatarNumeroComPonto(total) + ' kg';
+        }
+    }
+
+    // ============================================
+    // FUNÇÃO ATUALIZAR CARDS DE PRINCIPAIS PERDAS NO DASHBOARD
+    // ============================================
+    function atualizarCardsPerdasDashboard(data) {
+        const perdasPorMotivo = {};
+        let totalGeralPerdas = 0;
+        
+        data.forEach(reg => {
+            const avaria = reg.avaria || 0;
+            
+            if (avaria > 0) {
+                let motivo = reg.motivoPerda;
+                
+                if (!motivo || motivo === 'Setup') {
+                    motivo = 'Paradas não especificadas';
+                }
+                
+                perdasPorMotivo[motivo] = (perdasPorMotivo[motivo] || 0) + avaria;
+                totalGeralPerdas += avaria;
+            }
+        });
+        
+        if (totalGeralPerdas === 0) {
+            document.getElementById('topPerda1Nome').innerText = '--';
+            document.getElementById('topPerda1Pct').innerText = '0%';
+            document.getElementById('topPerda1Min').innerText = '0 min';
+            document.getElementById('topPerda2Nome').innerText = '--';
+            document.getElementById('topPerda2Pct').innerText = '0%';
+            document.getElementById('topPerda2Min').innerText = '0 min';
+            document.getElementById('topPerda3Nome').innerText = '--';
+            document.getElementById('topPerda3Pct').innerText = '0%';
+            document.getElementById('topPerda3Min').innerText = '0 min';
+            return;
+        }
+        
+        const perdasOrdenadas = Object.entries(perdasPorMotivo).sort((a, b) => b[1] - a[1]);
+        const top3 = perdasOrdenadas.slice(0, 3);
+        
+        const cards = [
+            { idNome: 'topPerda1Nome', idPct: 'topPerda1Pct', idMin: 'topPerda1Min' },
+            { idNome: 'topPerda2Nome', idPct: 'topPerda2Pct', idMin: 'topPerda2Min' },
+            { idNome: 'topPerda3Nome', idPct: 'topPerda3Pct', idMin: 'topPerda3Min' }
+        ];
+        
+        for (let i = 0; i < 3; i++) {
+            if (top3[i]) {
+                const [nome, valor] = top3[i];
+                const percentual = Math.round((valor / totalGeralPerdas) * 100);
+                document.getElementById(cards[i].idNome).innerText = nome;
+                document.getElementById(cards[i].idPct).innerText = percentual + '%';
+                document.getElementById(cards[i].idMin).innerText = Math.round(valor) + ' min';
+            } else {
+                document.getElementById(cards[i].idNome).innerText = '--';
+                document.getElementById(cards[i].idPct).innerText = '0%';
+                document.getElementById(cards[i].idMin).innerText = '0 min';
+            }
+        }
+    }
+
+    // ============================================
+    // FUNÇÃO CLOSE MODAL (CORRIGIDA)
+    // ============================================
+    function closeModal() { 
+        dadosPendentes = false;
+        document.getElementById('modal').style.display = 'none'; 
+    }
+
+    // ============================================
+    // FUNÇÃO ATUALIZAR PREVIEW
+    // ============================================
+    function atualizarPreview() {
+        const inicio = document.getElementById('regInicio')?.value;
+        const fim = document.getElementById('regFim')?.value;
+        const setup = document.getElementById('regSetup')?.value;
+        const avaria = document.getElementById('regAvaria')?.value;
+        const est = document.getElementById('regEst')?.value;
+        const produzido = document.getElementById('regProduzido')?.value;
+        const rejeicao = document.getElementById('regRejeicao')?.value;
+        const aparas = document.getElementById('regAparas')?.value;
+        
+        const dispOP = calcularDisponibilidadeOP(inicio, fim, setup, avaria);
+        const realKgH = calcularRealKgH(produzido, inicio, fim, setup, avaria);
+        const perf = calcularPerformance(est, produzido, inicio, fim, setup, avaria);
+        const qual = calcularQualidade(produzido, rejeicao, aparas);
+        const oee = calcularOEE(dispOP, perf, qual);
+        
+        document.getElementById('previewDispOP').innerText = dispOP + '%';
+        document.getElementById('previewPerf').innerText = perf + '%';
+        document.getElementById('previewQual').innerText = qual + '%';
+        document.getElementById('previewReal').innerText = realKgH;
+        document.getElementById('previewOEE').innerText = oee + '%';
+        
+        const previewOEE = document.getElementById('previewOEE');
+        if (oee >= 85) previewOEE.className = 'text-3xl font-black text-green-400';
+        else if (oee >= 60) previewOEE.className = 'text-3xl font-black text-yellow-400';
+        else previewOEE.className = 'text-3xl font-black text-red-400';
+        
+        marcarDadosPendentes();
+    }
+
+    // ============================================
+    // FUNÇÃO MARCAR DADOS PENDENTES
+    // ============================================
+    function marcarDadosPendentes() {
+        dadosPendentes = true;
+        
+        let indicador = document.getElementById('autosave-indicator');
+        if (!indicador) {
+            const btnSalvar = document.querySelector('button[onclick="calcularESalvar()"]');
+            if (btnSalvar) {
+                indicador = document.createElement('span');
+                indicador.id = 'autosave-indicator';
+                indicador.className = 'ml-3 text-xs text-orange-500 font-bold';
+                indicador.innerHTML = '⚡ Não salvo';
+                btnSalvar.parentNode.appendChild(indicador);
+            }
+        } else {
+            indicador.innerHTML = '⚡ Não salvo';
+            indicador.className = 'ml-3 text-xs text-orange-500 font-bold';
+        }
+        
+        if (autoSaveTimer) clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => {
+            if (dadosPendentes) {
+                autoSalvar();
+            }
+        }, 300000);
+    }
+
+    // ============================================
+    // FUNÇÃO AUTO SALVAR
+    // ============================================
+    async function autoSalvar() {
+        console.log("🔄 Autosave: Tentando salvar dados pendentes...");
+        
+        if (!dadosPendentes) {
+            console.log("📝 Sem dados pendentes");
+            return;
+        }
+        
+        const modal = document.getElementById('modal');
+        if (modal && modal.style.display === 'flex') {
+            await calcularESalvar();
+        } else {
+            console.log("❌ Modal fechado, não há dados para salvar");
+            dadosPendentes = false;
+        }
+    }
+
+    // ============================================
+    // FUNÇÃO VERIFICAR SOBREPOSIÇÃO
+    // ============================================
+    function verificarSobreposicao(data, maquina, inicio, fim, idIgnorar = null) {
+        console.log(`🔍 Verificando sobreposição para: Data=${data}, Máquina=${maquina}, Horário=${inicio}-${fim}`);
+        
+        const novoInicio = horaParaMinutos(inicio);
+        let novoFim = horaParaMinutos(fim);
+        
+        if (novoFim < novoInicio) {
+            novoFim += 24 * 60;
+        }
+        
+        const conflitos = historico.filter(reg => {
+            if (reg.id === idIgnorar) return false;
+            if (reg.data !== data) return false;
+            if (reg.machine !== maquina) return false;
+            
+            const regInicio = horaParaMinutos(reg.inicio);
+            let regFim = horaParaMinutos(reg.fim);
+            
+            if (regFim < regInicio) {
+                regFim += 24 * 60;
+            }
+            
+            return (novoInicio < regFim && novoFim > regInicio);
+        });
+        
+        return conflitos;
+    }
+
+    // ============================================
     // FUNÇÕES DE UTILIDADE
     // ============================================
     function showErrorToast(mensagem) {
@@ -2451,7 +2989,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div class="bg-red-50 rounded-2xl p-6 text-center border border-red-200">
                         <div class="text-red-500 text-sm font-bold uppercase mb-2">TOTAL APARAS (KG)</div>
-                        <div class="text-4xl font-black text-red-600">${totalAparasKg.toFixed(1)} kg</div>
+                        <div class="text-4xl font-black text-red-600">${formatarNumeroComPonto(totalAparasKg)} kg</div>
                     </div>
                     <div class="bg-orange-50 rounded-2xl p-6 text-center border border-orange-200">
                         <div class="text-orange-500 text-sm font-bold uppercase mb-2">TOTAL APARAS (MIN)</div>
@@ -2464,17 +3002,17 @@
                     <div class="grid grid-cols-3 gap-4">
                         <div class="text-center p-3 bg-white rounded-xl">
                             <div class="font-bold text-green-700">M1</div>
-                            <div class="text-sm mt-1">${porMaquina.M1.kg.toFixed(1)} kg</div>
+                            <div class="text-sm mt-1">${formatarNumeroComPonto(porMaquina.M1.kg)} kg</div>
                             <div class="text-xs text-slate-500">${Math.round(porMaquina.M1.min)} min</div>
                         </div>
                         <div class="text-center p-3 bg-white rounded-xl">
                             <div class="font-bold text-red-700">M2</div>
-                            <div class="text-sm mt-1">${porMaquina.M2.kg.toFixed(1)} kg</div>
+                            <div class="text-sm mt-1">${formatarNumeroComPonto(porMaquina.M2.kg)} kg</div>
                             <div class="text-xs text-slate-500">${Math.round(porMaquina.M2.min)} min</div>
                         </div>
                         <div class="text-center p-3 bg-white rounded-xl">
                             <div class="font-bold text-yellow-700">M3</div>
-                            <div class="text-sm mt-1">${porMaquina.M3.kg.toFixed(1)} kg</div>
+                            <div class="text-sm mt-1">${formatarNumeroComPonto(porMaquina.M3.kg)} kg</div>
                             <div class="text-xs text-slate-500">${Math.round(porMaquina.M3.min)} min</div>
                         </div>
                     </div>
@@ -2492,155 +3030,7 @@
     }
 
     // ============================================
-    // FUNÇÃO RENDER PERDAS MOTIVO CHART (MELHORADA - SÓ PARADAS)
-    // ============================================
-    function renderPerdasMotivoChart(perdasMot) {
-        const ctx = document.getElementById('perdasMotivoChart')?.getContext('2d');
-        if (!ctx) return;
-        
-        if (perdasMotivoChart) perdasMotivoChart.destroy();
-        
-        // Filtrar apenas paradas (avarias) - excluir Setup e Aparas
-        const apenasParadas = {};
-        Object.entries(perdasMot).forEach(([motivo, valor]) => {
-            if (motivo !== 'Setup' && motivo !== 'Aparas' && valor > 0) {
-                apenasParadas[motivo] = valor;
-            }
-        });
-        
-        if (Object.keys(apenasParadas).length === 0) {
-            perdasMotivoChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Sem paradas'],
-                    datasets: [{
-                        label: 'Minutos',
-                        data: [0],
-                        backgroundColor: ['#e5e7eb'],
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: () => 'Nenhuma parada registrada' } },
-                        datalabels: { display: false }
-                    }
-                }
-            });
-            renderPerdasMotivoLista({});
-            return;
-        }
-        
-        const motivosOrdenados = Object.entries(apenasParadas).sort((a, b) => b[1] - a[1]);
-        const totalParadas = motivosOrdenados.reduce((sum, [_, val]) => sum + val, 0);
-        
-        const cores = [
-            '#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', 
-            '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16', 
-            '#a855f7', '#eab308', '#d946ef', '#22c55e', '#6b7280'
-        ];
-        
-        perdasMotivoChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: motivosOrdenados.map(m => m[0]),
-                datasets: [{
-                    label: 'Minutos de Parada',
-                    data: motivosOrdenados.map(m => m[1]),
-                    backgroundColor: motivosOrdenados.map((_, i) => cores[i % cores.length]),
-                    borderRadius: 8,
-                    barPercentage: 0.7,
-                    categoryPercentage: 0.8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                indexAxis: 'y',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: (context) => {
-                                const valor = context.raw;
-                                const percentual = totalParadas > 0 ? ((valor / totalParadas) * 100).toFixed(1) : 0;
-                                return [`📊 ${valor} minutos`, `📈 ${percentual}% do total de paradas`];
-                            }
-                        },
-                        backgroundColor: '#1f2937',
-                        titleColor: '#f3f4f6',
-                        bodyColor: '#d1d5db',
-                        padding: 10,
-                        cornerRadius: 8
-                    },
-                    datalabels: {
-                        anchor: 'end',
-                        align: 'right',
-                        formatter: (val, context) => {
-                            const percentual = totalParadas > 0 ? ((val / totalParadas) * 100).toFixed(1) : 0;
-                            return `${Math.round(val)} min (${percentual}%)`;
-                        },
-                        font: { weight: 'bold', size: 10 },
-                        color: '#374151',
-                        backgroundColor: '#f3f4f6',
-                        padding: { left: 4, right: 4, top: 2, bottom: 2 },
-                        borderRadius: 4
-                    }
-                },
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Minutos de Parada',
-                            font: { weight: 'bold', size: 12 },
-                            color: '#6b7280'
-                        },
-                        grid: {
-                            display: true,
-                            color: '#e5e7eb',
-                            drawBorder: true
-                        },
-                        ticks: {
-                            callback: (val) => val + ' min',
-                            color: '#4b5563'
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Motivos de Parada',
-                            font: { weight: 'bold', size: 12 },
-                            color: '#6b7280'
-                        },
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            font: { size: 11, weight: '500' },
-                            color: '#374151'
-                        }
-                    }
-                },
-                layout: {
-                    padding: {
-                        left: 10,
-                        right: 10,
-                        top: 20,
-                        bottom: 10
-                    }
-                }
-            }
-        });
-        
-        renderPerdasMotivoLista(apenasParadas);
-    }
-
-    // ============================================
-    // FUNÇÃO RENDER PERDAS MOTIVO LISTA (MELHORADA)
+    // FUNÇÃO RENDER PERDAS MOTIVO LISTA
     // ============================================
     function renderPerdasMotivoLista(apenasParadas) {
         const container = document.getElementById('perdasMotivoListaContainer');
@@ -2707,123 +3097,12 @@
         `;
     }
 
-    // ============================================
-    // FUNÇÃO MOSTRAR QUANTIDADES NO PERÍODO
-    // ============================================
-    function mostrarQuantidadesPeriodo() {
-        const start = document.getElementById('startDate').value;
-        const end = document.getElementById('endDate').value;
-        
-        let dadosPeriodo = historico;
-        if (start && end) {
-            dadosPeriodo = historico.filter(h => h.data >= start && h.data <= end);
-        }
-        
-        if (dadosPeriodo.length === 0) {
-            showWarningToast('Nenhum dado no período selecionado!');
-            return;
-        }
-        
-        const quantidades = {
-            M1: { real: 0, estimado: 0 },
-            M2: { real: 0, estimado: 0 },
-            M3: { real: 0, estimado: 0 }
-        };
-        
-        dadosPeriodo.forEach(reg => {
-            const maq = reg.machine;
-            if (quantidades[maq]) {
-                quantidades[maq].real += reg.produzido || 0;
-                const horas = calcularDuracaoHoras(reg.inicio, reg.fim);
-                const estimado = (reg.est || 0) * horas;
-                quantidades[maq].estimado += estimado;
-            }
-        });
-        
-        const totalReal = quantidades.M1.real + quantidades.M2.real + quantidades.M3.real;
-        const totalEstimado = quantidades.M1.estimado + quantidades.M2.estimado + quantidades.M3.estimado;
-        const totalDiferenca = totalReal - totalEstimado;
-        
-        document.getElementById('qtdRealM1').innerHTML = quantidades.M1.real.toFixed(0) + ' kg';
-        document.getElementById('qtdRealM2').innerHTML = quantidades.M2.real.toFixed(0) + ' kg';
-        document.getElementById('qtdRealM3').innerHTML = quantidades.M3.real.toFixed(0) + ' kg';
-        document.getElementById('qtdRealTotal').innerHTML = totalReal.toFixed(0) + ' kg';
-        document.getElementById('qtdEstimadoTotal').innerHTML = totalEstimado.toFixed(0) + ' kg';
-        document.getElementById('qtdRealTotalGrande').innerHTML = totalReal.toFixed(0) + ' kg';
-        
-        const diffM1 = quantidades.M1.real - quantidades.M1.estimado;
-        const diffM2 = quantidades.M2.real - quantidades.M2.estimado;
-        const diffM3 = quantidades.M3.real - quantidades.M3.estimado;
-        
-        
-        document.getElementById('modalQuantidades').style.display = 'flex';
-    }
-    
     function fecharModalQuantidades() {
         document.getElementById('modalQuantidades').style.display = 'none';
     }
 
     // ============================================
-    // FUNÇÃO ATUALIZAR CARDS DE PRINCIPAIS PERDAS NO DASHBOARD (SÓ PARADAS)
-    // ============================================
-    function atualizarCardsPerdasDashboard(data) {
-        const perdasPorMotivo = {};
-        let totalGeralPerdas = 0;
-        
-        data.forEach(reg => {
-            const avaria = reg.avaria || 0;
-            
-            if (avaria > 0) {
-                let motivo = reg.motivoPerda;
-                
-                if (!motivo || motivo === 'Setup') {
-                    motivo = 'Paradas não especificadas';
-                }
-                
-                perdasPorMotivo[motivo] = (perdasPorMotivo[motivo] || 0) + avaria;
-                totalGeralPerdas += avaria;
-            }
-        });
-        
-        if (totalGeralPerdas === 0) {
-            document.getElementById('topPerda1Nome').innerText = '--';
-            document.getElementById('topPerda1Pct').innerText = '0%';
-            document.getElementById('topPerda1Min').innerText = '0 min';
-            document.getElementById('topPerda2Nome').innerText = '--';
-            document.getElementById('topPerda2Pct').innerText = '0%';
-            document.getElementById('topPerda2Min').innerText = '0 min';
-            document.getElementById('topPerda3Nome').innerText = '--';
-            document.getElementById('topPerda3Pct').innerText = '0%';
-            document.getElementById('topPerda3Min').innerText = '0 min';
-            return;
-        }
-        
-        const perdasOrdenadas = Object.entries(perdasPorMotivo).sort((a, b) => b[1] - a[1]);
-        const top3 = perdasOrdenadas.slice(0, 3);
-        
-        const cards = [
-            { idNome: 'topPerda1Nome', idPct: 'topPerda1Pct', idMin: 'topPerda1Min' },
-            { idNome: 'topPerda2Nome', idPct: 'topPerda2Pct', idMin: 'topPerda2Min' },
-            { idNome: 'topPerda3Nome', idPct: 'topPerda3Pct', idMin: 'topPerda3Min' }
-        ];
-        
-        for (let i = 0; i < 3; i++) {
-            if (top3[i]) {
-                const [nome, valor] = top3[i];
-                const percentual = Math.round((valor / totalGeralPerdas) * 100);
-                document.getElementById(cards[i].idNome).innerText = nome;
-                document.getElementById(cards[i].idPct).innerText = percentual + '%';
-                document.getElementById(cards[i].idMin).innerText = Math.round(valor) + ' min';
-            } else {
-                document.getElementById(cards[i].idNome).innerText = '--';
-                document.getElementById(cards[i].idPct).innerText = '0%';
-                document.getElementById(cards[i].idMin).innerText = '0 min';
-            }
-        }
-    }
-    
-    // ============================================
-    // FUNÇÃO MOSTRAR MÉDIAS KG/H (CARDS VISUAIS)
+    // FUNÇÃO MOSTRAR MÉDIAS KG/H
     // ============================================
     function mostrarMediasKgH() {
         const container = document.getElementById('mediasKgHContainer');
@@ -2960,7 +3239,7 @@
                         <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">OEE</span><div class="text-2xl font-black ${mOEE>=85?'text-green-600':'text-red-600'}">${mOEE}%</div></div>
                     </div>
                     <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
-                        <div><span class="font-medium">📦 ${totalProd.toFixed(0)} kg</span><span class="mx-2">•</span><span>🎯 ${totalPed} kg</span><span class="mx-2">•</span><span>🕒 ${totalH.toFixed(1)}h</span></div>
+                        <div><span class="font-medium">📦 ${formatarNumeroComPonto(totalProd)} kg</span><span class="mx-2">•</span><span>🎯 ${totalPed} kg</span><span class="mx-2">•</span><span>🕒 ${totalH.toFixed(1)}h</span></div>
                         <div><span>📅 ${per}</span><span class="ml-4 text-blue-600 font-medium">👆 Clique para detalhes</span></div>
                     </div>
                 </div>
@@ -4299,7 +4578,7 @@
                                 <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Real</th>
                                 <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Diferença</th>
                                 <th style="padding: 15px; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Status</th>
-                                <tr>
+                                </tr>
                         </thead>
                         <tbody>
         `;
@@ -4406,40 +4685,342 @@
         });
     }
 
-    function atualizarPreview() {
-        const inicio = document.getElementById('regInicio')?.value;
-        const fim = document.getElementById('regFim')?.value;
-        const setup = document.getElementById('regSetup')?.value;
-        const avaria = document.getElementById('regAvaria')?.value;
-        const est = document.getElementById('regEst')?.value;
-        const produzido = document.getElementById('regProduzido')?.value;
-        const rejeicao = document.getElementById('regRejeicao')?.value;
-        const aparas = document.getElementById('regAparas')?.value;
-        
-        const dispOP = calcularDisponibilidadeOP(inicio, fim, setup, avaria);
-        const realKgH = calcularRealKgH(produzido, inicio, fim, setup, avaria);
-        const perf = calcularPerformance(est, produzido, inicio, fim, setup, avaria);
-        const qual = calcularQualidade(produzido, rejeicao, aparas);
-        const oee = calcularOEE(dispOP, perf, qual);
-        
-        document.getElementById('previewDispOP').innerText = dispOP + '%';
-        document.getElementById('previewPerf').innerText = perf + '%';
-        document.getElementById('previewQual').innerText = qual + '%';
-        document.getElementById('previewReal').innerText = realKgH;
-        document.getElementById('previewOEE').innerText = oee + '%';
-        
-        const previewOEE = document.getElementById('previewOEE');
-        if (oee >= 85) previewOEE.className = 'text-3xl font-black text-green-400';
-        else if (oee >= 60) previewOEE.className = 'text-3xl font-black text-yellow-400';
-        else previewOEE.className = 'text-3xl font-black text-red-400';
-        
-        marcarDadosPendentes();
+    // ============================================
+    // FUNÇÃO ATUALIZAR HORÁRIO POR TURNO
+    // ============================================
+    function atualizarHorarioPorTurno() {
+        const turno = document.getElementById('regTurno').value;
+        if (turno && TURNOS[turno]) {
+            document.getElementById('regInicio').value = TURNOS[turno].inicio;
+            document.getElementById('regFim').value = TURNOS[turno].fim;
+            atualizarPreview();
+        }
     }
 
     // ============================================
-    // FUNÇÕES DE FILTRAGEM DE CLIENTES (VIEW)
+    // FUNÇÃO CALCULAR APARAS EM MINUTOS
     // ============================================
-    
+    function calcularAparasEmMinutos(aparasKg, realKgH, horas) {
+        if (!aparasKg || aparasKg <= 0 || !realKgH || realKgH <= 0) return 0;
+        const horasEfetivas = horas > 0 ? horas : 1;
+        const kgPorHora = realKgH;
+        const minutosParaProduzirAparas = (aparasKg / kgPorHora) * 60;
+        return Math.round(minutosParaProduzirAparas);
+    }
+
+    // ============================================
+    // FUNÇÃO DE LOGOUT
+    // ============================================
+    window.fazerLogout = function() {
+        console.log("🔵 Fazendo logout...");
+        
+        if (!window.supabase) {
+            console.error("❌ Supabase não encontrado!");
+            window.location.href = "login.html";
+            return;
+        }
+        
+        window.supabase.auth.signOut()
+            .then(({ error }) => {
+                if (error) {
+                    console.error("Erro:", error);
+                    alert("Erro ao sair. Redirecionando...");
+                } else {
+                    console.log("✅ Logout OK!");
+                }
+                window.location.href = "login.html";
+            })
+            .catch(erro => {
+                console.error("Erro inesperado:", erro);
+                window.location.href = "login.html";
+            });
+    };
+
+    // ============================================
+    // VERIFICAR USUÁRIO
+    // ============================================
+    window.supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user) {
+            console.log("❌ Sem usuário - redirecionando");
+            window.location.href = "login.html";
+        } else {
+            console.log("✅ Usuário logado:", user.email);
+        }
+    });
+
+    // ============================================
+    // LIMPAR SESSÃO AO FECHAR A PÁGINA
+    // ============================================
+    window.addEventListener('beforeunload', function() {
+        sessionStorage.removeItem('session_checked');
+    });
+
+    // ============================================
+    // TIMER DE INATIVIDADE
+    // ============================================
+    let tempoInatividade;
+    const TEMPO_LIMITE = 30 * 60 * 1000;
+
+    function reiniciarTimer() {
+        clearTimeout(tempoInatividade);
+        tempoInatividade = setTimeout(() => {
+            alert("Sessão expirada por inatividade.");
+            window.fazerLogout();
+        }, TEMPO_LIMITE);
+    }
+
+    document.onmousemove = reiniciarTimer;
+    document.onkeypress = reiniciarTimer;
+    document.onclick = reiniciarTimer;
+
+    // ============================================
+    // CONFIGURAR BOTÃO DE LOGOUT
+    // ============================================
+    setTimeout(function() {
+        const botoes = document.querySelectorAll('button');
+        let botaoSair = null;
+        
+        for(let botao of botoes) {
+            if(botao.textContent.includes('Sair') || botao.classList.contains('btn-logout')) {
+                botaoSair = botao;
+                break;
+            }
+        }
+        
+        if(botaoSair) {
+            console.log("✅ Botão de logout encontrado e configurado");
+            botaoSair.onclick = function(e) {
+                e.preventDefault();
+                window.fazerLogout();
+            };
+        } else {
+            console.error("❌ Botão de logout não encontrado");
+        }
+    }, 1000);
+
+    // ============================================
+    // FUNÇÃO VERIFICAR SOBREPOSIÇÃO
+    // ============================================
+    function verificarSobreposicao(data, maquina, inicio, fim, idIgnorar = null) {
+        console.log(`🔍 Verificando sobreposição para: Data=${data}, Máquina=${maquina}, Horário=${inicio}-${fim}`);
+        
+        const novoInicio = horaParaMinutos(inicio);
+        let novoFim = horaParaMinutos(fim);
+        
+        if (novoFim < novoInicio) {
+            novoFim += 24 * 60;
+        }
+        
+        const conflitos = historico.filter(reg => {
+            if (reg.id === idIgnorar) return false;
+            if (reg.data !== data) return false;
+            if (reg.machine !== maquina) return false;
+            
+            const regInicio = horaParaMinutos(reg.inicio);
+            let regFim = horaParaMinutos(reg.fim);
+            
+            if (regFim < regInicio) {
+                regFim += 24 * 60;
+            }
+            
+            return (novoInicio < regFim && novoFim > regInicio);
+        });
+        
+        return conflitos;
+    }
+
+    async function listarRegistros() {
+        try {
+            const { data, error } = await window.supabase
+                .from("oee_registros")
+                .select("*")
+                .order('data', { ascending: false });
+
+            if (error) {
+                console.error("Erro ao listar do banco:", error.message);
+                return [];
+            }
+            return data || [];
+        } catch (error) {
+            console.error("Erro ao listar registros:", error);
+            return [];
+        }
+    }
+
+    // ============================================
+    // FUNÇÃO INSERIR REGISTRO
+    // ============================================
+    async function inserirRegistro(novo) {
+        try {
+            const registroParaBanco = {
+                data: novo.data,
+                maquina: novo.machine,
+                turno: novo.turno,
+                op: novo.op,
+                produto: novo.produto,
+                cliente: novo.cliente,
+                disponibilidade: novo.disp,
+                performance: novo.perf,
+                qualidade: novo.qual,
+                pedido: novo.pedido,
+                inicio: novo.inicio,
+                fim: novo.fim,
+                setup: novo.setup,
+                paradas: novo.avaria,
+                motivo_perda: novo.motivoPerda || '',
+                est: novo.est,
+                real_kgh: novo.realKgH,
+                produzido: novo.produzido,
+                rejeicao: novo.rejeicao,
+                aparas: novo.aparas,
+                criado_em: novo.timestamp
+            };
+            
+            console.log("📤 Enviando para o banco:", registroParaBanco);
+            
+            const { data, error } = await window.supabase
+                .from("oee_registros")
+                .insert([registroParaBanco])
+                .select();
+
+            if (error) {
+                console.error("❌ Erro no Supabase:", error);
+                showErrorToast(`Erro: ${error.message}`);
+                return null;
+            }
+            
+            console.log("✅ Registro inserido com ID:", data?.[0]?.id);
+            return data;
+        } catch (error) {
+            console.error("❌ Erro inesperado:", error);
+            showErrorToast(`Erro: ${error.message}`);
+            return null;
+        }
+    }
+
+    async function apagarRegistroBanco(id) {
+        try {
+            const { error } = await window.supabase
+                .from("oee_registros")
+                .delete()
+                .eq('id', id);
+
+            return !error;
+        } catch (error) {
+            console.error("Erro ao apagar registro:", error);
+            return false;
+        }
+    }
+
+    // ============================================
+    // FUNÇÃO CARREGAR DADOS
+    // ============================================
+    async function carregarDados() {
+        console.log("📥 Carregando dados do banco...");
+        
+        const clientesSalvos = localStorage.getItem('lusitano_clientes');
+        const produtosSalvos = localStorage.getItem('lusitano_produtos');
+        
+        if (clientesSalvos) {
+            try { clientes = JSON.parse(clientesSalvos); } catch (e) {}
+        }
+        
+        if (produtosSalvos) {
+            try { produtos = JSON.parse(produtosSalvos); } catch (e) {}
+        }
+        
+        const registrosBanco = await listarRegistros();
+        console.log(`📊 Encontrados ${registrosBanco.length} registros no banco`);
+        
+        if (registrosBanco && registrosBanco.length > 0) {
+            historico = registrosBanco.map(reg => {
+                const realKgH = calcularRealKgH(
+                    reg.produzido || 0, 
+                    reg.inicio || '00:00', 
+                    reg.fim || '00:00', 
+                    reg.setup || 0, 
+                    reg.paradas || 0
+                );
+                
+                const perf = calcularPerformance(
+                    reg.est || 0,
+                    reg.produzido || 0,
+                    reg.inicio || '00:00',
+                    reg.fim || '00:00',
+                    reg.setup || 0,
+                    reg.paradas || 0
+                );
+                
+                const dispOP = calcularDisponibilidadeOP(
+                    reg.inicio || '00:00',
+                    reg.fim || '00:00',
+                    reg.setup || 0,
+                    reg.paradas || 0
+                );
+                
+                const qual = calcularQualidade(
+                    reg.produzido || 0,
+                    reg.rejeicao || 0,
+                    reg.aparas || 0
+                );
+                
+                return {
+                    id: reg.id,
+                    data: reg.data,
+                    machine: reg.maquina || 'M1',
+                    turno: reg.turno || 'A',
+                    op: reg.op || '---',
+                    produto: reg.produto || '---',
+                    cliente: reg.cliente || '---',
+                    disp: dispOP,
+                    perf: perf,
+                    qual: qual,
+                    pedido: reg.pedido || 0,
+                    inicio: reg.inicio || '00:00',
+                    fim: reg.fim || '00:00',
+                    setup: reg.setup || 0,
+                    avaria: reg.paradas || 0,
+                    motivoPerda: reg.motivo_perda || '',
+                    est: reg.est || 0,
+                    realKgH: realKgH,
+                    produzido: reg.produzido || 0,
+                    rejeicao: reg.rejeicao || 0,
+                    aparas: reg.aparas || 0,
+                    timestamp: reg.criado_em || new Date().toISOString(),
+                    dispTurno: 0
+                };
+            });
+            
+            console.log(`✅ Processados ${historico.length} registros`);
+            
+            const grupos = {};
+            historico.forEach(reg => {
+                const key = `${reg.data}-${reg.machine}-${reg.turno}`;
+                if (!grupos[key]) grupos[key] = [];
+                grupos[key].push(reg);
+            });
+            
+            Object.values(grupos).forEach(grupo => {
+                if (grupo.length > 0) {
+                    const dispTurno = calcularDisponibilidadeTurno(grupo);
+                    grupo.forEach(op => {
+                        op.dispTurno = dispTurno;
+                    });
+                }
+            });
+            
+            console.log("✅ Dados carregados com sucesso!");
+        } else {
+            historico = [];
+            console.log("📭 Nenhum registro encontrado no banco");
+        }
+        
+        filterByRange();
+    }
+
+    // ============================================
+    // FUNÇÃO FILTRAR CLIENTES LIVE
+    // ============================================
     function filtrarClientesLive() {
         const termo = document.getElementById('clientLiveSearch').value.trim().toLowerCase();
         const listaContainer = document.getElementById('client-performance-list');
@@ -4547,7 +5128,7 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
                         <div>
                             <span class="text-[10px] font-bold uppercase text-slate-400">Produção</span>
-                            <div class="text-lg font-black">${totalKg.toFixed(0)} kg</div>
+                            <div class="text-lg font-black">${formatarNumeroComPonto(totalKg)} kg</div>
                         </div>
                         <div>
                             <span class="text-[10px] font-bold uppercase text-slate-400">Pedidos</span>
@@ -4632,7 +5213,7 @@
                         <div class="grid grid-cols-2 gap-2 text-center">
                             <div><div class="stat-label">Horas Produtivas</div><div class="stat-value ${statsM1.horas > 0 ? 'positivo' : 'neutro'}">${statsM1.horas.toFixed(1)}h</div></div>
                             <div><div class="stat-label">Horas Ociosas</div><div class="stat-value negativo">${horasOciosasM1.toFixed(1)}h</div></div>
-                            <div><div class="stat-label">Produção</div><div class="stat-value positivo">${statsM1.kg}kg</div></div>
+                            <div><div class="stat-label">Produção</div><div class="stat-value positivo">${formatarNumeroComPonto(statsM1.kg)} kg</div></div>
                             <div><div class="stat-label">OEE Médio</div><div class="stat-value ${statsM1.oee >= 85 ? 'positivo' : 'negativo'}">${statsM1.oee}%</div></div>
                         </div>
                     </div>
@@ -4642,7 +5223,7 @@
                         <div class="grid grid-cols-2 gap-2 text-center">
                             <div><div class="stat-label">Horas Produtivas</div><div class="stat-value ${statsM2.horas > 0 ? 'positivo' : 'neutro'}">${statsM2.horas.toFixed(1)}h</div></div>
                             <div><div class="stat-label">Horas Ociosas</div><div class="stat-value negativo">${horasOciosasM2.toFixed(1)}h</div></div>
-                            <div><div class="stat-label">Produção</div><div class="stat-value positivo">${statsM2.kg}kg</div></div>
+                            <div><div class="stat-label">Produção</div><div class="stat-value positivo">${formatarNumeroComPonto(statsM2.kg)} kg</div></div>
                             <div><div class="stat-label">OEE Médio</div><div class="stat-value ${statsM2.oee >= 85 ? 'positivo' : 'negativo'}">${statsM2.oee}%</div></div>
                         </div>
                     </div>
@@ -4652,7 +5233,7 @@
                         <div class="grid grid-cols-2 gap-2 text-center">
                             <div><div class="stat-label">Horas Produtivas</div><div class="stat-value ${statsM3.horas > 0 ? 'positivo' : 'neutro'}">${statsM3.horas.toFixed(1)}h</div></div>
                             <div><div class="stat-label">Horas Ociosas</div><div class="stat-value negativo">${horasOciosasM3.toFixed(1)}h</div></div>
-                            <div><div class="stat-label">Produção</div><div class="stat-value positivo">${statsM3.kg}kg</div></div>
+                            <div><div class="stat-label">Produção</div><div class="stat-value positivo">${formatarNumeroComPonto(statsM3.kg)} kg</div></div>
                             <div><div class="stat-label">OEE Médio</div><div class="stat-value ${statsM3.oee >= 85 ? 'positivo' : 'negativo'}">${statsM3.oee}%</div></div>
                         </div>
                     </div>
@@ -4725,7 +5306,7 @@
                                 <div class="font-mono">${inicioHora} → ${fimHora} <span class="text-slate-400">(${duracao}h)</span></div>
                                 <div class="truncate" title="${p.produto}">📦 ${p.produto?.split(' - ')[0] || '-'}</div>
                                 <div class="flex gap-2 mt-1">
-                                    <span>⚖️ ${p.produzido} kg</span>
+                                    <span>⚖️ ${formatarNumeroComPonto(p.produzido)} kg</span>
                                     ${p.setup > 0 ? `<span class="text-orange-600">⚙️ ${p.setup}min</span>` : ''}
                                     ${p.avaria > 0 ? `<span class="text-red-600">⏸️ ${p.avaria}min</span>` : ''}
                                 </div>
@@ -4775,7 +5356,7 @@
                     <div class="bg-slate-50 p-3 rounded-xl"><div class="text-xs uppercase">Produto</div><div class="font-bold">${registro.produto || '-'}</div></div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="p-3 rounded-xl border"><div class="text-xs uppercase">Horário</div><div class="font-mono font-bold">${registro.inicio} - ${registro.fim}</div><div class="text-xs">Duração: ${calcularDuracaoHoras(registro.inicio, registro.fim).toFixed(1)}h</div></div>
-                        <div class="p-3 rounded-xl border"><div class="text-xs uppercase">Produção</div><div class="font-bold">${registro.produzido} kg</div><div class="text-xs">Real: ${registro.realKgH} kg/h | Est: ${registro.est} kg/h</div></div>
+                        <div class="p-3 rounded-xl border"><div class="text-xs uppercase">Produção</div><div class="font-bold">${formatarNumeroComPonto(registro.produzido)} kg</div><div class="text-xs">Real: ${registro.realKgH} kg/h | Est: ${registro.est} kg/h</div></div>
                         <div class="p-3 rounded-xl border"><div class="text-xs uppercase">Perdas</div><div>Setup: ${registro.setup} min</div><div>Paradas: ${registro.avaria} min</div>${registro.aparas > 0 ? `<div>Aparas: ${registro.aparas} kg</div>` : ''}</div>
                         <div class="p-3 rounded-xl border"><div class="text-xs uppercase">Qualidade</div><div class="font-bold">${registro.qual}%</div><div class="text-xs">Rejeição: ${registro.rejeicao} kg</div></div>
                     </div>
@@ -4795,76 +5376,8 @@
     }
 
     // ============================================
-    // FUNÇÃO ADICIONAR TURNO MODAL
+    // FUNÇÃO ATUALIZAR LISTA TURNOS
     // ============================================
-    function adicionarTurnoModal() {
-        const data = document.getElementById('regDate').value;
-        const machine = document.getElementById('regMachine').value;
-        const op = document.getElementById('regOP').value;
-        const pedido = safeNumber(document.getElementById('regPedido').value);
-        const produtoDisplay = document.getElementById('regProduto').value;
-        const est = safeNumber(document.getElementById('regEst').value);
-        
-        const turno = document.getElementById('regTurno').value;
-        const inicio = document.getElementById('regInicio').value;
-        const fim = document.getElementById('regFim').value;
-        const setup = safeNumber(document.getElementById('regSetup').value);
-        const avaria = safeNumber(document.getElementById('regAvaria').value);
-        const produzido = safeNumber(document.getElementById('regProduzido').value);
-        const rejeicao = safeNumber(document.getElementById('regRejeicao').value);
-        const aparas = safeNumber(document.getElementById('regAparas').value);
-        
-        if (!data || !machine || !op || !produtoDisplay || !turno || !inicio || !fim) {
-            showErrorToast('Preencha todos os campos obrigatórios!');
-            return;
-        }
-        
-        const paradasDesteTurno = [];
-        paradasDetalhadas.forEach((p, idx) => {
-            const inicioParada = document.getElementById(`parada-inicio-${idx}`)?.value;
-            const fimParada = document.getElementById(`parada-fim-${idx}`)?.value;
-            const motivoParada = obterMotivoParada(idx);
-            
-            if (inicioParada && fimParada) {
-                paradasDesteTurno.push({
-                    inicio: inicioParada,
-                    fim: fimParada,
-                    motivo: motivoParada
-                });
-            }
-        });
-        
-        if (turnosTemp.find(t => t.data === data && t.turno === turno)) {
-            showErrorToast(`Turno ${turno} da data ${data.split('-').reverse().join('/')} já foi adicionado!`);
-            return;
-        }
-        
-        turnosTemp.push({
-            data, machine, turno, op, pedido, produtoDisplay, est,
-            inicio, fim, setup, avaria,
-            produzido, rejeicao, aparas,
-            paradasDetalhadas: paradasDesteTurno
-        });
-        
-        document.getElementById('regTurno').value = '';
-        document.getElementById('regInicio').value = '06:00';
-        document.getElementById('regFim').value = '14:00';
-        document.getElementById('regSetup').value = '0';
-        document.getElementById('regAvaria').value = '0';
-        document.getElementById('regProduzido').value = '0';
-        document.getElementById('regRejeicao').value = '0';
-        document.getElementById('regAparas').value = '0';
-        
-        paradasDetalhadas = [];
-        document.getElementById('paradas-detalhadas-container').innerHTML = '';
-        
-        atualizarListaTurnos();
-        marcarDadosPendentes();
-        atualizarPreview();
-        
-        showToast(`✅ Turno ${turno} (${data}) adicionado à lista!`);
-    }
-
     function atualizarListaTurnos() {
         const container = document.getElementById('turnos-lista');
         container.innerHTML = '';
@@ -4893,7 +5406,7 @@
                             </div>
                             
                             <div class="flex items-center gap-3 text-xs flex-wrap">
-                                <span class="font-medium">📦 Prod: ${turno.produzido} kg</span>
+                                <span class="font-medium">📦 Prod: ${formatarNumeroComPonto(turno.produzido)} kg</span>
                                 <span class="${turno.setup > 0 ? 'text-orange-600' : 'text-slate-400'}">⚙️ Setup: ${turno.setup}min</span>
                                 <span class="${turno.avaria > 0 ? 'text-red-600 font-bold' : 'text-slate-400'}">⏸️ Avaria: ${turno.avaria}min</span>
                             </div>
@@ -5423,9 +5936,6 @@
     }
 
     function closeModal() { 
-        if (dadosPendentes && confirm('Tem dados não salvos. Deseja salvar antes de fechar?')) {
-            autoSalvar();
-        }
         dadosPendentes = false;
         document.getElementById('modal').style.display = 'none'; 
     }
@@ -5833,7 +6343,7 @@
                     <div class="produto-stats-cliente">
                         <div class="produto-stat-item">
                             <div class="produto-stat-label">Produção Total</div>
-                            <div class="produto-stat-value text-green-700">${totalKg.toFixed(0)} kg</div>
+                            <div class="produto-stat-value text-green-700">${formatarNumeroComPonto(totalKg)} kg</div>
                         <\/div>
                         <div class="produto-stat-item">
                             <div class="produto-stat-label">Horas Produtivas</div>
@@ -5910,148 +6420,6 @@
         if (modal) modal.remove();
     }
 
-    // ============================================
-    // FUNÇÃO ATUALIZAR HORÁRIO POR TURNO
-    // ============================================
-    function atualizarHorarioPorTurno() {
-        const turno = document.getElementById('regTurno').value;
-        if (turno && TURNOS[turno]) {
-            document.getElementById('regInicio').value = TURNOS[turno].inicio;
-            document.getElementById('regFim').value = TURNOS[turno].fim;
-            atualizarPreview();
-        }
-    }
-
-    // ============================================
-    // FUNÇÃO CALCULAR APARAS EM MINUTOS
-    // ============================================
-    function calcularAparasEmMinutos(aparasKg, realKgH, horas) {
-        if (!aparasKg || aparasKg <= 0 || !realKgH || realKgH <= 0) return 0;
-        const horasEfetivas = horas > 0 ? horas : 1;
-        const kgPorHora = realKgH;
-        const minutosParaProduzirAparas = (aparasKg / kgPorHora) * 60;
-        return Math.round(minutosParaProduzirAparas);
-    }
-
-    // ============================================
-    // FUNÇÃO DE LOGOUT
-    // ============================================
-    window.fazerLogout = function() {
-        console.log("🔵 Fazendo logout...");
-        
-        if (!window.supabase) {
-            console.error("❌ Supabase não encontrado!");
-            window.location.href = "login.html";
-            return;
-        }
-        
-        window.supabase.auth.signOut()
-            .then(({ error }) => {
-                if (error) {
-                    console.error("Erro:", error);
-                    alert("Erro ao sair. Redirecionando...");
-                } else {
-                    console.log("✅ Logout OK!");
-                }
-                window.location.href = "login.html";
-            })
-            .catch(erro => {
-                console.error("Erro inesperado:", erro);
-                window.location.href = "login.html";
-            });
-    };
-
-    // ============================================
-    // VERIFICAR USUÁRIO
-    // ============================================
-    window.supabase.auth.getUser().then(({ data: { user } }) => {
-        if (!user) {
-            console.log("❌ Sem usuário - redirecionando");
-            window.location.href = "login.html";
-        } else {
-            console.log("✅ Usuário logado:", user.email);
-        }
-    });
-
-    // ============================================
-    // LIMPAR SESSÃO AO FECHAR A PÁGINA
-    // ============================================
-    window.addEventListener('beforeunload', function() {
-        sessionStorage.removeItem('session_checked');
-    });
-
-    // ============================================
-    // TIMER DE INATIVIDADE
-    // ============================================
-    let tempoInatividade;
-    const TEMPO_LIMITE = 30 * 60 * 1000;
-
-    function reiniciarTimer() {
-        clearTimeout(tempoInatividade);
-        tempoInatividade = setTimeout(() => {
-            alert("Sessão expirada por inatividade.");
-            window.fazerLogout();
-        }, TEMPO_LIMITE);
-    }
-
-    document.onmousemove = reiniciarTimer;
-    document.onkeypress = reiniciarTimer;
-    document.onclick = reiniciarTimer;
-
-    // ============================================
-    // CONFIGURAR BOTÃO DE LOGOUT
-    // ============================================
-    setTimeout(function() {
-        const botoes = document.querySelectorAll('button');
-        let botaoSair = null;
-        
-        for(let botao of botoes) {
-            if(botao.textContent.includes('Sair') || botao.classList.contains('btn-logout')) {
-                botaoSair = botao;
-                break;
-            }
-        }
-        
-        if(botaoSair) {
-            console.log("✅ Botão de logout encontrado e configurado");
-            botaoSair.onclick = function(e) {
-                e.preventDefault();
-                window.fazerLogout();
-            };
-        } else {
-            console.error("❌ Botão de logout não encontrado");
-        }
-    }, 1000);
-
-    // ============================================
-    // FUNÇÕES DE AUTOSAVE
-    // ============================================
-    function marcarDadosPendentes() {
-        dadosPendentes = true;
-        
-        let indicador = document.getElementById('autosave-indicator');
-        if (!indicador) {
-            const btnSalvar = document.querySelector('button[onclick="calcularESalvar()"]');
-            if (btnSalvar) {
-                indicador = document.createElement('span');
-                indicador.id = 'autosave-indicator';
-                indicador.className = 'ml-3 text-xs text-orange-500 font-bold';
-                indicador.innerHTML = '⚡ Não salvo';
-                btnSalvar.parentNode.appendChild(indicador);
-            }
-        } else {
-            indicador.innerHTML = '⚡ Não salvo';
-            indicador.className = 'ml-3 text-xs text-orange-500 font-bold';
-        }
-        
-        if (autoSaveTimer) clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => {
-            if (dadosPendentes) {
-                autoSalvar();
-            }
-        }, 300000);
-    }
-
     function limparIndicadorAutosave() {
         dadosPendentes = false;
         const indicador = document.getElementById('autosave-indicator');
@@ -6065,243 +6433,6 @@
                 }
             }, 3000);
         }
-    }
-
-    async function autoSalvar() {
-        console.log("🔄 Autosave: Tentando salvar dados pendentes...");
-        
-        if (!dadosPendentes) {
-            console.log("📝 Sem dados pendentes");
-            return;
-        }
-        
-        const modal = document.getElementById('modal');
-        if (modal && modal.style.display === 'flex') {
-            await calcularESalvar();
-        } else {
-            console.log("❌ Modal fechado, não há dados para salvar");
-            dadosPendentes = false;
-        }
-    }
-
-    // ============================================
-    // FUNÇÃO VERIFICAR SOBREPOSIÇÃO
-    // ============================================
-    function verificarSobreposicao(data, maquina, inicio, fim, idIgnorar = null) {
-        console.log(`🔍 Verificando sobreposição para: Data=${data}, Máquina=${maquina}, Horário=${inicio}-${fim}`);
-        
-        const novoInicio = horaParaMinutos(inicio);
-        let novoFim = horaParaMinutos(fim);
-        
-        if (novoFim < novoInicio) {
-            novoFim += 24 * 60;
-        }
-        
-        const conflitos = historico.filter(reg => {
-            if (reg.id === idIgnorar) return false;
-            if (reg.data !== data) return false;
-            if (reg.machine !== maquina) return false;
-            
-            const regInicio = horaParaMinutos(reg.inicio);
-            let regFim = horaParaMinutos(reg.fim);
-            
-            if (regFim < regInicio) {
-                regFim += 24 * 60;
-            }
-            
-            return (novoInicio < regFim && novoFim > regInicio);
-        });
-        
-        return conflitos;
-    }
-
-    async function listarRegistros() {
-        try {
-            const { data, error } = await window.supabase
-                .from("oee_registros")
-                .select("*")
-                .order('data', { ascending: false });
-
-            if (error) {
-                console.error("Erro ao listar do banco:", error.message);
-                return [];
-            }
-            return data || [];
-        } catch (error) {
-            console.error("Erro ao listar registros:", error);
-            return [];
-        }
-    }
-
-    // ============================================
-    // FUNÇÃO INSERIR REGISTRO
-    // ============================================
-    async function inserirRegistro(novo) {
-        try {
-            const registroParaBanco = {
-                data: novo.data,
-                maquina: novo.machine,
-                turno: novo.turno,
-                op: novo.op,
-                produto: novo.produto,
-                cliente: novo.cliente,
-                disponibilidade: novo.disp,
-                performance: novo.perf,
-                qualidade: novo.qual,
-                pedido: novo.pedido,
-                inicio: novo.inicio,
-                fim: novo.fim,
-                setup: novo.setup,
-                paradas: novo.avaria,
-                motivo_perda: novo.motivoPerda || '',
-                est: novo.est,
-                real_kgh: novo.realKgH,
-                produzido: novo.produzido,
-                rejeicao: novo.rejeicao,
-                aparas: novo.aparas,
-                criado_em: novo.timestamp
-            };
-            
-            console.log("📤 Enviando para o banco:", registroParaBanco);
-            
-            const { data, error } = await window.supabase
-                .from("oee_registros")
-                .insert([registroParaBanco])
-                .select();
-
-            if (error) {
-                console.error("❌ Erro no Supabase:", error);
-                showErrorToast(`Erro: ${error.message}`);
-                return null;
-            }
-            
-            console.log("✅ Registro inserido com ID:", data?.[0]?.id);
-            return data;
-        } catch (error) {
-            console.error("❌ Erro inesperado:", error);
-            showErrorToast(`Erro: ${error.message}`);
-            return null;
-        }
-    }
-
-    async function apagarRegistroBanco(id) {
-        try {
-            const { error } = await window.supabase
-                .from("oee_registros")
-                .delete()
-                .eq('id', id);
-
-            return !error;
-        } catch (error) {
-            console.error("Erro ao apagar registro:", error);
-            return false;
-        }
-    }
-
-    // ============================================
-    // FUNÇÃO CARREGAR DADOS
-    // ============================================
-    async function carregarDados() {
-        console.log("📥 Carregando dados do banco...");
-        
-        const clientesSalvos = localStorage.getItem('lusitano_clientes');
-        const produtosSalvos = localStorage.getItem('lusitano_produtos');
-        
-        if (clientesSalvos) {
-            try { clientes = JSON.parse(clientesSalvos); } catch (e) {}
-        }
-        
-        if (produtosSalvos) {
-            try { produtos = JSON.parse(produtosSalvos); } catch (e) {}
-        }
-        
-        const registrosBanco = await listarRegistros();
-        console.log(`📊 Encontrados ${registrosBanco.length} registros no banco`);
-        
-        if (registrosBanco && registrosBanco.length > 0) {
-            historico = registrosBanco.map(reg => {
-                const realKgH = calcularRealKgH(
-                    reg.produzido || 0, 
-                    reg.inicio || '00:00', 
-                    reg.fim || '00:00', 
-                    reg.setup || 0, 
-                    reg.paradas || 0
-                );
-                
-                const perf = calcularPerformance(
-                    reg.est || 0,
-                    reg.produzido || 0,
-                    reg.inicio || '00:00',
-                    reg.fim || '00:00',
-                    reg.setup || 0,
-                    reg.paradas || 0
-                );
-                
-                const dispOP = calcularDisponibilidadeOP(
-                    reg.inicio || '00:00',
-                    reg.fim || '00:00',
-                    reg.setup || 0,
-                    reg.paradas || 0
-                );
-                
-                const qual = calcularQualidade(
-                    reg.produzido || 0,
-                    reg.rejeicao || 0,
-                    reg.aparas || 0
-                );
-                
-                return {
-                    id: reg.id,
-                    data: reg.data,
-                    machine: reg.maquina || 'M1',
-                    turno: reg.turno || 'A',
-                    op: reg.op || '---',
-                    produto: reg.produto || '---',
-                    cliente: reg.cliente || '---',
-                    disp: dispOP,
-                    perf: perf,
-                    qual: qual,
-                    pedido: reg.pedido || 0,
-                    inicio: reg.inicio || '00:00',
-                    fim: reg.fim || '00:00',
-                    setup: reg.setup || 0,
-                    avaria: reg.paradas || 0,
-                    motivoPerda: reg.motivo_perda || '',
-                    est: reg.est || 0,
-                    realKgH: realKgH,
-                    produzido: reg.produzido || 0,
-                    rejeicao: reg.rejeicao || 0,
-                    aparas: reg.aparas || 0,
-                    timestamp: reg.criado_em || new Date().toISOString(),
-                    dispTurno: 0
-                };
-            });
-            
-            console.log(`✅ Processados ${historico.length} registros`);
-            
-            const grupos = {};
-            historico.forEach(reg => {
-                const key = `${reg.data}-${reg.machine}-${reg.turno}`;
-                if (!grupos[key]) grupos[key] = [];
-                grupos[key].push(reg);
-            });
-            
-            Object.values(grupos).forEach(grupo => {
-                if (grupo.length > 0) {
-                    const dispTurno = calcularDisponibilidadeTurno(grupo);
-                    grupo.forEach(op => {
-                        op.dispTurno = dispTurno;
-                    });
-                }
-            });
-            
-            console.log("✅ Dados carregados com sucesso!");
-        } else {
-            historico = [];
-            console.log("📭 Nenhum registro encontrado no banco");
-        }
-        
-        filterByRange();
     }
 
     // ============================================

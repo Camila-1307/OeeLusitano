@@ -1436,6 +1436,8 @@
                             <option value="A">TURNO A</option>
                             <option value="B">TURNO B</option>
                             <option value="C">TURNO C</option>
+                            <option value="C1">TURNO C1 (NOITE)</option>
+                            <option value="C2">TURNO C2 (MADRUGADA)</option>
                         </select>
                         <select id="perdasMaquinaFilter" onchange="filtrarPerdasPorTurno()" class="bg-slate-100 border-2 border-slate-200 p-3 rounded-xl font-black text-slate-700 outline-none focus:border-green-600 transition-all">
                             <option value="ALL">TODAS MÁQUINAS</option>
@@ -2292,7 +2294,24 @@
     }
 
     // ============================================
-    // FUNÇÃO VALIDAR SE PODE ADICIONAR TURNO C (CORRIGIDA - PERMITE MÚLTIPLOS TURNOS C)
+    // FUNÇÃO CLASSIFICAR TURNO C (CORRIGIDA)
+    // ============================================
+    function classificarTurnoC(inicio, fim) {
+        if (inicio === '22:00' && fim === '06:00') return 'C';
+        if (inicio === '22:00' && fim === '00:00') return 'C1';
+        if (inicio === '00:00' && fim === '06:00') return 'C2';
+        
+        const inicioMin = horaParaMinutos(inicio);
+        const fimMin = horaParaMinutos(fim);
+        
+        if (fimMin < inicioMin) return 'C';
+        if (inicioMin >= 0 && inicioMin < 360) return 'C2';
+        if (inicioMin >= 1320) return 'C1';
+        return 'C';
+    }
+
+    // ============================================
+    // FUNÇÃO VALIDAR SE PODE ADICIONAR TURNO (CORRIGIDA - PERMITE MÚLTIPLOS TURNOS C)
     // ============================================
     function podeAdicionarTurno(data, turno, inicio, fim) {
         const turnosExistentesNaData = turnosTemp.filter(t => t.data === data);
@@ -2326,7 +2345,7 @@
     }
 
     // ============================================
-    // FUNÇÃO ADICIONAR TURNO MODAL (CORRIGIDA)
+    // FUNÇÃO ADICIONAR TURNO MODAL (COM CLASSIFICAÇÃO AUTOMÁTICA)
     // ============================================
     function adicionarTurnoModal() {
         const data = document.getElementById('regDate').value;
@@ -2336,9 +2355,9 @@
         const produtoDisplay = document.getElementById('regProduto').value;
         const est = safeNumber(document.getElementById('regEst').value);
         
-        const turno = document.getElementById('regTurno').value;
-        const inicio = document.getElementById('regInicio').value;
-        const fim = document.getElementById('regFim').value;
+        let turno = document.getElementById('regTurno').value;
+        let inicio = document.getElementById('regInicio').value;
+        let fim = document.getElementById('regFim').value;
         const setup = safeNumber(document.getElementById('regSetup').value);
         const avaria = safeNumber(document.getElementById('regAvaria').value);
         const produzido = safeNumber(document.getElementById('regProduzido').value);
@@ -2348,6 +2367,13 @@
         if (!data || !machine || !op || !produtoDisplay || !turno || !inicio || !fim) {
             showErrorToast('Preencha todos os campos obrigatórios!');
             return;
+        }
+        
+        // CLASSIFICAÇÃO AUTOMÁTICA DO TURNO C
+        if (turno === 'C') {
+            const turnoClassificado = classificarTurnoC(inicio, fim);
+            console.log(`🔄 Turno C classificado automaticamente: ${turno} → ${turnoClassificado} (${inicio} - ${fim})`);
+            turno = turnoClassificado;
         }
         
         if (!podeAdicionarTurno(data, turno, inicio, fim)) {
@@ -2439,6 +2465,10 @@
         document.getElementById('qtdRealTotalGrande').innerHTML = formatarNumeroComPonto(totalReal) + ' kg';
         
         document.getElementById('modalQuantidades').style.display = 'flex';
+    }
+    
+    function fecharModalQuantidades() {
+        document.getElementById('modalQuantidades').style.display = 'none';
     }
 
     // ============================================
@@ -3095,10 +3125,6 @@
                 </p>
             </div>
         `;
-    }
-
-    function fecharModalQuantidades() {
-        document.getElementById('modalQuantidades').style.display = 'none';
     }
 
     // ============================================
@@ -4578,7 +4604,7 @@
                                 <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Real</th>
                                 <th style="padding: 15px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Diferença</th>
                                 <th style="padding: 15px; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Status</th>
-                                </tr>
+                                </table>
                         </thead>
                         <tbody>
         `;
@@ -5263,64 +5289,115 @@
         let html = `<div class="bg-white rounded-xl p-3 border"><h3 class="font-bold mb-3 text-center text-${maquina === 'M1' ? 'green' : maquina === 'M2' ? 'red' : 'yellow'}-700">🔧 ${maquina}</h3>`;
         
         turnos.forEach(turno => {
-            const pedidosTurno = pedidos.filter(p => p.turno === turno)
-                .sort((a, b) => horaParaMinutos(a.inicio) - horaParaMinutos(b.inicio));
+            let pedidosTurno = pedidos.filter(p => p.turno === turno);
+            
+            if (pedidosTurno.length === 0) {
+                const turnoInfo = TURNOS[turno];
+                const coresTurno = turno === 'A' ? 'bg-yellow-100 text-yellow-800' : turno === 'B' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                html += `<div class="mb-4"><div class="flex items-center gap-2 mb-2"><span class="text-xs font-bold px-2 py-1 rounded-full ${coresTurno}">TURNO ${turno}</span><span class="text-[10px] text-slate-500">${turnoInfo.inicio} - ${turnoInfo.fim}</span></div><div class="timeline-maquina"><div class="timeline-item border-l-4 border-gray-300 bg-gray-50"><div class="flex items-center gap-2"><span class="text-gray-400">⏸️</span><span class="text-gray-500 text-xs">SEM PRODUÇÃO - TURNO COMPLETO</span></div></div></div></div>`;
+                return;
+            }
             
             const turnoInfo = TURNOS[turno];
             const coresTurno = turno === 'A' ? 'bg-yellow-100 text-yellow-800' : turno === 'B' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
             
+            let inicioTurno = horaParaMinutos(turnoInfo.inicio);
+            let fimTurno = horaParaMinutos(turnoInfo.fim);
+            
+            // Para Turno C, o fim é no dia seguinte
+            if (turno === 'C' && fimTurno < inicioTurno) {
+                fimTurno += 24 * 60;
+            }
+            
+            // Converter todos os horários para o mesmo eixo temporal
+            let pedidosProcessados = pedidosTurno.map(p => {
+                let inicioMin = horaParaMinutos(p.inicio);
+                let fimMin = horaParaMinutos(p.fim);
+                
+                // Se for Turno C e horário é da madrugada (antes das 6h), adicionar 24h
+                if (turno === 'C') {
+                    if (inicioMin < 6 * 60) inicioMin += 24 * 60;
+                    if (fimMin < 6 * 60) fimMin += 24 * 60;
+                    if (fimMin < inicioMin) fimMin += 24 * 60;
+                } else {
+                    if (fimMin < inicioMin) fimMin += 24 * 60;
+                }
+                
+                return { ...p, inicioMin, fimMin };
+            });
+            
+            // Ordenar por horário de início
+            pedidosProcessados.sort((a, b) => a.inicioMin - b.inicioMin);
+            
             html += `<div class="mb-4"><div class="flex items-center gap-2 mb-2"><span class="text-xs font-bold px-2 py-1 rounded-full ${coresTurno}">TURNO ${turno}</span><span class="text-[10px] text-slate-500">${turnoInfo.inicio} - ${turnoInfo.fim}</span></div><div class="timeline-maquina">`;
             
-            const inicioTurno = horaParaMinutos(turnoInfo.inicio);
-            let fimTurno = horaParaMinutos(turnoInfo.fim);
-            if (fimTurno < inicioTurno) fimTurno += 24 * 60;
             let ultimoFim = inicioTurno;
             
-            if (pedidosTurno.length === 0) {
-                html += `<div class="timeline-item border-l-4 border-gray-300 bg-gray-50"><div class="flex items-center gap-2"><span class="text-gray-400">⏸️</span><span class="text-gray-500 text-xs">SEM PRODUÇÃO - TURNO COMPLETO</span></div></div>`;
-            } else {
-                pedidosTurno.forEach(p => {
-                    let inicioPedido = horaParaMinutos(p.inicio);
-                    let fimPedido = horaParaMinutos(p.fim);
-                    if (fimPedido < inicioPedido) fimPedido += 24 * 60;
+            for (let p of pedidosProcessados) {
+                // Verificar gap antes deste pedido
+                if (p.inicioMin > ultimoFim + 1) {
+                    const inicioGap = minutosParaHora(ultimoFim % (24*60));
+                    const fimGap = minutosParaHora(p.inicioMin % (24*60));
+                    const duracaoGap = ((p.inicioMin - ultimoFim) / 60).toFixed(1);
                     
-                    if (inicioPedido > ultimoFim) {
-                        const inicioGap = minutosParaHora(ultimoFim % (24*60));
-                        const fimGap = minutosParaHora(inicioPedido % (24*60));
-                        html += `<div class="timeline-item border-l-4 border-orange-500"><div class="flex items-center gap-2"><span class="text-orange-600">⏸️</span><span class="font-mono text-xs">${inicioGap} - ${fimGap}</span><span class="text-orange-500 text-[10px]">SEM PRODUÇÃO</span></div></div>`;
-                    }
-                    
-                    const inicioHora = minutosParaHora(inicioPedido % (24*60));
-                    const fimHora = minutosParaHora(fimPedido % (24*60));
-                    const duracao = ((fimPedido - inicioPedido) / 60).toFixed(1);
-                    const oee = calcularOEE(p.disp, p.perf, p.qual);
-                    const statusOEE = oee >= 85 ? 'text-green-600' : 'text-red-600';
-                    
-                    html += `
-                        <div class="pedido-card-modal" onclick="event.stopPropagation(); abrirDetalhesPedido(${p.id})">
-                            <div class="flex justify-between items-start">
-                                <div><span class="op-numero font-bold">OP ${p.op}</span><span class="text-[10px] text-slate-500 ml-1">${p.turno}</span></div>
-                                <span class="text-xs font-bold ${statusOEE}">${oee}%</span>
-                            </div>
-                            <div class="mt-1 text-xs">
-                                <div class="font-mono">${inicioHora} → ${fimHora} <span class="text-slate-400">(${duracao}h)</span></div>
-                                <div class="truncate" title="${p.produto}">📦 ${p.produto?.split(' - ')[0] || '-'}</div>
-                                <div class="flex gap-2 mt-1">
-                                    <span>⚖️ ${formatarNumeroComPonto(p.produzido)} kg</span>
-                                    ${p.setup > 0 ? `<span class="text-orange-600">⚙️ ${p.setup}min</span>` : ''}
-                                    ${p.avaria > 0 ? `<span class="text-red-600">⏸️ ${p.avaria}min</span>` : ''}
+                    html += `<div class="timeline-item border-l-4 border-orange-500">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-orange-600">⏸️</span>
+                                    <span class="font-mono text-xs">${inicioGap} → ${fimGap}</span>
+                                    <span class="text-orange-500 text-[10px]">SEM PRODUÇÃO (${duracaoGap}h)</span>
                                 </div>
+                             </div>`;
+                }
+                
+                // Exibir o pedido
+                const inicioHora = minutosParaHora(p.inicioMin % (24*60));
+                const fimHora = minutosParaHora(p.fimMin % (24*60));
+                const duracao = ((p.fimMin - p.inicioMin) / 60).toFixed(1);
+                const oee = calcularOEE(p.disp, p.perf, p.qual);
+                const statusOEE = oee >= 85 ? 'text-green-600' : oee >= 60 ? 'text-yellow-600' : 'text-red-600';
+                
+                let borderClass = 'border-green-500';
+                if (oee < 60) borderClass = 'border-red-500';
+                else if (oee < 85) borderClass = 'border-yellow-500';
+                
+                html += `
+                    <div class="pedido-card-modal border-l-4 ${borderClass}" onclick="event.stopPropagation(); abrirDetalhesPedido(${p.id})">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="op-numero font-bold">OP ${p.op}</span>
+                                <span class="text-[10px] text-slate-500 ml-1">${p.turno}</span>
+                            </div>
+                            <span class="text-xs font-bold ${statusOEE}">${oee}%</span>
+                        </div>
+                        <div class="mt-1 text-xs">
+                            <div class="font-mono">${inicioHora} → ${fimHora} <span class="text-slate-400">(${duracao}h)</span></div>
+                            <div class="truncate" title="${p.produto}">📦 ${p.produto?.split(' - ')[0] || '-'}</div>
+                            <div class="flex gap-2 mt-1 flex-wrap">
+                                <span>⚖️ ${formatarNumeroComPonto(p.produzido)} kg</span>
+                                ${p.setup > 0 ? `<span class="text-orange-600">⚙️ ${p.setup}min</span>` : ''}
+                                ${p.avaria > 0 ? `<span class="text-red-600">⏸️ ${p.avaria}min</span>` : ''}
+                                ${p.realKgH ? `<span class="text-blue-600">📊 ${p.realKgH} kg/h</span>` : ''}
                             </div>
                         </div>
-                    `;
-                    ultimoFim = fimPedido;
-                });
+                    </div>
+                `;
                 
-                if (ultimoFim < fimTurno) {
-                    const inicioGap = minutosParaHora(ultimoFim % (24*60));
-                    const fimGap = minutosParaHora(fimTurno % (24*60));
-                    html += `<div class="timeline-item border-l-4 border-orange-500"><div class="flex items-center gap-2"><span class="text-orange-600">⏸️</span><span class="font-mono text-xs">${inicioGap} - ${fimGap}</span><span class="text-orange-500 text-[10px]">SEM PRODUÇÃO</span></div></div>`;
-                }
+                ultimoFim = Math.max(ultimoFim, p.fimMin);
+            }
+            
+            // Verificar gap após o último pedido até o fim do turno
+            if (ultimoFim < fimTurno - 1) {
+                const inicioGap = minutosParaHora(ultimoFim % (24*60));
+                const fimGap = minutosParaHora(fimTurno % (24*60));
+                const duracaoGap = ((fimTurno - ultimoFim) / 60).toFixed(1);
+                
+                html += `<div class="timeline-item border-l-4 border-orange-500">
+                            <div class="flex items-center gap-2">
+                                <span class="text-orange-600">⏸️</span>
+                                <span class="font-mono text-xs">${inicioGap} → ${fimGap}</span>
+                                <span class="text-orange-500 text-[10px]">SEM PRODUÇÃO (${duracaoGap}h)</span>
+                            </div>
+                         </div>`;
             }
             
             html += `</div></div>`;
@@ -5447,7 +5524,7 @@
     }
 
     // ============================================
-    // FUNÇÃO CALCULAR E SALVAR
+    // FUNÇÃO CALCULAR E SALVAR (COM CLASSIFICAÇÃO AUTOMÁTICA)
     // ============================================
     async function calcularESalvar() {
         console.log("🟢 Salvando dados...");
@@ -5469,7 +5546,7 @@
         
         const data = document.getElementById('regDate').value;
         const machine = document.getElementById('regMachine').value;
-        const turno = document.getElementById('regTurno').value;
+        let turno = document.getElementById('regTurno').value;
         const op = document.getElementById('regOP').value;
         const pedido = safeNumber(document.getElementById('regPedido').value);
         const produtoDisplay = document.getElementById('regProduto').value;
@@ -5485,6 +5562,13 @@
         if (!data || !machine || !turno || !op || !produtoDisplay || !inicio || !fim) {
             showErrorToast('Preencha todos os campos obrigatórios!');
             return;
+        }
+        
+        // CLASSIFICAÇÃO AUTOMÁTICA DO TURNO C
+        if (turno === 'C') {
+            const turnoClassificado = classificarTurnoC(inicio, fim);
+            console.log(`🔄 Turno C classificado automaticamente: ${turno} → ${turnoClassificado} (${inicio} - ${fim})`);
+            turno = turnoClassificado;
         }
         
         const conflitos = verificarSobreposicao(data, machine, inicio, fim);
@@ -5809,7 +5893,7 @@
         
         const date = document.getElementById('editDate').value;
         const machine = document.getElementById('editMachine').value;
-        const turno = document.getElementById('editTurno').value;
+        let turno = document.getElementById('editTurno').value;
         const op = document.getElementById('editOP').value;
         const produto = document.getElementById('editProduto').value;
         const pedido = safeNumber(document.getElementById('editPedido').value);
@@ -5821,6 +5905,13 @@
         const produzido = safeNumber(document.getElementById('editProduzido').value);
         const rejeicao = safeNumber(document.getElementById('editRejeicao').value);
         const aparas = safeNumber(document.getElementById('editAparas').value);
+        
+        // CLASSIFICAÇÃO AUTOMÁTICA DO TURNO C NA EDIÇÃO
+        if (turno === 'C') {
+            const turnoClassificado = classificarTurnoC(inicio, fim);
+            console.log(`🔄 Turno C classificado automaticamente na edição: ${turno} → ${turnoClassificado}`);
+            turno = turnoClassificado;
+        }
         
         const conflitos = verificarSobreposicao(date, machine, inicio, fim, id);
         if (conflitos.length > 0) {

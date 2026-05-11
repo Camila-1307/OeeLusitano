@@ -1341,9 +1341,6 @@
         .product-badge.product-6 { background-color: #ec4899; color: white; }
         .product-badge.product-7 { background-color: #14b8a6; color: white; }
         .product-badge.product-8 { background-color: #f97316; color: white; }
-
-	
-
     </style>
 </head>
 <body>
@@ -1559,36 +1556,28 @@
             </div>
             
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-    <div class="flex items-center justify-between mb-6">
-        <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest">
-            📋 DETALHAMENTO DE PERDAS POR REGISTRO
-        </h3>
-        <div class="flex gap-2">
-            <span class="text-[9px] px-2 py-1 rounded-full bg-amber-100 text-amber-700">🔧 Setup</span>
-            <span class="text-[9px] px-2 py-1 rounded-full bg-red-100 text-red-700">⏸️ Parada</span>
-            <span class="text-[9px] px-2 py-1 rounded-full bg-green-100 text-green-700">📦 Apara</span>
+                <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Detalhamento de Perdas por Registro</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="text-[10px] uppercase text-slate-400 border-b">
+                                <th class="pb-4">Data</th>
+                                <th class="pb-4">Máq</th>
+                                <th class="pb-4">Turno</th>
+                                <th class="pb-4">OP</th>
+                                <th class="pb-4">Cliente/Produto</th>
+                                <th class="pb-4 text-center">Setup (min)</th>
+                                <th class="pb-4 text-center">Paradas (min)</th>
+                                <th class="pb-4 text-center">Aparas (min)</th>
+                                <th class="pb-4 text-center">Total Perda</th>
+                                <th class="pb-4">Motivo Principal</th>
+                              </tr>
+                        </thead>
+                        <tbody id="perdas-detail-rows"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="overflow-x-auto rounded-xl">
-        <table class="w-full text-left text-sm perdas-table">
-            <thead>
-                <tr class="text-[10px] uppercase text-slate-400 border-b bg-slate-50">
-                    <th class="py-3 px-3">Data</th>
-                    <th class="py-3 px-3">Máq</th>
-                    <th class="py-3 px-3">Turno</th>
-                    <th class="py-3 px-3">OP</th>
-                    <th class="py-3 px-3">Cliente/Produto</th>
-                    <th class="py-3 px-3 text-center">Setup</th>
-                    <th class="py-3 px-3 text-center">Paradas</th>
-                    <th class="py-3 px-3 text-center">Aparas</th>
-                    <th class="py-3 px-3 text-center">Total</th>
-                    <th class="py-3 px-3">Motivo</th>
-                </tr>
-            </thead>
-            <tbody id="perdas-detail-rows"></tbody>
-        </table>
-    </div>
-</div>
 
         <div id="view-efficiency" class="view-content">
             <div class="bg-white p-8 rounded-3xl border border-slate-200 mb-8">
@@ -1712,7 +1701,7 @@
             <div id="mediasKgHContainer" class="medias-card-container" style="display: none;">
                 <div class="media-card m1">
                     <div class="maquina-titulo m1">
-                        <span>🔧 M1</span>
+                        <span> M1</span>
                     </div>
                     <div class="stats">
                         <div class="stat-item">
@@ -1727,7 +1716,7 @@
                 </div>
                 <div class="media-card m2">
                     <div class="maquina-titulo m2">
-                        <span>🔧 M2</span>
+                        <span> M2</span>
                     </div>
                     <div class="stats">
                         <div class="stat-item">
@@ -1742,7 +1731,7 @@
                 </div>
                 <div class="media-card m3">
                     <div class="maquina-titulo m3">
-                        <span>🔧 M3</span>
+                        <span> M3</span>
                     </div>
                     <div class="stats">
                         <div class="stat-item">
@@ -3185,7 +3174,7 @@
         nomeProduto = nomeProduto.replace(/\s*\((M1|M2|M3)\)\s*$/, '');
         nomeProduto = nomeProduto.trim();
         
-        let maquinaExibicao = maquinaDoProduto ? ` - 🔧 ${maquinaDoProduto}` : '';
+        let maquinaExibicao = maquinaDoProduto ? ` -  ${maquinaDoProduto}` : '';
         document.getElementById('produtoSelecionadoInfo').innerHTML = `📦 ${nomeProduto} (${est} kg/h)${maquinaExibicao}`;
         
         document.getElementById('selecaoClientesArea').style.display = 'none';
@@ -3237,7 +3226,7 @@
         
         document.getElementById('clienteSelecionadoDisplay').style.display = 'flex';
         document.getElementById('clienteSelecionadoNome').innerHTML = cliente;
-        document.getElementById('produtoSelecionadoInfo').innerHTML = `📦 ${produto} (${est} kg/h) - 🔧 ${maquina}`;
+        document.getElementById('produtoSelecionadoInfo').innerHTML = `📦 ${produto} (${est} kg/h) -  ${maquina}`;
         
         document.getElementById('selecaoClientesArea').style.display = 'none';
         
@@ -3302,10 +3291,10 @@
                 <div class="produto-item-gestao cursor-pointer" 
                      onclick="selecionarProdutoDireto('${cliente.replace(/'/g, "\\'")}', '${nomeProduto.replace(/'/g, "\\'")}', '${maquinaDisplay}', ${estDisplay})">
                     <div class="produto-info-gestao">
-                        <span class="produto-nome-gestao">📦 ${nomeProduto}</span>
+                        <span class="produto-nome-gestao"> ${nomeProduto}</span>
                         <div class="produto-detalhes-gestao">
-                            <span class="badge-maquina-gestao ${corBg} ${corMaquina}">🔧 ${maquinaDisplay}</span>
-                            <span class="badge-est-gestao">⚡ ${estDisplay} kg/h</span>
+                            <span class="badge-maquina-gestao ${corBg} ${corMaquina}"> ${maquinaDisplay}</span>
+                            <span class="badge-est-gestao"> ${estDisplay} kg/h</span>
                         </div>
                     </div>
                 </div>
@@ -3545,11 +3534,11 @@ function removerProduto(produtoNome, cliente) {
                     <div class="flex items-center gap-2">
                         <span class="product-badge product-${produtoNum}">${nomeProduto}</span>
                         <span class="text-xs font-bold ${corMaquinaTexto} ${corMaquinaBg} px-2 py-0.5 rounded-full">
-                            🔧 ${maquinaDisplay}
+                             ${maquinaDisplay}
                         </span>
                     </div>
                     <div class="flex items-center gap-3">
-                        <span class="text-sm font-bold">⚡ ${estDisplay} kg/h</span>
+                        <span class="text-sm font-bold"> ${estDisplay} kg/h</span>
                         <button onclick="removerProduto('${nomeProduto.replace(/'/g, "\\'")}', '${cliente.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-700">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -4037,7 +4026,7 @@ function removerProduto(produtoNome, cliente) {
     
     // Ordem correta dos turnos: C2 (madrugada) → A → B → C1 (noite)
     const ordemTurnos = ['C2', 'A', 'B', 'C1'];
-    let html = `<div class="bg-white rounded-xl p-3 border"><h3 class="font-bold mb-3 text-center text-${maquina === 'M1' ? 'green' : maquina === 'M2' ? 'red' : 'yellow'}-700">🔧 ${maquina}</h3>`;
+    let html = `<div class="bg-white rounded-xl p-3 border"><h3 class="font-bold mb-3 text-center text-${maquina === 'M1' ? 'green' : maquina === 'M2' ? 'red' : 'yellow'}-700"> ${maquina}</h3>`;
     
     ordemTurnos.forEach(turnoNome => {
         let pedidosTurno;
@@ -6549,19 +6538,205 @@ function removerProduto(produtoNome, cliente) {
     
     if (perdasTurnoComparativoChart) perdasTurnoComparativoChart.destroy();
     
-    // CORREÇÃO: Definir os turnos manualmente em vez de usar a variável 'turnos'
-    const turnosLista = ['C2', 'A', 'B', 'C1'];
-    const labelsTurnos = ['Turno C2 (00:00-06:00)', 'Turno A (06:00-14:00)', 'Turno B (14:00-22:00)', 'Turno C1 (22:00-00:00)'];
-    const valores = turnosLista.map(t => perdasPorTurno[t] || 0);
+    // CORREÇÃO: Definir o array turnos
+    const turnos = ['A', 'B', 'C'];
+    const valores = turnos.map(t => perdasPorTurno[t] || 0);
     
     perdasTurnoComparativoChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: labelsTurnos,
+            labels: ['Turno A', 'Turno B', 'Turno C'],
             datasets: [{
                 label: 'Perdas (minutos)',
                 data: valores,
-                backgroundColor: ['#8b5cf6', '#eab308', '#005a2b', '#c4121a']
+                backgroundColor: ['#FFD700', '#005a2b', '#c4121a']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    formatter: val => val + ' min',
+                    font: { weight: 'bold', size: 10 }
+                }
+            },
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
+        }
+    });
+}
+
+function renderPerdasDetalheChart(perdasMaq) {
+    const ctx = document.getElementById('perdasMaquinaDetalheChart')?.getContext('2d');
+    if (!ctx) return;
+    
+    if (perdasMaquinaDetalheChart) perdasMaquinaDetalheChart.destroy();
+    
+    perdasMaquinaDetalheChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['M1', 'M2', 'M3'],
+            datasets: [
+                { 
+                    label: 'Setup', 
+                    data: [perdasMaq.M1.setup, perdasMaq.M2.setup, perdasMaq.M3.setup], 
+                    backgroundColor: '#f59e0b' 
+                },
+                { 
+                    label: 'Paradas', 
+                    data: [perdasMaq.M1.avaria, perdasMaq.M2.avaria, perdasMaq.M3.avaria], 
+                    backgroundColor: '#ef4444' 
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                datalabels: { 
+                    anchor: 'end', 
+                    align: 'top', 
+                    formatter: val => Math.round(val) + ' min', 
+                    font: { weight: 'bold', size: 10 } 
+                } 
+            },
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
+        }
+    });
+}
+
+function renderPerdasMotivoChart(perdasMot) {
+    const ctx = document.getElementById('perdasMotivoChart')?.getContext('2d');
+    if (!ctx) return;
+    
+    if (perdasMotivoChart) perdasMotivoChart.destroy();
+    
+    const apenasParadas = {};
+    Object.entries(perdasMot).forEach(([motivo, valor]) => {
+        if (motivo !== 'Setup' && motivo !== 'Aparas' && valor > 0) {
+            apenasParadas[motivo] = valor;
+        }
+    });
+    
+    if (Object.keys(apenasParadas).length === 0) {
+        perdasMotivoChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Sem paradas'],
+                datasets: [{
+                    label: 'Minutos',
+                    data: [0],
+                    backgroundColor: ['#e5e7eb'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: () => 'Nenhuma parada registrada' } },
+                    datalabels: { display: false }
+                }
+            }
+        });
+        return;
+    }
+    
+    const motivosOrdenados = Object.entries(apenasParadas).sort((a, b) => b[1] - a[1]);
+    const totalParadas = motivosOrdenados.reduce((sum, [_, val]) => sum + val, 0);
+    
+    const cores = [
+        '#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', 
+        '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16', 
+        '#a855f7', '#eab308', '#d946ef', '#22c55e', '#6b7280'
+    ];
+    
+    const labels = motivosOrdenados.map(m => {
+        const nome = m[0];
+        return nome.length > 30 ? nome.substring(0, 27) + '...' : nome;
+    });
+    
+    perdasMotivoChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Minutos de Parada',
+                data: motivosOrdenados.map(m => m[1]),
+                backgroundColor: motivosOrdenados.map((_, i) => cores[i % cores.length]),
+                borderRadius: 8,
+                barPercentage: 0.7,
+                categoryPercentage: 0.8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => {
+                            const valor = context.raw;
+                            const motivoOriginal = motivosOrdenados[context.dataIndex][0];
+                            const percentual = totalParadas > 0 ? ((valor / totalParadas) * 100).toFixed(1) : 0;
+                            return [`${motivoOriginal}: ${Math.round(valor)} minutos`, `${percentual}% do total de paradas`];
+                        }
+                    }
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'right',
+                    formatter: (val, context) => {
+                        const percentual = totalParadas > 0 ? ((val / totalParadas) * 100).toFixed(1) : 0;
+                        return `${Math.round(val)} min (${percentual}%)`;
+                    },
+                    font: { weight: 'bold', size: 10 },
+                    color: '#374151',
+                    backgroundColor: '#f3f4f6',
+                    padding: { left: 4, right: 4, top: 2, bottom: 2 },
+                    borderRadius: 4
+                }
+            },
+            scales: {
+                x: { display: true },
+                y: { display: true }
+            },
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 80,
+                    top: 20,
+                    bottom: 10
+                }
+            }
+        }
+    });
+}
+
+function renderPerdasTipoChart(perdasMaq) {
+    const ctx = document.getElementById('perdasTipoChart')?.getContext('2d');
+    if (!ctx) return;
+    
+    const totalSetup = perdasMaq.M1.setup + perdasMaq.M2.setup + perdasMaq.M3.setup;
+    const totalAvaria = perdasMaq.M1.avaria + perdasMaq.M2.avaria + perdasMaq.M3.avaria;
+    const totalAparas = perdasMaq.M1.aparas + perdasMaq.M2.aparas + perdasMaq.M3.aparas;
+    
+    if (perdasTipoChart) perdasTipoChart.destroy();
+    
+    perdasTipoChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Setup', 'Paradas', 'Aparas'],
+            datasets: [{
+                label: 'Minutos',
+                data: [totalSetup, totalAvaria, totalAparas],
+                backgroundColor: ['#f59e0b', '#ef4444', '#10b981']
             }]
         },
         options: {
@@ -6572,8 +6747,44 @@ function removerProduto(produtoNome, cliente) {
                     anchor: 'end',
                     align: 'top',
                     formatter: val => Math.round(val) + ' min',
-                    font: { weight: 'bold', size: 10 }
+                    font: { weight: 'bold', size: 11 }
                 }
+            },
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
+        }
+    });
+}
+
+function renderPerdasEvolucaoChart(perdasDia) {
+    const ctx = document.getElementById('perdasEvolucaoChart')?.getContext('2d');
+    if (!ctx) return;
+    
+    const dias = Object.keys(perdasDia).sort();
+    const valores = dias.map(d => perdasDia[d]);
+    
+    if (perdasEvolucaoChart) perdasEvolucaoChart.destroy();
+    
+    perdasEvolucaoChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dias.map(d => d.split('-').reverse().join('/')),
+            datasets: [{
+                label: 'Perdas Totais (min)',
+                data: valores,
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239,68,68,0.1)',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                datalabels: { display: false },
+                tooltip: { callbacks: { label: (ctx) => Math.round(ctx.raw) + ' min' } }
             },
             scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
         }

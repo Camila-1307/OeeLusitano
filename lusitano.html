@@ -2346,7 +2346,7 @@
         { cliente: "BB EMBALAGENS", nome: "620X60 80KG SHRINK", est: 120, maquina: "M2", displayName: "BB EMBALAGENS - 620X60 80KG SHRINK (120 kg/h) - M2" }
     ];
 
-    // ============================================
+        // ============================================
     // FUNÇÕES DE FORMATAÇÃO E UTILIDADE
     // ============================================
     function formatarNumeroComPonto(valor) {
@@ -2360,7 +2360,7 @@
         if (turnosTemp.length > 0 || paradasDetalhadas.length > 0 || 
             document.getElementById('regProduzido').value != 0 || 
             document.getElementById('regOP').value != '') {
-            if (confirm('⚠️ Dados não salvos! Tem certeza que deseja cancelar? Os dados serão perdidos.')) {
+            if (confirm('Dados não salvos! Tem certeza que deseja cancelar? Os dados serão perdidos.')) {
                 closeModal();
             }
         } else {
@@ -2369,9 +2369,8 @@
     }
 
     function getTurnoDisplay(turno) {
-    // NÃO esconder C1 e C2 - mostrar como está
-    return turno;
-}
+        return turno;
+    }
 
     function classificarTurnoC(inicio, fim) {
         if (inicio === '22:00' && fim === '06:00') return 'C1';
@@ -2442,7 +2441,6 @@
         
         if (turno === 'C') {
             turno = classificarTurnoC(inicio, fim);
-            console.log(`🔄 Turno C classificado automaticamente: ${turno} (${inicio} - ${fim})`);
         }
         
         if (!podeAdicionarTurno(data, turno, inicio, fim)) {
@@ -2487,7 +2485,7 @@
         marcarDadosPendentes();
         atualizarPreview();
         
-        showToast(`✅ Turno ${turno} (${data.split('-').reverse().join('/')}) adicionado à lista!`);
+        showToast(`Turno ${turno} (${data.split('-').reverse().join('/')}) adicionado à lista!`);
     }
 
     function mostrarQuantidadesPeriodo() {
@@ -2533,7 +2531,7 @@
         document.getElementById('modalQuantidades').style.display = 'flex';
     }
     
-        function fecharModalQuantidades() {
+    function fecharModalQuantidades() {
         document.getElementById('modalQuantidades').style.display = 'none';
     }
 
@@ -2671,6 +2669,7 @@
     // FUNÇÕES DE DIAS SEM PEDIDO
     // ============================================
     function abrirModalSemPedido() {
+        if (!verificarPermissaoEscrita()) return;
         document.getElementById('semPedidoData').value = new Date().toISOString().split('T')[0];
         document.getElementById('semPedidoTurno').value = 'A';
         document.getElementById('semPedidoMaquina').value = 'M1';
@@ -2697,7 +2696,7 @@
         }
     }
 
-            async function salvarSemPedido() {
+    async function salvarSemPedido() {
         if (!verificarPermissaoEscrita()) return; 
 
         const data = document.getElementById('semPedidoData').value;
@@ -2756,57 +2755,29 @@
         fecharModalSemPedido();
         carregarCalendario();
     }
-	function limparProdutosDuplicados() {
-    console.log("🧹 Verificando produtos duplicados...");
     
-    const produtosUnicos = [];
-    const chavesExistentes = new Set();
-    let removidos = 0;
-    
-    for (const p of produtos) {
-        // A chave INCLUI a máquina para permitir produtos iguais em máquinas diferentes
-        const chave = `${p.cliente}|${p.nome}|${p.maquina}`;
-        
-        if (!chavesExistentes.has(chave)) {
-            chavesExistentes.add(chave);
-            produtosUnicos.push(p);
-        } else {
-            // Só remove se for EXATAMENTE o mesmo cliente, nome E máquina
-            console.log(`🗑️ Removendo duplicata EXATA: ${p.cliente} - ${p.nome} (${p.maquina}) - ${p.est} kg/h`);
-            removidos++;
-        }
-    }
-    
-    if (removidos > 0) {
-        const produtosAntigos = [...produtos];
-        produtos.length = 0;
-        produtos.push(...produtosUnicos);
-        localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
-        console.log(`✅ Removidas ${removidos} duplicatas EXATAS (mesmo cliente, nome E máquina).`);
-        console.log(`📊 Total antes: ${produtosAntigos.length} | Total depois: ${produtos.length} produtos`);
-        
-        // Mostrar quais produtos foram mantidos (para verificar)
-        console.log("📦 Produtos mantidos:");
-        produtos.forEach(p => {
-            console.log(`   • ${p.cliente} - ${p.nome} (${p.maquina}) - ${p.est} kg/h`);
-        });
-        
-        // Atualizar todas as telas
-        atualizarSelectClientesProduto();
-        atualizarListaClientesProdutos();
-        if (document.getElementById('clientModal').style.display === 'flex') {
-            mostrarProdutosDoCliente();
-        }
-        
-        showToast(`✅ ${removidos} duplicatas removidas!`);
-    } else {
-        console.log("✅ Nenhuma duplicata exata encontrada (produtos com mesmo nome em máquinas diferentes foram mantidos)");
-    }
-}
+    async function carregarDiasSemPedido() {
+        const { data, error } = await window.supabase
+            .from('dias_sem_pedido')
+            .select('*')
+            .order('data', { ascending: false });
 
-    function carregarDiasSemPedido() {
-        diasSemPedido = JSON.parse(localStorage.getItem('diasSemPedido') || '[]');
-        console.log(`📋 Carregados ${diasSemPedido.length} registros de dias sem pedido`);
+        if (error) {
+            console.error('Erro ao carregar dias sem pedido:', error.message);
+            diasSemPedido = [];
+            return;
+        }
+
+        diasSemPedido = (data || []).map(d => ({
+            id: d.id,
+            data: d.data,
+            turno: d.turno,
+            maquina: d.maquina,
+            inicio: d.inicio,
+            fim: d.fim,
+            horasParado: Number(d.horas_parado),
+            motivo: d.motivo
+        }));
     }
 
     function isDiaSemPedido(data, maquina, turno) {
@@ -2843,25 +2814,25 @@
             </div>
             <div class="flex flex-col gap-2">
                 <select id="parada-motivo-${index}" class="border-2 border-slate-200 p-2 rounded-lg text-sm w-full" onchange="mostrarCampoOutros(${index})">
-                    <option value="">📌 Selecione o motivo...</option>
-                    <option value="Avaria Elétrica">⚡ Avaria Elétrica</option>
-                    <option value="Avaria Mecânica">🔧 Avaria Mecânica</option>
-                    <option value="Falta de Energia">💡 Falta de Energia</option>
-                    <option value="Falta de Matéria-Prima">📦 Falta de Matéria-Prima</option>
-                    <option value="Manutenção Preventiva">🛠️ Manutenção Preventiva</option>
-                    <option value="Manutenção Corretiva">🔨 Manutenção Corretiva</option>
-                    <option value="Ajuste de Máquina">⚙️ Ajuste de Máquina</option>
-                    <option value="Setup">⏱️ Setup</option>
-                    <option value="Troca de Ferramenta">🔧 Troca de Ferramenta</option>
-                    <option value="Limpeza">🧹 Limpeza</option>
-                    <option value="Qualidade - Rejeição">📋 Qualidade - Rejeição</option>
-                    <option value="Falta de Operador">👤 Falta de Operador</option>
-                    <option value="Pausa Programada">⏸️ Pausa Programada</option>
-                    <option value="OUTROS">📌 Outros (especificar)</option>
+                    <option value="">Selecione o motivo...</option>
+                    <option value="Avaria Elétrica">Avaria Elétrica</option>
+                    <option value="Avaria Mecânica">Avaria Mecânica</option>
+                    <option value="Falta de Energia">Falta de Energia</option>
+                    <option value="Falta de Matéria-Prima">Falta de Matéria-Prima</option>
+                    <option value="Manutenção Preventiva">Manutenção Preventiva</option>
+                    <option value="Manutenção Corretiva">Manutenção Corretiva</option>
+                    <option value="Ajuste de Máquina">Ajuste de Máquina</option>
+                    <option value="Setup">Setup</option>
+                    <option value="Troca de Ferramenta">Troca de Ferramenta</option>
+                    <option value="Limpeza">Limpeza</option>
+                    <option value="Qualidade - Rejeição">Qualidade - Rejeição</option>
+                    <option value="Falta de Operador">Falta de Operador</option>
+                    <option value="Pausa Programada">Pausa Programada</option>
+                    <option value="OUTROS">Outros (especificar)</option>
                 </select>
                 <input type="text" 
                        id="parada-motivo-outros-${index}"
-                       placeholder="✏️ Escreva o motivo personalizado..."
+                       placeholder="Escreva o motivo personalizado..."
                        class="border-2 border-slate-200 p-2 rounded-lg text-sm hidden"
                        style="display: none;">
             </div>
@@ -2956,52 +2927,49 @@
     }
 
     async function inserirRegistro(novo) {
-    try {
-        const registroParaBanco = {
-            data: novo.data,
-            maquina: novo.machine,           // ← 'maquina'
-            turno: novo.turno,
-            op: novo.op,
-            produto: novo.produto,
-            cliente: novo.cliente,
-            disponibilidade: novo.disp,      // ← 'disponibilidade'
-            performance: novo.perf,          // ← 'performance'
-            qualidade: novo.qual,            // ← 'qualidade'
-            pedido: novo.pedido,
-            inicio: novo.inicio,
-            fim: novo.fim,
-            setup: novo.setup,
-            paradas: novo.avaria,            // ← 'paradas'
-            motivo_perda: novo.motivoPerda || '',
-            est: novo.est,
-            real_kgh: novo.realKgH,          // ← 'real_kgh'
-            produzido: novo.produzido,
-            rejeicao: novo.rejeicao,
-            aparas: novo.aparas,
-            criado_em: novo.timestamp
-        };
-        
-        console.log("📤 Enviando para o banco:", registroParaBanco);
-        
-        const { data, error } = await window.supabase
-            .from("oee_registros")
-            .insert([registroParaBanco])
-            .select();
+        try {
+            const registroParaBanco = {
+                data: novo.data,
+                maquina: novo.machine,
+                turno: novo.turno,
+                op: novo.op,
+                produto: novo.produto,
+                cliente: novo.cliente,
+                disponibilidade: novo.disp,
+                performance: novo.perf,
+                qualidade: novo.qual,
+                pedido: novo.pedido,
+                inicio: novo.inicio,
+                fim: novo.fim,
+                setup: novo.setup,
+                paradas: novo.avaria,
+                motivo_perda: novo.motivoPerda || '',
+                est: novo.est,
+                real_kgh: novo.realKgH,
+                produzido: novo.produzido,
+                rejeicao: novo.rejeicao,
+                aparas: novo.aparas,
+                criado_em: novo.timestamp
+            };
+            
+            const { data, error } = await window.supabase
+                .from("oee_registros")
+                .insert([registroParaBanco])
+                .select();
 
-        if (error) {
-            console.error("❌ Erro no Supabase:", error);
+            if (error) {
+                console.error("Erro no Supabase:", error);
+                showErrorToast(`Erro: ${error.message}`);
+                return null;
+            }
+            
+            return data;
+        } catch (error) {
+            console.error("Erro inesperado:", error);
             showErrorToast(`Erro: ${error.message}`);
             return null;
         }
-        
-        console.log("✅ Registro inserido com ID:", data?.[0]?.id);
-        return data;
-    } catch (error) {
-        console.error("❌ Erro inesperado:", error);
-        showErrorToast(`Erro: ${error.message}`);
-        return null;
     }
-}
 
     async function apagarRegistroBanco(id) {
         try {
@@ -3018,7 +2986,7 @@
     }
 
     async function apagarRegistro(id) {
-		if (!verificarPermissaoEscrita()) return;
+        if (!verificarPermissaoEscrita()) return;
         const idNum = typeof id === 'string' ? parseInt(id) : id;
         
         if (confirm("Deseja apagar este registo permanentemente?")) {
@@ -3026,9 +2994,9 @@
             if (apagado) {
                 historico = historico.filter(h => h.id !== idNum);
                 filterByRange();
-                showToast('✅ Registro apagado!');
+                showToast('Registro apagado!');
             } else {
-                showErrorToast('❌ Erro ao apagar registro!');
+                showErrorToast('Erro ao apagar registro!');
             }
         }
     }
@@ -3098,27 +3066,8 @@
             `;
         }).join('');
     }
-	function carregarProdutosDoLocalStorage() {
-    const produtosSalvos = localStorage.getItem('lusitano_produtos');
-    if (produtosSalvos) {
-        try {
-            const produtosCarregados = JSON.parse(produtosSalvos);
-            if (produtosCarregados && produtosCarregados.length > 0) {
-                produtos.length = 0;
-                produtos.push(...produtosCarregados);
-                console.log(`✅ Carregados ${produtos.length} produtos do localStorage`);
-                return true;
-            }
-        } catch(e) {
-            console.error("Erro ao carregar produtos:", e);
-        }
-    }
-    console.log("⚠️ Nenhum produto encontrado no localStorage");
-    return false;
-}
 
     function selecionarCliente(cliente) {
-        console.log("Selecionando cliente:", cliente);
         clienteSelecionado = cliente;
         produtoSelecionado = null;
         document.getElementById('regProduto').value = '';
@@ -3184,7 +3133,7 @@
         nomeProduto = nomeProduto.trim();
         
         let maquinaExibicao = maquinaDoProduto ? ` -  ${maquinaDoProduto}` : '';
-        document.getElementById('produtoSelecionadoInfo').innerHTML = `📦 ${nomeProduto} (${est} kg/h)${maquinaExibicao}`;
+        document.getElementById('produtoSelecionadoInfo').innerHTML = `${nomeProduto} (${est} kg/h)${maquinaExibicao}`;
         
         document.getElementById('selecaoClientesArea').style.display = 'none';
         
@@ -3235,7 +3184,7 @@
         
         document.getElementById('clienteSelecionadoDisplay').style.display = 'flex';
         document.getElementById('clienteSelecionadoNome').innerHTML = cliente;
-        document.getElementById('produtoSelecionadoInfo').innerHTML = `📦 ${produto} (${est} kg/h) -  ${maquina}`;
+        document.getElementById('produtoSelecionadoInfo').innerHTML = `${produto} (${est} kg/h) -  ${maquina}`;
         
         document.getElementById('selecaoClientesArea').style.display = 'none';
         
@@ -3243,74 +3192,71 @@
         
         closeClientModal();
         
-        showToast(`✅ Produto selecionado: ${produto} (${maquina})`);
+        showToast(`Produto selecionado: ${produto} (${maquina})`);
     }
 
     function mostrarProdutosDoCliente() {
-    const cliente = document.getElementById('produtoCliente').value;
-    const container = document.getElementById('produtosPreviewContainer');
-    const lista = document.getElementById('produtosPreviewList');
-    const nomeSpan = document.getElementById('clienteSelecionadoNome');
-    
-    if (!cliente) {
-        container.style.display = 'none';
-        return;
-    }
-    
-    const produtosDoCliente = produtos.filter(p => p.cliente === cliente);
-    
-    container.style.display = 'block';
-    nomeSpan.textContent = cliente;
-    
-    if (produtosDoCliente.length === 0) {
-        lista.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">Nenhum produto cadastrado para este cliente.</p>';
-        return;
-    }
-    
-    // Agrupar produtos por nome (para mostrar todas as variações de máquina)
-    const produtosAgrupados = new Map();
-    produtosDoCliente.forEach(p => {
-        if (!produtosAgrupados.has(p.nome)) {
-            produtosAgrupados.set(p.nome, []);
+        const cliente = document.getElementById('produtoCliente').value;
+        const container = document.getElementById('produtosPreviewContainer');
+        const lista = document.getElementById('produtosPreviewList');
+        const nomeSpan = document.getElementById('clienteSelecionadoNome');
+        
+        if (!cliente) {
+            container.style.display = 'none';
+            return;
         }
-        produtosAgrupados.get(p.nome).push(p);
-    });
-    
-    // Renderizar cada produto com suas variações de máquina
-    lista.innerHTML = Array.from(produtosAgrupados.entries()).map(([nomeProduto, variantes]) => {
-        // Para cada variante (máquina), criar uma linha independente
-        return variantes.map(v => {
-            let corMaquina = '';
-            let corBg = '';
-            if (v.maquina === 'M1') {
-                corMaquina = 'text-green-700';
-                corBg = 'bg-green-100';
-            } else if (v.maquina === 'M2') {
-                corMaquina = 'text-red-700';
-                corBg = 'bg-red-100';
-            } else {
-                corMaquina = 'text-yellow-700';
-                corBg = 'bg-yellow-100';
+        
+        const produtosDoCliente = produtos.filter(p => p.cliente === cliente);
+        
+        container.style.display = 'block';
+        nomeSpan.textContent = cliente;
+        
+        if (produtosDoCliente.length === 0) {
+            lista.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">Nenhum produto cadastrado para este cliente.</p>';
+            return;
+        }
+        
+        const produtosAgrupados = new Map();
+        produtosDoCliente.forEach(p => {
+            if (!produtosAgrupados.has(p.nome)) {
+                produtosAgrupados.set(p.nome, []);
             }
-            
-            const estDisplay = v.est || 0;
-            const maquinaDisplay = v.maquina || 'M1';
-            
-            return `
-                <div class="produto-item-gestao cursor-pointer" 
-                     onclick="selecionarProdutoDireto('${cliente.replace(/'/g, "\\'")}', '${nomeProduto.replace(/'/g, "\\'")}', '${maquinaDisplay}', ${estDisplay})">
-                    <div class="produto-info-gestao">
-                        <span class="produto-nome-gestao"> ${nomeProduto}</span>
-                        <div class="produto-detalhes-gestao">
-                            <span class="badge-maquina-gestao ${corBg} ${corMaquina}"> ${maquinaDisplay}</span>
-                            <span class="badge-est-gestao"> ${estDisplay} kg/h</span>
+            produtosAgrupados.get(p.nome).push(p);
+        });
+        
+        lista.innerHTML = Array.from(produtosAgrupados.entries()).map(([nomeProduto, variantes]) => {
+            return variantes.map(v => {
+                let corMaquina = '';
+                let corBg = '';
+                if (v.maquina === 'M1') {
+                    corMaquina = 'text-green-700';
+                    corBg = 'bg-green-100';
+                } else if (v.maquina === 'M2') {
+                    corMaquina = 'text-red-700';
+                    corBg = 'bg-red-100';
+                } else {
+                    corMaquina = 'text-yellow-700';
+                    corBg = 'bg-yellow-100';
+                }
+                
+                const estDisplay = v.est || 0;
+                const maquinaDisplay = v.maquina || 'M1';
+                
+                return `
+                    <div class="produto-item-gestao cursor-pointer" 
+                         onclick="selecionarProdutoDireto('${cliente.replace(/'/g, "\\'")}', '${nomeProduto.replace(/'/g, "\\'")}', '${maquinaDisplay}', ${estDisplay})">
+                        <div class="produto-info-gestao">
+                            <span class="produto-nome-gestao"> ${nomeProduto}</span>
+                            <div class="produto-detalhes-gestao">
+                                <span class="badge-maquina-gestao ${corBg} ${corMaquina}"> ${maquinaDisplay}</span>
+                                <span class="badge-est-gestao"> ${estDisplay} kg/h</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
+            }).join('');
         }).join('');
-    }).join('');
-}
+    }
 
     function openClientModal() {
         atualizarSelectClientesProduto();
@@ -3329,7 +3275,9 @@
         document.getElementById('clientModal').style.display = 'none';
     }
 
-    function adicionarCliente() {
+    async function adicionarCliente() {
+        if (!verificarPermissaoEscrita()) return;
+        
         const novoCliente = document.getElementById('novoCliente').value.trim();
         if (novoCliente) {
             if (clientes.includes(novoCliente)) {
@@ -3337,7 +3285,16 @@
                 return;
             }
             clientes.push(novoCliente);
-            localStorage.setItem('lusitano_clientes', JSON.stringify(clientes));
+            
+            const { error } = await window.supabase
+                .from('clientes')
+                .insert([{ nome: novoCliente }]);
+                
+            if (error) {
+                showErrorToast(`Erro ao salvar no banco: ${error.message}`);
+                return;
+            }
+            
             atualizarSelectClientesProduto();
             atualizarListaClientesProdutos();
             document.getElementById('novoCliente').value = '';
@@ -3353,93 +3310,98 @@
         }
     }
 
-    function adicionarProduto() {
-    const cliente = document.getElementById('produtoCliente').value;
-    const produto = document.getElementById('novoProduto').value.trim();
-    const maquina = document.getElementById('produtoMaquina').value;
-    const est = safeNumber(document.getElementById('produtoEst').value);
-    
-    if (!cliente || !produto || !maquina || est <= 0) {
-        alert('Preencha todos os campos corretamente!');
-        return;
-    }
-    
-    // VERIFICAÇÃO DE DUPLICIDADE MAIS RÍGIDA
-    const produtoExistente = produtos.find(p => 
-        p.cliente === cliente && 
-        p.nome === produto && 
-        p.maquina === maquina
-    );
-    
-    if (produtoExistente) {
-        showErrorToast(`❌ Produto "${produto}" já existe para ${cliente} na máquina ${maquina}!`);
-        return;
-    }
-    
-    // Verificar se existe o mesmo produto em máquina diferente (apenas aviso)
-    const existeEmOutraMaquina = produtos.some(p => 
-        p.cliente === cliente && 
-        p.nome === produto && 
-        p.maquina !== maquina
-    );
-    
-    // Adicionar o produto
-    const novoProduto = {
-        cliente: cliente,
-        nome: produto,
-        maquina: maquina,
-        est: est,
-        displayName: `${cliente} - ${produto} (${est} kg/h) - ${maquina}`
-    };
-    
-    produtos.push(novoProduto);
-    
-    // Salvar no localStorage
-    localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
-    
-    let mensagem = `✅ Produto "${produto}" adicionado em ${maquina} (${est} kg/h)`;
-    if (existeEmOutraMaquina) {
-        mensagem = `⚠️ Produto "${produto}" adicionado em ${maquina}!\n\nℹ️ Este produto já existe em outra máquina. Agora você pode escolher qual máquina usar ao selecionar o produto.`;
-        showWarningToast(mensagem);
-    } else {
-        showToast(mensagem);
-    }
-    
-    // Atualizar as listas
-    atualizarSelectClientesProduto();
-    atualizarListaClientesProdutos();
-    mostrarProdutosDoCliente();
-    
-    // Limpar campos
-    document.getElementById('novoProduto').value = '';
-    document.getElementById('produtoEst').value = '';
-    
-    // Manter o cliente selecionado no select
-    const selectCliente = document.getElementById('produtoCliente');
-    if (selectCliente) {
-        selectCliente.value = cliente;
-    }
-    
-    // Atualizar a visualização dos produtos do cliente
-    mostrarProdutosDoCliente();
-    
-    // Se o modal de edição estiver aberto, atualizar também
-    atualizarTodosSelectsProdutos();
-    
-    // Limpar busca se houver
-    const buscaInput = document.getElementById('buscaClientesGerenciamento');
-    if (buscaInput && buscaInput.value) {
-        filtrarClientesGerenciamento(buscaInput.value);
-    }
-}
+    async function adicionarProduto() {
+        if (!verificarPermissaoEscrita()) return;
+        
+        const cliente = document.getElementById('produtoCliente').value;
+        const nome = document.getElementById('novoProduto').value.trim();
+        const maquina = document.getElementById('produtoMaquina').value;
+        const est = safeNumber(document.getElementById('produtoEst').value);
+        
+        if (!cliente || !nome || !maquina || est <= 0) {
+            alert('Preencha todos os campos corretamente!');
+            return;
+        }
+        
+        const { data: clienteRow, error: errCli } = await window.supabase
+            .from('clientes')
+            .select('id')
+            .eq('nome', cliente)
+            .single();
 
-    function removerProduto(produtoNome, cliente) {
-        if (confirm(`Deseja remover o produto "${produtoNome}"?`)) {
-            produtos = produtos.filter(p => p.nome !== produtoNome || p.cliente !== cliente);
-            localStorage.setItem('lusitano_produtos', JSON.stringify(produtos));
+        if (errCli || !clienteRow) {
+            showErrorToast('Cliente não encontrado no banco!');
+            return;
+        }
+
+        const { data, error } = await window.supabase
+            .from('produtos')
+            .insert([{
+                cliente_id: clienteRow.id,
+                nome: nome,
+                maquina: maquina,
+                est: est
+            }])
+            .select()
+            .single();
+
+        if (error) {
+            if (error.code === '23505') {
+                showErrorToast(`Produto "${nome}" já existe para este cliente na máquina ${maquina}!`);
+            } else {
+                showErrorToast(`Erro: ${error.message}`);
+            }
+            return;
+        }
+
+        produtos.push({
+            id: data.id,
+            cliente: cliente,
+            nome: data.nome,
+            maquina: data.maquina,
+            est: Number(data.est),
+            displayName: `${cliente} - ${data.nome} (${data.est} kg/h) - ${data.maquina}`
+        });
+        
+        showToast(`Produto "${nome}" adicionado com sucesso.`);
+        document.getElementById('novoProduto').value = '';
+        document.getElementById('produtoEst').value = '';
+        atualizarSelectClientesProduto();
+        atualizarListaClientesProdutos();
+        mostrarProdutosDoCliente();
+        atualizarTodosSelectsProdutos();
+        
+        const buscaInput = document.getElementById('buscaClientesGerenciamento');
+        if (buscaInput && buscaInput.value) {
+            filtrarClientesGerenciamento(buscaInput.value);
+        }
+    }
+
+    async function removerProduto(nome, cliente, maquina) {
+        if (!verificarPermissaoEscrita()) return;
+        
+        if (confirm(`Deseja remover o produto "${nome}" da máquina ${maquina}?`)) {
+            const prod = produtos.find(p => p.nome === nome && p.cliente === cliente && p.maquina === maquina);
+            if (!prod) {
+                showErrorToast('Produto não encontrado!');
+                return;
+            }
+            
+            const { error } = await window.supabase
+                .from('produtos')
+                .delete()
+                .eq('id', prod.id);
+                
+            if (error) {
+                showErrorToast(`Erro: ${error.message}`);
+                return;
+            }
+            
+            produtos = produtos.filter(p => p.id !== prod.id);
             atualizarSelectClientesProduto();
             atualizarListaClientesProdutos();
             mostrarProdutosDoCliente();
+            atualizarTodosSelectsProdutos();
             showToast('Produto removido com sucesso!');
             
             const buscaInput = document.getElementById('buscaClientesGerenciamento');
@@ -3450,60 +3412,104 @@
     }
 
     function atualizarSelectClientesProduto() {
-    const selectCliente = document.getElementById('produtoCliente');
-    const selectEdit = document.getElementById('editProduto');
-    
-    if (selectCliente) {
-        const valorAtualCliente = selectCliente.value;
-        selectCliente.innerHTML = '<option value="">Selecionar cliente...</option>' + 
-            clientes.map(c => `<option value="${c}">${c}</option>`).join('');
-        if (valorAtualCliente) selectCliente.value = valorAtualCliente;
-    }
-    
-    if (selectEdit) {
-        const valorAtualEdit = selectEdit.value;
-        selectEdit.innerHTML = '<option value="">Selecionar cliente/produto...</option>' + 
-            produtos.map(p => `<option value="${p.displayName}">${p.displayName}</option>`).join('');
-        if (valorAtualEdit && valorAtualEdit !== '') {
-            selectEdit.value = valorAtualEdit;
+        const selectCliente = document.getElementById('produtoCliente');
+        const selectEdit = document.getElementById('editProduto');
+        
+        if (selectCliente) {
+            const valorAtualCliente = selectCliente.value;
+            selectCliente.innerHTML = '<option value="">Selecionar cliente...</option>' + 
+                clientes.map(c => `<option value="${c}">${c}</option>`).join('');
+            if (valorAtualCliente) selectCliente.value = valorAtualCliente;
+        }
+        
+        if (selectEdit) {
+            const valorAtualEdit = selectEdit.value;
+            selectEdit.innerHTML = '<option value="">Selecionar cliente/produto...</option>' + 
+                produtos.map(p => `<option value="${p.displayName}">${p.displayName}</option>`).join('');
+            if (valorAtualEdit && valorAtualEdit !== '') {
+                selectEdit.value = valorAtualEdit;
+            }
         }
     }
-}
-   // Chamar esta função sempre que produtos forem modificados
-	 function atualizarTodosSelectsProdutos() {
-	    atualizarSelectClientesProduto();
-    
-   // Se o modal de edição estiver aberto, recarregar também
-    	const editModal = document.getElementById('editModal');
-    	if (editModal && editModal.style.display === 'flex') {
-        const currentProduto = document.getElementById('editProduto')?.value;
-        recarregarSelectProdutosEdicao(currentProduto);
+
+    function atualizarTodosSelectsProdutos() {
+        atualizarSelectClientesProduto();
+        const editModal = document.getElementById('editModal');
+        if (editModal && editModal.style.display === 'flex') {
+            const currentProduto = document.getElementById('editProduto')?.value;
+            recarregarSelectProdutosEdicao(currentProduto);
+        }
     }
-}
-
-// Modificar adicionarProduto e removerProduto para chamar atualizarTodosSelectsProdutos
-function adicionarProduto() {
-    // ... código existente ...
-    atualizarTodosSelectsProdutos(); // Adicionar esta linha
-}
-
-function removerProduto(produtoNome, cliente) {
-    // ... código existente ...
-    atualizarTodosSelectsProdutos(); // Adicionar esta linha
-}
 
     function atualizarListaClientesProdutos() {
-    const tbody = document.getElementById('clientes-produtos-list');
-    if (!tbody) return;
-    
-    tbody.innerHTML = clientes.map(cliente => {
-        const produtosCliente = produtos.filter(p => p.cliente === cliente);
+        const tbody = document.getElementById('clientes-produtos-list');
+        if (!tbody) return;
         
-        if (produtosCliente.length === 0) {
+        tbody.innerHTML = clientes.map(cliente => {
+            const produtosCliente = produtos.filter(p => p.cliente === cliente);
+            
+            if (produtosCliente.length === 0) {
+                return `
+                    <tr class="border-t">
+                        <td class="p-4 font-bold align-top">${cliente}<\/td>
+                        <td class="p-4 text-slate-400 italic">Nenhum produto cadastrado<\/td>
+                        <td class="p-4 text-center align-top">
+                            <button onclick="removerCliente('${cliente.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        <\/td>
+                     <\/tr>
+                `;
+            }
+            
+            const produtosHTML = produtosCliente.map((p, idx) => {
+                const produtoNum = (idx % 8) + 1;
+                const nomeProduto = p.nome || 'Produto sem nome';
+                const estDisplay = p.est || 0;
+                const maquinaDisplay = p.maquina || 'M1';
+                
+                let corMaquinaTexto = '';
+                let corMaquinaBg = '';
+                if (maquinaDisplay === 'M1') {
+                    corMaquinaTexto = 'text-green-700';
+                    corMaquinaBg = 'bg-green-100';
+                } else if (maquinaDisplay === 'M2') {
+                    corMaquinaTexto = 'text-red-700';
+                    corMaquinaBg = 'bg-red-100';
+                } else if (maquinaDisplay === 'M3') {
+                    corMaquinaTexto = 'text-yellow-700';
+                    corMaquinaBg = 'bg-yellow-100';
+                } else {
+                    corMaquinaTexto = 'text-gray-700';
+                    corMaquinaBg = 'bg-gray-100';
+                }
+                
+                return `
+                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded mb-1">
+                        <div class="flex items-center gap-2">
+                            <span class="product-badge product-${produtoNum}">${nomeProduto}</span>
+                            <span class="text-xs font-bold ${corMaquinaTexto} ${corMaquinaBg} px-2 py-0.5 rounded-full">
+                                 ${maquinaDisplay}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold"> ${estDisplay} kg/h</span>
+                            <button onclick="removerProduto('${nomeProduto.replace(/'/g, "\\'")}', '${cliente.replace(/'/g, "\\'")}', '${maquinaDisplay}')" class="text-red-500 hover:text-red-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
             return `
                 <tr class="border-t">
                     <td class="p-4 font-bold align-top">${cliente}<\/td>
-                    <td class="p-4 text-slate-400 italic">Nenhum produto cadastrado<\/td>
+                    <td class="p-4"><div class="flex flex-col gap-1">${produtosHTML}<\/div><\/td>
                     <td class="p-4 text-center align-top">
                         <button onclick="removerCliente('${cliente.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-700">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3513,88 +3519,72 @@ function removerProduto(produtoNome, cliente) {
                     <\/td>
                  <\/tr>
             `;
-        }
-        
-        const produtosHTML = produtosCliente.map((p, idx) => {
-            const produtoNum = (idx % 8) + 1;
-            const nomeProduto = p.nome || 'Produto sem nome';
-            const estDisplay = p.est || 0;
-            const maquinaDisplay = p.maquina || 'M1';
-            
-            // CORES CORRETAS PARA CADA MÁQUINA
-            let corMaquinaTexto = '';
-            let corMaquinaBg = '';
-            if (maquinaDisplay === 'M1') {
-                corMaquinaTexto = 'text-green-700';
-                corMaquinaBg = 'bg-green-100';
-            } else if (maquinaDisplay === 'M2') {
-                corMaquinaTexto = 'text-red-700';
-                corMaquinaBg = 'bg-red-100';
-            } else if (maquinaDisplay === 'M3') {
-                corMaquinaTexto = 'text-yellow-700';      // ← Amarelo para M3
-                corMaquinaBg = 'bg-yellow-100';           // ← Fundo amarelo claro
-            } else {
-                corMaquinaTexto = 'text-gray-700';
-                corMaquinaBg = 'bg-gray-100';
-            }
-            
-            return `
-                <div class="flex items-center justify-between bg-slate-50 p-2 rounded mb-1">
-                    <div class="flex items-center gap-2">
-                        <span class="product-badge product-${produtoNum}">${nomeProduto}</span>
-                        <span class="text-xs font-bold ${corMaquinaTexto} ${corMaquinaBg} px-2 py-0.5 rounded-full">
-                             ${maquinaDisplay}
-                        </span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm font-bold"> ${estDisplay} kg/h</span>
-                        <button onclick="removerProduto('${nomeProduto.replace(/'/g, "\\'")}', '${cliente.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-700">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            `;
         }).join('');
-        
-        return `
-            <tr class="border-t">
-                <td class="p-4 font-bold align-top">${cliente}<\/td>
-                <td class="p-4"><div class="flex flex-col gap-1">${produtosHTML}<\/div><\/td>
-                <td class="p-4 text-center align-top">
-                    <button onclick="removerCliente('${cliente.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                    </button>
-                <\/td>
-             <\/tr>
-        `;
-    }).join('');
-}
-
+    }
 
     function filtrarClientesGerenciamento(termo) {
-    const tbody = document.getElementById('clientes-produtos-list');
-    if (!tbody) return;
-    
-    const termoLower = termo.toLowerCase();
-    const clientesFiltrados = clientes.filter(c => c.toLowerCase().includes(termoLower));
-    
-    const contadorSpan = document.getElementById('clientesSearchCount');
-    if (contadorSpan) {
-        contadorSpan.innerHTML = `${clientesFiltrados.length}`;
-    }
-    
-    tbody.innerHTML = clientesFiltrados.map(cliente => {
-        const produtosCliente = produtos.filter(p => p.cliente === cliente);
+        const tbody = document.getElementById('clientes-produtos-list');
+        if (!tbody) return;
         
-        if (produtosCliente.length === 0) {
+        const termoLower = termo.toLowerCase();
+        const clientesFiltrados = clientes.filter(c => c.toLowerCase().includes(termoLower));
+        
+        const contadorSpan = document.getElementById('clientesSearchCount');
+        if (contadorSpan) {
+            contadorSpan.innerHTML = `${clientesFiltrados.length}`;
+        }
+        
+        tbody.innerHTML = clientesFiltrados.map(cliente => {
+            const produtosCliente = produtos.filter(p => p.cliente === cliente);
+            
+            if (produtosCliente.length === 0) {
+                return `
+                    <tr class="border-t">
+                        <td class="p-4 font-bold align-top">${cliente}<\/td>
+                        <td class="p-4 text-slate-400 italic">Nenhum produto cadastrado<\/td>
+                        <td class="p-4 text-center align-top">
+                            <button onclick="removerCliente('${cliente.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        <\/td>
+                     <\/tr>
+                `;
+            }
+            
+            const produtosHTML = produtosCliente.map((p, idx) => {
+                const produtoNum = (idx % 8) + 1;
+                const corMaquina = p.maquina === 'M1' ? 'text-green-600' : p.maquina === 'M2' ? 'text-red-600' : 'text-yellow-600';
+                const corBg = p.maquina === 'M1' ? 'green' : p.maquina === 'M2' ? 'red' : 'yellow';
+                const nomeProduto = p.nome || 'Produto sem nome';
+                const estDisplay = p.est || 0;
+                const maquinaDisplay = p.maquina || 'M1';
+                
+                return `
+                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded mb-1">
+                        <div class="flex items-center gap-2">
+                            <span class="product-badge product-${produtoNum}">${nomeProduto}</span>
+                            <span class="text-xs font-bold ${corMaquina} bg-${corBg}-100 px-2 py-0.5 rounded-full">
+                                ${maquinaDisplay}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold">${estDisplay} kg/h</span>
+                            <button onclick="removerProduto('${nomeProduto.replace(/'/g, "\\'")}', '${cliente.replace(/'/g, "\\'")}', '${maquinaDisplay}')" class="text-red-500 hover:text-red-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
             return `
                 <tr class="border-t">
                     <td class="p-4 font-bold align-top">${cliente}<\/td>
-                    <td class="p-4 text-slate-400 italic">Nenhum produto cadastrado<\/td>
+                    <td class="p-4"><div class="flex flex-col gap-1">${produtosHTML}<\/div><\/td>
                     <td class="p-4 text-center align-top">
                         <button onclick="removerCliente('${cliente.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-700">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3604,164 +3594,110 @@ function removerProduto(produtoNome, cliente) {
                     <\/td>
                  <\/tr>
             `;
-        }
-        
-        const produtosHTML = produtosCliente.map((p, idx) => {
-            const produtoNum = (idx % 8) + 1;
-            const corMaquina = p.maquina === 'M1' ? 'text-green-600' : p.maquina === 'M2' ? 'text-red-600' : 'text-yellow-600';
-            const corBg = p.maquina === 'M1' ? 'green' : p.maquina === 'M2' ? 'red' : 'yellow';
-            const nomeProduto = p.nome || 'Produto sem nome';
-            const estDisplay = p.est || 0;
-            const maquinaDisplay = p.maquina || 'M1';
-            
-            return `
-                <div class="flex items-center justify-between bg-slate-50 p-2 rounded mb-1">
-                    <div class="flex items-center gap-2">
-                        <span class="product-badge product-${produtoNum}">${nomeProduto}</span>
-                        <span class="text-xs font-bold ${corMaquina} bg-${corBg}-100 px-2 py-0.5 rounded-full">
-                            ${maquinaDisplay}
-                        </span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm font-bold">${estDisplay} kg/h</span>
-                        <button onclick="removerProduto('${nomeProduto.replace(/'/g, "\\'")}', '${cliente.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-700">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            `;
         }).join('');
         
-        return `
-            <tr class="border-t">
-                <td class="p-4 font-bold align-top">${cliente}<\/td>
-                <td class="p-4"><div class="flex flex-col gap-1">${produtosHTML}<\/div><\/td>
-                <td class="p-4 text-center align-top">
-                    <button onclick="removerCliente('${cliente.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                    </button>
-                <\/td>
-             <\/tr>
-        `;
-    }).join('');
-    
-    if (clientesFiltrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-slate-400">Nenhum cliente encontrado<\/td><\/tr>';
+        if (clientesFiltrados.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-slate-400">Nenhum cliente encontrado<\/td><\/tr>';
+        }
     }
-}
 
     function processarRegistrosComTurnoC(registros) {
-    const registrosProcessados = [];
-    
-    for (const reg of registros) {
-        // Se já for C1 ou C2, precisa verificar se está no formato correto
-        if (reg.turno === 'C1' || reg.turno === 'C2') {
-            // Verificar se o C1 está com horário 22:00 - 06:00 (8h) - precisa corrigir
-            if (reg.turno === 'C1' && reg.inicio === '22:00' && reg.fim === '06:00') {
-                // Este C1 está errado (tem 8h), precisa ser corrigido
-                console.log(`🔧 Corrigindo C1 com horário incorreto: OP ${reg.op}`);
+        const registrosProcessados = [];
+        
+        for (const reg of registros) {
+            if (reg.turno === 'C1' || reg.turno === 'C2') {
+                if (reg.turno === 'C1' && reg.inicio === '22:00' && reg.fim === '06:00') {
+                    const producaoTotal = reg.produzido || 0;
+                    const horasC1Correto = 2;
+                    const horasC2Correto = 6;
+                    const totalHoras = 8;
+                    
+                    const producaoC1 = (producaoTotal * horasC1Correto) / totalHoras;
+                    
+                    const regC1Corrigido = {
+                        ...reg,
+                        fim: '00:00',
+                        produzido: producaoC1,
+                        isParteTurnoC: true,
+                        parteTurnoC: 'C1'
+                    };
+                    registrosProcessados.push(regC1Corrigido);
+                    
+                    const dataObj = new Date(reg.data);
+                    dataObj.setDate(dataObj.getDate() + 1);
+                    const dataSeguinte = dataObj.toISOString().split('T')[0];
+                    
+                    const producaoC2 = (producaoTotal * horasC2Correto) / totalHoras;
+                    
+                    const regC2 = {
+                        ...reg,
+                        turno: 'C2',
+                        data: dataSeguinte,
+                        inicio: '00:00',
+                        fim: '06:00',
+                        produzido: producaoC2,
+                        isParteTurnoC: true,
+                        parteTurnoC: 'C2',
+                        id: reg.id + '_c2'
+                    };
+                    registrosProcessados.push(regC2);
+                } else {
+                    registrosProcessados.push(reg);
+                }
+            }
+            else if (reg.turno === 'C') {
+                const minutosInicio = horaParaMinutos(reg.inicio);
+                const minutosFim = horaParaMinutos(reg.fim);
                 
-                // Calcular produção proporcional
-                const producaoTotal = reg.produzido || 0;
-                const horasC1Correto = 2; // 22:00-00:00 = 2h
-                const horasC2Correto = 6; // 00:00-06:00 = 6h
-                const totalHoras = 8;
-                
-                const producaoC1 = (producaoTotal * horasC1Correto) / totalHoras;
-                
-                // Criar C1 corrigido
-                const regC1Corrigido = {
-                    ...reg,
-                    fim: '00:00',
-                    produzido: producaoC1,
-                    isParteTurnoC: true,
-                    parteTurnoC: 'C1'
-                };
-                registrosProcessados.push(regC1Corrigido);
-                
-                // Criar C2 correspondente no dia seguinte
-                const dataObj = new Date(reg.data);
-                dataObj.setDate(dataObj.getDate() + 1);
-                const dataSeguinte = dataObj.toISOString().split('T')[0];
-                
-                const producaoC2 = (producaoTotal * horasC2Correto) / totalHoras;
-                
-                const regC2 = {
-                    ...reg,
-                    turno: 'C2',
-                    data: dataSeguinte,
-                    inicio: '00:00',
-                    fim: '06:00',
-                    produzido: producaoC2,
-                    isParteTurnoC: true,
-                    parteTurnoC: 'C2',
-                    id: reg.id + '_c2'
-                };
-                registrosProcessados.push(regC2);
-                
-                console.log(`✅ Corrigido: C1 ${reg.data} (${producaoC1.toFixed(2)}kg) e C2 ${dataSeguinte} (${producaoC2.toFixed(2)}kg)`);
+                if (minutosFim < minutosInicio) {
+                    const producaoTotal = reg.produzido || 0;
+                    const horasC1 = (24 * 60 - minutosInicio) / 60;
+                    const horasC2 = minutosFim / 60;
+                    const totalHoras = horasC1 + horasC2;
+                    
+                    const producaoC1 = (producaoTotal * horasC1) / totalHoras;
+                    const producaoC2 = (producaoTotal * horasC2) / totalHoras;
+                    
+                    const regC1 = {
+                        ...reg,
+                        turno: 'C1',
+                        data: reg.data,
+                        inicio: reg.inicio,
+                        fim: '00:00',
+                        produzido: producaoC1,
+                        isParteTurnoC: true,
+                        parteTurnoC: 'C1'
+                    };
+                    
+                    const dataObj = new Date(reg.data);
+                    dataObj.setDate(dataObj.getDate() + 1);
+                    const dataSeguinte = dataObj.toISOString().split('T')[0];
+                    
+                    const regC2 = {
+                        ...reg,
+                        turno: 'C2',
+                        data: dataSeguinte,
+                        inicio: '00:00',
+                        fim: reg.fim,
+                        produzido: producaoC2,
+                        isParteTurnoC: true,
+                        parteTurnoC: 'C2'
+                    };
+                    
+                    registrosProcessados.push(regC1, regC2);
+                } else {
+                    registrosProcessados.push(reg);
+                }
             } else {
                 registrosProcessados.push(reg);
             }
         }
-        // Se for turno C (normal), dividir normalmente
-        else if (reg.turno === 'C') {
-            const minutosInicio = horaParaMinutos(reg.inicio);
-            const minutosFim = horaParaMinutos(reg.fim);
-            
-            if (minutosFim < minutosInicio) {
-                const producaoTotal = reg.produzido || 0;
-                const horasC1 = (24 * 60 - minutosInicio) / 60;
-                const horasC2 = minutosFim / 60;
-                const totalHoras = horasC1 + horasC2;
-                
-                const producaoC1 = (producaoTotal * horasC1) / totalHoras;
-                const producaoC2 = (producaoTotal * horasC2) / totalHoras;
-                
-                const regC1 = {
-                    ...reg,
-                    turno: 'C1',
-                    data: reg.data,
-                    inicio: reg.inicio,
-                    fim: '00:00',
-                    produzido: producaoC1,
-                    isParteTurnoC: true,
-                    parteTurnoC: 'C1'
-                };
-                
-                const dataObj = new Date(reg.data);
-                dataObj.setDate(dataObj.getDate() + 1);
-                const dataSeguinte = dataObj.toISOString().split('T')[0];
-                
-                const regC2 = {
-                    ...reg,
-                    turno: 'C2',
-                    data: dataSeguinte,
-                    inicio: '00:00',
-                    fim: reg.fim,
-                    produzido: producaoC2,
-                    isParteTurnoC: true,
-                    parteTurnoC: 'C2'
-                };
-                
-                registrosProcessados.push(regC1, regC2);
-            } else {
-                registrosProcessados.push(reg);
-            }
-        } else {
-            registrosProcessados.push(reg);
-        }
+        
+        return registrosProcessados;
     }
-    
-    return registrosProcessados;
-}
 
     // ============================================
-    // FUNÇÕES DE CALENDÁRIO (ITEM 1 - usar registros processados)
+    // FUNÇÕES DE CALENDÁRIO
     // ============================================
     function carregarCalendario() {
         const maquinaCalendario = document.getElementById('machineCalendarSelect').value;
@@ -3775,7 +3711,6 @@ function removerProduto(produtoNome, cliente) {
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
         
-        // Processar registros com Turno C dividido
         const historicoProcessado = processarRegistrosComTurnoC(historico);
         
         let dias = [];
@@ -3832,9 +3767,9 @@ function removerProduto(produtoNome, cliente) {
                 onclickAttr = '';
             } else if (temSemPedido) {
                 classeDia = 'dia-sem-pedido';
-                tooltipText = `🔸 Sem produção por falta de pedido: ${motivosSemPedido.join(', ')}`;
+                tooltipText = `Sem produção por falta de pedido: ${motivosSemPedido.join(', ')}`;
                 if (temProducao) {
-                    tooltipText += `\n✅ Também teve produção: ${turnosTexto}`;
+                    tooltipText += `\nTambém teve produção: ${turnosTexto}`;
                 }
             } else if (temProducao) {
                 classeDia = 'com-producao';
@@ -3847,7 +3782,7 @@ function removerProduto(produtoNome, cliente) {
                      class="${classeDia} cursor-pointer transition-all hover:scale-105 p-3 rounded text-center font-semibold"
                      title="${tooltipText || turnosTexto || 'Sem registro'}">
                     ${d}
-                    ${temSemPedido ? '<div class="text-[8px] font-bold text-amber-600 mt-1">⚠️ sem pedido</div>' : ''}
+                    ${temSemPedido ? '<div class="text-[8px] font-bold text-amber-600 mt-1">sem pedido</div>' : ''}
                 </div>
             `);
         }
@@ -3871,14 +3806,12 @@ function removerProduto(produtoNome, cliente) {
     }
 
     // ============================================
-    // FUNÇÕES DE VISUALIZAÇÃO (ITEM 1 - usar registros processados)
+    // FUNÇÕES DE VISUALIZAÇÃO
     // ============================================
     function abrirModalDia(data) {
         const dataFormatada = data.split('-').reverse().join('/');
         
         const semPedidosDia = diasSemPedido.filter(d => d.data === data);
-        
-        // Processar registros com Turno C dividido
         const historicoProcessado = processarRegistrosComTurnoC(historico);
         
         const pedidosM1 = historicoProcessado.filter(h => h.data === data && h.machine === 'M1')
@@ -3898,7 +3831,6 @@ function removerProduto(produtoNome, cliente) {
         function calcularEstatisticasMaquina(pedidos) {
             if (pedidos.length === 0) return { horas: 0, kg: 0, oee: 0, pedidos: 0 };
             
-            // ITEM 2: Corrigir horas totais para não ultrapassar 24h (usar minutos)
             let totalMinutos = 0;
             let totalKg = 0, somaOEE = 0;
             
@@ -3912,7 +3844,6 @@ function removerProduto(produtoNome, cliente) {
                 somaOEE += calcularOEE(p.disp, p.perf, p.qual);
             });
             
-            // Limitar a 1440 minutos (24h)
             const minutosLimitados = Math.min(totalMinutos, 1440);
             const horasLimitadas = minutosLimitados / 60;
             
@@ -3928,7 +3859,6 @@ function removerProduto(produtoNome, cliente) {
         const statsM2 = calcularEstatisticasMaquina(pedidosM2);
         const statsM3 = calcularEstatisticasMaquina(pedidosM3);
         
-        // ITEM 2: Horas ociosas = 24 - horas produtivas (garantindo não negativo)
         const horasOciosasM1 = Math.max(0, 24 - statsM1.horas);
         const horasOciosasM2 = Math.max(0, 24 - statsM2.horas);
         const horasOciosasM3 = Math.max(0, 24 - statsM3.horas);
@@ -3938,7 +3868,7 @@ function removerProduto(produtoNome, cliente) {
             semPedidoHTML = `
                 <div class="mt-4 bg-amber-50 rounded-xl p-4 border border-amber-200">
                     <h3 class="font-bold text-amber-800 mb-3 flex items-center gap-2">
-                        <span>📋</span> Registros de Falta de Pedido
+                        <span>Registros de Falta de Pedido</span>
                         <span class="text-[10px] bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">Não impactam indicadores</span>
                     </h3>
                     <div class="space-y-2">
@@ -3947,15 +3877,15 @@ function removerProduto(produtoNome, cliente) {
                                 <div class="flex justify-between items-start">
                                     <div>
                                         <span class="font-bold text-amber-700">${sp.maquina === 'ALL' ? 'Todas Máquinas' : sp.maquina}</span>
-                                        <span class="mx-2">•</span>
+                                        <span class="mx-2">|</span>
                                         <span class="font-mono text-sm">Turno ${sp.turno}</span>
-                                        <span class="mx-2">•</span>
+                                        <span class="mx-2">|</span>
                                         <span class="text-sm">${sp.inicio} - ${sp.fim}</span>
-                                        <span class="mx-2">•</span>
+                                        <span class="mx-2">|</span>
                                         <span class="text-sm font-bold">${sp.horasParado}h parado</span>
                                     </div>
                                 </div>
-                                <div class="text-sm text-amber-600 mt-1">📝 ${sp.motivo}</div>
+                                <div class="text-sm text-amber-600 mt-1">${sp.motivo}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -3974,13 +3904,13 @@ function removerProduto(produtoNome, cliente) {
         modal.innerHTML = `
             <div class="bg-white rounded-3xl shadow-2xl w-[95vw] max-w-7xl p-6 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
                 <div class="flex justify-between items-center mb-4 border-b pb-3">
-                    <h2 class="font-black uppercase text-slate-800 text-2xl">📅 ANÁLISE DO DIA ${dataFormatada}</h2>
+                    <h2 class="font-black uppercase text-slate-800 text-2xl">ANÁLISE DO DIA ${dataFormatada}</h2>
                     <button onclick="fecharModalDia()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div class="maquina-resumo-card m1">
-                        <div class="maquina-titulo text-green-700">📊 M1</div>
+                        <div class="maquina-titulo text-green-700">M1</div>
                         <div class="text-center mb-2"><span class="text-4xl font-black">${statsM1.pedidos}</span><span class="text-sm ml-1">pedidos</span></div>
                         <div class="grid grid-cols-2 gap-2 text-center">
                             <div><div class="stat-label">Horas Produtivas</div><div class="stat-value ${statsM1.horas > 0 ? 'positivo' : 'neutro'}">${statsM1.horas.toFixed(1)}h</div></div>
@@ -3990,7 +3920,7 @@ function removerProduto(produtoNome, cliente) {
                         </div>
                     </div>
                     <div class="maquina-resumo-card m2">
-                        <div class="maquina-titulo text-red-700">📊 M2</div>
+                        <div class="maquina-titulo text-red-700">M2</div>
                         <div class="text-center mb-2"><span class="text-4xl font-black">${statsM2.pedidos}</span><span class="text-sm ml-1">pedidos</span></div>
                         <div class="grid grid-cols-2 gap-2 text-center">
                             <div><div class="stat-label">Horas Produtivas</div><div class="stat-value ${statsM2.horas > 0 ? 'positivo' : 'neutro'}">${statsM2.horas.toFixed(1)}h</div></div>
@@ -4000,7 +3930,7 @@ function removerProduto(produtoNome, cliente) {
                         </div>
                     </div>
                     <div class="maquina-resumo-card m3">
-                        <div class="maquina-titulo text-yellow-700">📊 M3</div>
+                        <div class="maquina-titulo text-yellow-700">M3</div>
                         <div class="text-center mb-2"><span class="text-4xl font-black">${statsM3.pedidos}</span><span class="text-sm ml-1">pedidos</span></div>
                         <div class="grid grid-cols-2 gap-2 text-center">
                             <div><div class="stat-label">Horas Produtivas</div><div class="stat-value ${statsM3.horas > 0 ? 'positivo' : 'neutro'}">${statsM3.horas.toFixed(1)}h</div></div>
@@ -4029,149 +3959,139 @@ function removerProduto(produtoNome, cliente) {
     }
 
     function criarColunaMaquina(pedidos, maquina) {
-    if (pedidos.length === 0) {
-        return `<div class="bg-white rounded-xl p-4 text-center border"><div class="text-slate-400 italic">SEM APONTAMENTO</div></div>`;
-    }
-    
-    // Ordem correta dos turnos: C2 (madrugada) → A → B → C1 (noite)
-    const ordemTurnos = ['C2', 'A', 'B', 'C1'];
-    let html = `<div class="bg-white rounded-xl p-3 border"><h3 class="font-bold mb-3 text-center text-${maquina === 'M1' ? 'green' : maquina === 'M2' ? 'red' : 'yellow'}-700"> ${maquina}</h3>`;
-    
-    ordemTurnos.forEach(turnoNome => {
-        let pedidosTurno;
-        
-        if (turnoNome === 'C1' || turnoNome === 'C2') {
-            pedidosTurno = pedidos.filter(p => p.turno === turnoNome);
-        } else {
-            pedidosTurno = pedidos.filter(p => p.turno === turnoNome);
+        if (pedidos.length === 0) {
+            return `<div class="bg-white rounded-xl p-4 text-center border"><div class="text-slate-400 italic">SEM APONTAMENTO</div></div>`;
         }
         
-        // Definir cores e horários
-        let coresTurno, horarioTexto;
+        const ordemTurnos = ['C2', 'A', 'B', 'C1'];
+        let html = `<div class="bg-white rounded-xl p-3 border"><h3 class="font-bold mb-3 text-center text-${maquina === 'M1' ? 'green' : maquina === 'M2' ? 'red' : 'yellow'}-700"> ${maquina}</h3>`;
         
-        if (turnoNome === 'C1') {
-            coresTurno = 'bg-purple-100 text-purple-800';
-            horarioTexto = '22:00 - 00:00';
-        } else if (turnoNome === 'C2') {
-            coresTurno = 'bg-indigo-100 text-indigo-800';
-            horarioTexto = '00:00 - 06:00';
-        } else if (turnoNome === 'A') {
-            coresTurno = 'bg-yellow-100 text-yellow-800';
-            horarioTexto = '06:00 - 14:00';
-        } else {
-            coresTurno = 'bg-green-100 text-green-800';
-            horarioTexto = '14:00 - 22:00';
-        }
-        
-        if (pedidosTurno.length === 0) {
-            html += `<div class="mb-4"><div class="flex items-center gap-2 mb-2"><span class="text-xs font-bold px-2 py-1 rounded-full ${coresTurno}">TURNO ${turnoNome === 'C1' ? 'C1 (Noite)' : (turnoNome === 'C2' ? 'C2 (Madrugada)' : turnoNome)}</span><span class="text-[10px] text-slate-500">${horarioTexto}</span></div><div class="timeline-maquina"><div class="timeline-item border-l-4 border-gray-300 bg-gray-50"><div class="flex items-center gap-2"><span class="text-gray-400">⏸️</span><span class="text-gray-500 text-xs">SEM PRODUÇÃO</span></div></div></div></div>`;
-            return;
-        }
-        
-        let inicioTurno, fimTurno;
-        if (turnoNome === 'C1') {
-            inicioTurno = horaParaMinutos('22:00');
-            fimTurno = 24 * 60;
-        } else if (turnoNome === 'C2') {
-            inicioTurno = 0;
-            fimTurno = horaParaMinutos('06:00');
-        } else if (turnoNome === 'A') {
-            inicioTurno = horaParaMinutos('06:00');
-            fimTurno = horaParaMinutos('14:00');
-        } else {
-            inicioTurno = horaParaMinutos('14:00');
-            fimTurno = horaParaMinutos('22:00');
-        }
-        
-        let pedidosProcessados = pedidosTurno.map(p => {
-            let inicioMin = horaParaMinutos(p.inicio);
-            let fimMin = horaParaMinutos(p.fim);
+        ordemTurnos.forEach(turnoNome => {
+            let pedidosTurno;
             
-            if (fimMin < inicioMin) fimMin += 24 * 60;
+            if (turnoNome === 'C1' || turnoNome === 'C2') {
+                pedidosTurno = pedidos.filter(p => p.turno === turnoNome);
+            } else {
+                pedidosTurno = pedidos.filter(p => p.turno === turnoNome);
+            }
             
-            return { ...p, inicioMin, fimMin };
-        });
-        
-        pedidosProcessados.sort((a, b) => a.inicioMin - b.inicioMin);
-        
-        const nomeExibicao = turnoNome === 'C1' ? 'TURNO C1 (Noite)' : (turnoNome === 'C2' ? 'TURNO C2 (Madrugada)' : `TURNO ${turnoNome}`);
-        
-        html += `<div class="mb-4"><div class="flex items-center gap-2 mb-2"><span class="text-xs font-bold px-2 py-1 rounded-full ${coresTurno}">${nomeExibicao}</span><span class="text-[10px] text-slate-500">${horarioTexto}</span></div><div class="timeline-maquina">`;
-        
-        let ultimoFim = inicioTurno;
-        
-        for (let p of pedidosProcessados) {
-            if (p.inicioMin > ultimoFim + 1) {
-                const inicioGap = minutosParaHora(ultimoFim % (24*60));
-                const fimGap = minutosParaHora(p.inicioMin % (24*60));
-                const duracaoGap = ((p.inicioMin - ultimoFim) / 60).toFixed(1);
+            let coresTurno, horarioTexto;
+            
+            if (turnoNome === 'C1') {
+                coresTurno = 'bg-purple-100 text-purple-800';
+                horarioTexto = '22:00 - 00:00';
+            } else if (turnoNome === 'C2') {
+                coresTurno = 'bg-indigo-100 text-indigo-800';
+                horarioTexto = '00:00 - 06:00';
+            } else if (turnoNome === 'A') {
+                coresTurno = 'bg-yellow-100 text-yellow-800';
+                horarioTexto = '06:00 - 14:00';
+            } else {
+                coresTurno = 'bg-green-100 text-green-800';
+                horarioTexto = '14:00 - 22:00';
+            }
+            
+            if (pedidosTurno.length === 0) {
+                html += `<div class="mb-4"><div class="flex items-center gap-2 mb-2"><span class="text-xs font-bold px-2 py-1 rounded-full ${coresTurno}">TURNO ${turnoNome === 'C1' ? 'C1 (Noite)' : (turnoNome === 'C2' ? 'C2 (Madrugada)' : turnoNome)}</span><span class="text-[10px] text-slate-500">${horarioTexto}</span></div><div class="timeline-maquina"><div class="timeline-item border-l-4 border-gray-300 bg-gray-50"><div class="flex items-center gap-2"><span class="text-gray-500 text-xs">SEM PRODUÇÃO</span></div></div></div></div>`;
+                return;
+            }
+            
+            let inicioTurno, fimTurno;
+            if (turnoNome === 'C1') {
+                inicioTurno = horaParaMinutos('22:00');
+                fimTurno = 24 * 60;
+            } else if (turnoNome === 'C2') {
+                inicioTurno = 0;
+                fimTurno = horaParaMinutos('06:00');
+            } else if (turnoNome === 'A') {
+                inicioTurno = horaParaMinutos('06:00');
+                fimTurno = horaParaMinutos('14:00');
+            } else {
+                inicioTurno = horaParaMinutos('14:00');
+                fimTurno = horaParaMinutos('22:00');
+            }
+            
+            let pedidosProcessados = pedidosTurno.map(p => {
+                let inicioMin = horaParaMinutos(p.inicio);
+                let fimMin = horaParaMinutos(p.fim);
                 
+                if (fimMin < inicioMin) fimMin += 24 * 60;
+                
+                return { ...p, inicioMin, fimMin };
+            });
+            
+            pedidosProcessados.sort((a, b) => a.inicioMin - b.inicioMin);
+            
+            const nomeExibicao = turnoNome === 'C1' ? 'TURNO C1 (Noite)' : (turnoNome === 'C2' ? 'TURNO C2 (Madrugada)' : `TURNO ${turnoNome}`);
+            
+            html += `<div class="mb-4"><div class="flex items-center gap-2 mb-2"><span class="text-xs font-bold px-2 py-1 rounded-full ${coresTurno}">${nomeExibicao}</span><span class="text-[10px] text-slate-500">${horarioTexto}</span></div><div class="timeline-maquina">`;
+            
+            let ultimoFim = inicioTurno;
+            
+            for (let p of pedidosProcessados) {
+                if (p.inicioMin > ultimoFim + 1) {
+                    const inicioGap = minutosParaHora(ultimoFim % (24*60));
+                    const fimGap = minutosParaHora(p.inicioMin % (24*60));
+                    const duracaoGap = ((p.inicioMin - ultimoFim) / 60).toFixed(1);
+                    
+                    html += `<div class="timeline-item border-l-4 border-orange-500">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-orange-500 text-[10px]">SEM PRODUÇÃO (${duracaoGap}h)</span>
+                                </div>
+                             </div>`;
+                }
+                
+                const inicioHora = minutosParaHora(p.inicioMin % (24*60));
+                const fimHora = minutosParaHora(p.fimMin % (24*60));
+                const duracao = ((p.fimMin - p.inicioMin) / 60).toFixed(1);
+                const oee = calcularOEE(p.disp, p.perf, p.qual);
+                const statusOEE = oee >= 85 ? 'text-green-600' : oee >= 60 ? 'text-yellow-600' : 'text-red-600';
+                
+                let borderClass = 'border-green-500';
+                if (oee < 60) borderClass = 'border-red-500';
+                else if (oee < 85) borderClass = 'border-yellow-500';
+                
+                html += `
+                    <div class="pedido-card-modal border-l-4 ${borderClass}" onclick="event.stopPropagation(); abrirDetalhesPedido(${p.id})">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="op-numero font-bold">OP ${p.op}</span>
+                                <span class="text-[10px] text-slate-500 ml-1">${p.turno}</span>
+                            </div>
+                            <span class="text-xs font-bold ${statusOEE}">${oee}%</span>
+                        </div>
+                        <div class="mt-1 text-xs">
+                            <div class="font-mono">${inicioHora} → ${fimHora} <span class="text-slate-400">(${duracao}h)</span></div>
+                            <div class="truncate" title="${p.produto}">${p.produto?.split(' - ')[0] || '-'}</div>
+                            <div class="flex gap-2 mt-1 flex-wrap">
+                                <span>${formatarNumeroComPonto(p.produzido)} kg</span>
+                                ${p.setup > 0 ? `<span class="text-orange-600">Setup: ${p.setup}min</span>` : ''}
+                                ${p.avaria > 0 ? `<span class="text-red-600">Paradas: ${p.avaria}min</span>` : ''}
+                                ${p.realKgH ? `<span class="text-blue-600">${p.realKgH} kg/h</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                ultimoFim = Math.max(ultimoFim, p.fimMin);
+            }
+            
+            if (ultimoFim < fimTurno - 1) {
+                const duracaoGap = ((fimTurno - ultimoFim) / 60).toFixed(1);
                 html += `<div class="timeline-item border-l-4 border-orange-500">
                             <div class="flex items-center gap-2">
-                                <span class="text-orange-600">⏸️</span>
-                                <span class="font-mono text-xs">${inicioGap} → ${fimGap}</span>
                                 <span class="text-orange-500 text-[10px]">SEM PRODUÇÃO (${duracaoGap}h)</span>
                             </div>
                          </div>`;
             }
             
-            const inicioHora = minutosParaHora(p.inicioMin % (24*60));
-            const fimHora = minutosParaHora(p.fimMin % (24*60));
-            const duracao = ((p.fimMin - p.inicioMin) / 60).toFixed(1);
-            const oee = calcularOEE(p.disp, p.perf, p.qual);
-            const statusOEE = oee >= 85 ? 'text-green-600' : oee >= 60 ? 'text-yellow-600' : 'text-red-600';
-            
-            let borderClass = 'border-green-500';
-            if (oee < 60) borderClass = 'border-red-500';
-            else if (oee < 85) borderClass = 'border-yellow-500';
-            
-            html += `
-                <div class="pedido-card-modal border-l-4 ${borderClass}" onclick="event.stopPropagation(); abrirDetalhesPedido(${p.id})">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="op-numero font-bold">OP ${p.op}</span>
-                            <span class="text-[10px] text-slate-500 ml-1">${p.turno}</span>
-                        </div>
-                        <span class="text-xs font-bold ${statusOEE}">${oee}%</span>
-                    </div>
-                    <div class="mt-1 text-xs">
-                        <div class="font-mono">${inicioHora} → ${fimHora} <span class="text-slate-400">(${duracao}h)</span></div>
-                        <div class="truncate" title="${p.produto}">📦 ${p.produto?.split(' - ')[0] || '-'}</div>
-                        <div class="flex gap-2 mt-1 flex-wrap">
-                            <span>⚖️ ${formatarNumeroComPonto(p.produzido)} kg</span>
-                            ${p.setup > 0 ? `<span class="text-orange-600">⚙️ ${p.setup}min</span>` : ''}
-                            ${p.avaria > 0 ? `<span class="text-red-600">⏸️ ${p.avaria}min</span>` : ''}
-                            ${p.realKgH ? `<span class="text-blue-600">📊 ${p.realKgH} kg/h</span>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            ultimoFim = Math.max(ultimoFim, p.fimMin);
-        }
+            html += `</div></div>`;
+        });
         
-        if (ultimoFim < fimTurno - 1) {
-            const inicioGap = minutosParaHora(ultimoFim % (24*60));
-            const fimGap = minutosParaHora(fimTurno % (24*60));
-            const duracaoGap = ((fimTurno - ultimoFim) / 60).toFixed(1);
-            
-            html += `<div class="timeline-item border-l-4 border-orange-500">
-                        <div class="flex items-center gap-2">
-                            <span class="text-orange-600">⏸️</span>
-                            <span class="font-mono text-xs">${inicioGap} → ${fimGap}</span>
-                            <span class="text-orange-500 text-[10px]">SEM PRODUÇÃO (${duracaoGap}h)</span>
-                        </div>
-                     </div>`;
-        }
-        
-        html += `</div></div>`;
-    });
-    
-    html += `</div>`;
-    return html;
-}
+        html += `</div>`;
+        return html;
+    }
 
-    // ITEM 4 e 5: abrirDetalhesPedido corrigido para não fechar modais e z-index correto
     function abrirDetalhesPedido(id) {
         const registro = historico.find(r => r.id === id);
         if (!registro) return;
@@ -4185,7 +4105,7 @@ function removerProduto(produtoNome, cliente) {
         modal.innerHTML = `
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 m-4 modal-content">
                 <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h2 class="font-black uppercase text-slate-800 text-xl">📋 Detalhes do Pedido</h2>
+                    <h2 class="font-black uppercase text-slate-800 text-xl">Detalhes do Pedido</h2>
                     <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
                 </div>
                 <div class="space-y-3">
@@ -4204,7 +4124,7 @@ function removerProduto(produtoNome, cliente) {
                     </div>
                 </div>
                 <div class="mt-4 flex justify-end gap-2">
-                    <button onclick="event.stopPropagation(); this.closest('.fixed').remove(); openEditModal(${registro.id})" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">✏️ Editar</button>
+                    <button onclick="event.stopPropagation(); this.closest('.fixed').remove(); openEditModal(${registro.id})" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">Editar</button>
                     <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-slate-200 text-slate-800 font-bold rounded-lg hover:bg-slate-300">Fechar</button>
                 </div>
             </div>
@@ -4232,7 +4152,6 @@ function removerProduto(produtoNome, cliente) {
         });
         
         turnosTemp.forEach((turno, index) => {
-            const dataFormatada = turno.data.split('-').reverse().join('/');
             const duracao = calcularDuracaoHoras(turno.inicio, turno.fim).toFixed(1);
             
             let html = `
@@ -4245,9 +4164,9 @@ function removerProduto(produtoNome, cliente) {
                             </div>
                             
                             <div class="flex items-center gap-3 text-xs flex-wrap">
-                                <span class="font-medium">📦 Prod: ${formatarNumeroComPonto(turno.produzido)} kg</span>
-                                <span class="${turno.setup > 0 ? 'text-orange-600' : 'text-slate-400'}">⚙️ Setup: ${turno.setup}min</span>
-                                <span class="${turno.avaria > 0 ? 'text-red-600 font-bold' : 'text-slate-400'}">⏸️ Avaria: ${turno.avaria}min</span>
+                                <span class="font-medium">Prod: ${formatarNumeroComPonto(turno.produzido)} kg</span>
+                                <span class="${turno.setup > 0 ? 'text-orange-600' : 'text-slate-400'}">Setup: ${turno.setup}min</span>
+                                <span class="${turno.avaria > 0 ? 'text-red-600 font-bold' : 'text-slate-400'}">Avaria: ${turno.avaria}min</span>
                             </div>
             `;
             
@@ -4256,7 +4175,7 @@ function removerProduto(produtoNome, cliente) {
                 turno.paradasDetalhadas.forEach(p => {
                     html += `
                         <div class="text-[10px] text-purple-700 flex items-center gap-1">
-                            <span>⏱️ ${p.inicio} - ${p.fim}</span>
+                            <span>${p.inicio} - ${p.fim}</span>
                             <span class="font-medium">${p.motivo || 'Sem motivo'}</span>
                         </div>
                     `;
@@ -4341,42 +4260,29 @@ function removerProduto(produtoNome, cliente) {
                 indicador = document.createElement('span');
                 indicador.id = 'autosave-indicator';
                 indicador.className = 'ml-3 text-xs text-orange-500 font-bold';
-                indicador.innerHTML = '⚡ Não salvo';
+                indicador.innerHTML = 'Não salvo';
                 btnSalvar.parentNode.appendChild(indicador);
             }
         } else {
-            indicador.innerHTML = '⚡ Não salvo';
+            indicador.innerHTML = 'Não salvo';
             indicador.className = 'ml-3 text-xs text-orange-500 font-bold';
         }
-        
-        if (autoSaveTimer) clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => {
-            if (dadosPendentes) {
-                autoSalvar();
-            }
-        }, 300000);
     }
 
     async function autoSalvar() {
-        console.log("🔄 Autosave: Tentando salvar dados pendentes...");
-        
-        if (!dadosPendentes) {
-            console.log("📝 Sem dados pendentes");
-            return;
-        }
+        if (!dadosPendentes) return;
         
         const modal = document.getElementById('modal');
         if (modal && modal.style.display === 'flex') {
             await calcularESalvar();
         } else {
-            console.log("❌ Modal fechado, não há dados para salvar");
             dadosPendentes = false;
         }
     }
 
     async function calcularESalvar() {
-        console.log("🟢 Salvando dados...");
-        
+        if (!verificarPermissaoEscrita()) return;
+
         if (!document.getElementById('regProduto').value) {
             showErrorToast('Selecione um cliente e produto!');
             return;
@@ -4390,8 +4296,7 @@ function removerProduto(produtoNome, cliente) {
     }
 
     async function salvarTurnoUnico() {
-		if (!verificarPermissaoEscrita()) return;
-        console.log("📝 Salvando turno único...");
+        if (!verificarPermissaoEscrita()) return;
         
         const data = document.getElementById('regDate').value;
         const machine = document.getElementById('regMachine').value;
@@ -4414,9 +4319,8 @@ function removerProduto(produtoNome, cliente) {
         }
         
         if (turno === 'C') {
-    	     // Manter como 'C' - a divisão será feita apenas na visualização
-    	     console.log(`🟢 Turno C mantido como 'C' para divisão na visualização`);
-	}
+            turno = classificarTurnoC(inicio, fim);
+        }
         
         const conflitos = verificarSobreposicao(data, machine, inicio, fim);
         if (conflitos.length > 0) {
@@ -4475,8 +4379,6 @@ function removerProduto(produtoNome, cliente) {
             timestamp: new Date().toISOString()
         };
         
-        console.log("Salvando turno único:", novoRegistro);
-        
         const resultado = await inserirRegistro(novoRegistro);
         
         if (resultado && resultado.length > 0) {
@@ -4485,7 +4387,7 @@ function removerProduto(produtoNome, cliente) {
             
             recalcularDisponibilidadesTurno(data, machine, turno);
             
-            showToast('✅ Turno salvo com sucesso!');
+            showToast('Turno salvo com sucesso!');
             
             limparIndicadorAutosave();
             document.getElementById('regForm').reset();
@@ -4515,112 +4417,110 @@ function removerProduto(produtoNome, cliente) {
     }
 
     async function salvarMultiplosTurnos() {
-	if (!verificarPermissaoEscrita()) return;
-    console.log("🟢 Salvando múltiplos turnos...");
-    
-    if (turnosTemp.length === 0) {
-        showErrorToast('Adicione pelo menos um turno!');
-        return;
-    }
-    
-    for (let t of turnosTemp) {
-        const conflitos = verificarSobreposicao(t.data, t.machine, t.inicio, t.fim);
-        if (conflitos.length > 0) {
-            let mensagem = `⚠️ Conflito de horário na máquina ${t.machine} para o turno ${t.turno} do dia ${t.data}!\n\n`;
-            conflitos.forEach(c => {
-                mensagem += `• Conflito com OP ${c.op} (${c.inicio} - ${c.fim})\n`;
-            });
-            showErrorToast(mensagem);
+        if (!verificarPermissaoEscrita()) return;
+        
+        if (turnosTemp.length === 0) {
+            showErrorToast('Adicione pelo menos um turno!');
             return;
         }
-    }
-    
-    let registrosSalvos = 0;
-    
-    for (let t of turnosTemp) {
-        const perf = calcularPerformance(t.est, t.produzido, t.inicio, t.fim, t.setup, t.avaria);
-        const qual = calcularQualidade(t.produzido, t.rejeicao, t.aparas);
-        const dispOP = calcularDisponibilidadeOP(t.inicio, t.fim, t.setup, t.avaria);
-        const realKgH = calcularRealKgH(t.produzido, t.inicio, t.fim, t.setup, t.avaria);
-        
-        const produtoInfo = produtos.find(p => p.displayName === t.produtoDisplay) || { cliente: '' };
-        
-        let motivoPrincipal = '';
-        if (t.paradasDetalhadas && t.paradasDetalhadas.length > 0) {
-            motivoPrincipal = t.paradasDetalhadas[0].motivo || '';
-        }
-        
-        const novoRegistro = {
-            data: t.data,
-            machine: t.machine,
-            turno: t.turno,
-            op: t.op,
-            produto: t.produtoDisplay,
-            cliente: produtoInfo.cliente || 'Sem cliente',
-            disp: dispOP || 0,
-            perf: perf || 0,
-            qual: qual || 0,
-            pedido: t.pedido || 0,
-            inicio: t.inicio,
-            fim: t.fim,
-            setup: t.setup || 0,
-            avaria: t.avaria || 0,
-            motivoPerda: motivoPrincipal,
-            est: t.est || 0,
-            realKgH: realKgH || 0,
-            produzido: t.produzido || 0,
-            rejeicao: t.rejeicao || 0,
-            aparas: t.aparas || 0,
-            timestamp: new Date().toISOString()
-        };
-        
-        const resultado = await inserirRegistro(novoRegistro);
-        
-        if (resultado && resultado.length > 0) {
-            novoRegistro.id = resultado[0].id;
-            historico.push(novoRegistro);
-            registrosSalvos++;
-        }
-    }
-    
-    if (registrosSalvos === turnosTemp.length) {
-        showToast(`✅ ${registrosSalvos} turnos salvos com sucesso!`);
         
         for (let t of turnosTemp) {
-            const opsDoTurno = historico.filter(h => 
-                h.data === t.data && h.machine === t.machine && h.turno === t.turno
-            );
-            if (opsDoTurno.length > 0) {
-                const dispTurno = calcularDisponibilidadeTurno(opsDoTurno);
-                opsDoTurno.forEach(op => op.dispTurno = dispTurno);
+            const conflitos = verificarSobreposicao(t.data, t.machine, t.inicio, t.fim);
+            if (conflitos.length > 0) {
+                let mensagem = `Conflito de horário na máquina ${t.machine} para o turno ${t.turno} do dia ${t.data}!\n\n`;
+                conflitos.forEach(c => {
+                    mensagem += `• Conflito com OP ${c.op} (${c.inicio} - ${c.fim})\n`;
+                });
+                showErrorToast(mensagem);
+                return;
             }
         }
         
-        limparIndicadorAutosave();
-        document.getElementById('regForm').reset();
-        turnosTemp = [];
-        paradasDetalhadas = [];
-        document.getElementById('paradas-detalhadas-container').innerHTML = '';
-        atualizarListaTurnos();
+        let registrosSalvos = 0;
         
-        document.getElementById('regDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('regInicio').value = '06:00';
-        document.getElementById('regFim').value = '14:00';
-        document.getElementById('regEst').value = '90';
+        for (let t of turnosTemp) {
+            const perf = calcularPerformance(t.est, t.produzido, t.inicio, t.fim, t.setup, t.avaria);
+            const qual = calcularQualidade(t.produzido, t.rejeicao, t.aparas);
+            const dispOP = calcularDisponibilidadeOP(t.inicio, t.fim, t.setup, t.avaria);
+            const realKgH = calcularRealKgH(t.produzido, t.inicio, t.fim, t.setup, t.avaria);
+            
+            const produtoInfo = produtos.find(p => p.displayName === t.produtoDisplay) || { cliente: '' };
+            
+            let motivoPrincipal = '';
+            if (t.paradasDetalhadas && t.paradasDetalhadas.length > 0) {
+                motivoPrincipal = t.paradasDetalhadas[0].motivo || '';
+            }
+            
+            const novoRegistro = {
+                data: t.data,
+                machine: t.machine,
+                turno: t.turno,
+                op: t.op,
+                produto: t.produtoDisplay,
+                cliente: produtoInfo.cliente || 'Sem cliente',
+                disp: dispOP || 0,
+                perf: perf || 0,
+                qual: qual || 0,
+                pedido: t.pedido || 0,
+                inicio: t.inicio,
+                fim: t.fim,
+                setup: t.setup || 0,
+                avaria: t.avaria || 0,
+                motivoPerda: motivoPrincipal,
+                est: t.est || 0,
+                realKgH: realKgH || 0,
+                produzido: t.produzido || 0,
+                rejeicao: t.rejeicao || 0,
+                aparas: t.aparas || 0,
+                timestamp: new Date().toISOString()
+            };
+            
+            const resultado = await inserirRegistro(novoRegistro);
+            
+            if (resultado && resultado.length > 0) {
+                novoRegistro.id = resultado[0].id;
+                historico.push(novoRegistro);
+                registrosSalvos++;
+            }
+        }
         
-        clienteSelecionado = null;
-        produtoSelecionado = null;
-        document.getElementById('clienteSelecionadoDisplay').style.display = 'none';
-        document.getElementById('selecaoClientesArea').style.display = 'block';
-        document.getElementById('buscaClienteCard').value = '';
-        
-        closeModal();
-        filterByRange();
-    } else {
-        showWarningToast(`⚠️ ${registrosSalvos} de ${turnosTemp.length} turnos salvos.`);
+        if (registrosSalvos === turnosTemp.length) {
+            showToast(`${registrosSalvos} turnos salvos com sucesso!`);
+            
+            for (let t of turnosTemp) {
+                const opsDoTurno = historico.filter(h => 
+                    h.data === t.data && h.machine === t.machine && h.turno === t.turno
+                );
+                if (opsDoTurno.length > 0) {
+                    const dispTurno = calcularDisponibilidadeTurno(opsDoTurno);
+                    opsDoTurno.forEach(op => op.dispTurno = dispTurno);
+                }
+            }
+            
+            limparIndicadorAutosave();
+            document.getElementById('regForm').reset();
+            turnosTemp = [];
+            paradasDetalhadas = [];
+            document.getElementById('paradas-detalhadas-container').innerHTML = '';
+            atualizarListaTurnos();
+            
+            document.getElementById('regDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('regInicio').value = '06:00';
+            document.getElementById('regFim').value = '14:00';
+            document.getElementById('regEst').value = '90';
+            
+            clienteSelecionado = null;
+            produtoSelecionado = null;
+            document.getElementById('clienteSelecionadoDisplay').style.display = 'none';
+            document.getElementById('selecaoClientesArea').style.display = 'block';
+            document.getElementById('buscaClienteCard').value = '';
+            
+            closeModal();
+            filterByRange();
+        } else {
+            showWarningToast(`Atenção: ${registrosSalvos} de ${turnosTemp.length} turnos salvos.`);
+        }
     }
-}
-    
 
     function recalcularDisponibilidadesTurno(data, maquina, turno) {
         const opsDoTurno = historico.filter(h => 
@@ -4656,8 +4556,6 @@ function removerProduto(produtoNome, cliente) {
     // FUNÇÕES DE SOBREPOSIÇÃO
     // ============================================
     function verificarSobreposicao(data, maquina, inicio, fim, idIgnorar = null) {
-        console.log(`🔍 Verificando sobreposição para: Data=${data}, Máquina=${maquina}, Horário=${inicio}-${fim}`);
-        
         const novoInicio = horaParaMinutos(inicio);
         let novoFim = horaParaMinutos(fim);
         
@@ -4683,8 +4581,8 @@ function removerProduto(produtoNome, cliente) {
         return conflitos;
     }
 
-        function openEditModal(id) {
-        if (!verificarPermissaoEscrita()) return; // Bloqueia visualizador
+    function openEditModal(id) {
+        if (!verificarPermissaoEscrita()) return; 
         
         const idNum = typeof id === 'string' ? parseInt(id) : id;
         const reg = historico.find(h => h.id === idNum);
@@ -4694,7 +4592,6 @@ function removerProduto(produtoNome, cliente) {
             return;
         }
         
-        // Preenche os campos básicos
         document.getElementById('editId').value = reg.id;
         document.getElementById('editDate').value = reg.data;
         document.getElementById('editMachine').value = reg.machine;
@@ -4710,7 +4607,6 @@ function removerProduto(produtoNome, cliente) {
         document.getElementById('editRejeicao').value = reg.rejeicao || 0;
         document.getElementById('editAparas').value = reg.aparas || 0;
         
-        // Popula o Select de Produtos
         const selectProduto = document.getElementById('editProduto');
         selectProduto.innerHTML = '<option value="">Selecione cliente/produto...</option>';
         
@@ -4723,11 +4619,8 @@ function removerProduto(produtoNome, cliente) {
             }
         });
         
-        // A MÁGICA ACONTECE AQUI: Força a seleção do produto que veio do banco
         if (reg.produto) {
             selectProduto.value = reg.produto;
-            
-            // Se não encontrou exato, tenta buscar pelo nome parecido (segurança extra)
             if (selectProduto.value === "") {
                 const optionEncontrada = Array.from(selectProduto.options).find(opt => opt.value.includes(reg.produto));
                 if (optionEncontrada) {
@@ -4738,185 +4631,133 @@ function removerProduto(produtoNome, cliente) {
         
         document.getElementById('editModal').style.display = 'flex';
     }
-    
-    // 4. GARANTIR QUE O SELECT NÃO SEJA LIMPO DEPOIS
-    // Bloquear qualquer evento que possa limpar o select
-    selectProduto.setAttribute('data-original-value', selectProduto.value);
-    
-    // 5. ABRIR MODAL
-    document.getElementById('editModal').style.display = 'flex';
-    
-    // 6. TENTATIVA FINAL após o modal abrir (300ms)
-    setTimeout(function() {
-        if (reg.produto && document.getElementById('editProduto').value === '') {
-            console.log("🔄 Produto foi limpo! Tentando restaurar...");
-            const select = document.getElementById('editProduto');
-            
-            // Tentar encontrar o produto na lista
-            for (let i = 0; i < select.options.length; i++) {
-                if (select.options[i].value === reg.produto) {
-                    select.value = reg.produto;
-                    break;
-                }
-            }
-            
-            // Se ainda não achou, tentar por correspondência
-            if (select.value === '') {
-                const clienteNome = reg.produto.split(' - ')[0];
-                for (let i = 0; i < select.options.length; i++) {
-                    if (select.options[i].value && select.options[i].value.startsWith(clienteNome)) {
-                        select.value = select.options[i].value;
-                        break;
-                    }
-                }
-            }
-            
-            console.log("🔄 Valor restaurado:", select.value);
-        }
-    }, 300);
-}
 
     function closeEditModal() {
         document.getElementById('editModal').style.display = 'none';
     }
 
     async function salvarEdicao() {
-	if (!verificarPermissaoEscrita()) return;
-    const id = parseInt(document.getElementById('editId').value);
-    const index = historico.findIndex(h => h.id === id);
-    if (index === -1) {
-        showErrorToast('Registro não encontrado!');
-        return;
-    }
-    
-    const date = document.getElementById('editDate').value;
-    const machine = document.getElementById('editMachine').value;
-    let turno = document.getElementById('editTurno').value;
-    const op = document.getElementById('editOP').value;
-    const produto = document.getElementById('editProduto').value;
-    const pedido = safeNumber(document.getElementById('editPedido').value);
-    const inicio = document.getElementById('editInicio').value;
-    const fim = document.getElementById('editFim').value;
-    const setup = safeNumber(document.getElementById('editSetup').value);
-    const avaria = safeNumber(document.getElementById('editAvaria').value);
-    const est = safeNumber(document.getElementById('editEst').value);
-    const produzido = safeNumber(document.getElementById('editProduzido').value);
-    const rejeicao = safeNumber(document.getElementById('editRejeicao').value);
-    const aparas = safeNumber(document.getElementById('editAparas').value);
-    
-    // VALIDAÇÕES
-    if (!date || !machine || !turno || !op || !produto || !inicio || !fim) {
-        showErrorToast('Preencha todos os campos obrigatórios!');
-        return;
-    }
-    
-    if (turno === 'C') {
-        turno = classificarTurnoC(inicio, fim);
-        console.log(`🔄 Turno C classificado automaticamente na edição: ${turno}`);
-    }
-    
-    // Verificar conflitos de horário
-    const conflitos = verificarSobreposicao(date, machine, inicio, fim, id);
-    if (conflitos.length > 0) {
-        let mensagem = `⚠️ Conflito de horário na máquina ${machine}!\n\n`;
-        conflitos.forEach(c => {
-            mensagem += `• Conflito com OP ${c.op} (${c.inicio} - ${c.fim})\n`;
-        });
-        showErrorToast(mensagem);
-        return;
-    }
-    
-    // Calcular métricas
-    const realKgH = calcularRealKgH(produzido, inicio, fim, setup, avaria);
-    const perf = calcularPerformance(est, produzido, inicio, fim, setup, avaria);
-    const qual = calcularQualidade(produzido, rejeicao, aparas);
-    const dispOP = calcularDisponibilidadeOP(inicio, fim, setup, avaria);
-    
-    // Buscar informações do produto
-    const produtoInfo = produtos.find(p => p.displayName === produto) || { cliente: 'Sem cliente' };
-    
-    // IMPORTANTE: Usar os nomes de colunas CORRETOS do Supabase
-    const registroAtualizado = {
-        data: date,
-        maquina: machine,           // ← 'maquina' (sem 'chine')
-        turno: turno,
-        op: op,
-        produto: produto,
-        cliente: produtoInfo.cliente,
-        disponibilidade: dispOP,    // ← 'disponibilidade' (não 'disp')
-        performance: perf,          // ← 'performance'
-        qualidade: qual,            // ← 'qualidade'
-        pedido: pedido,
-        inicio: inicio,
-        fim: fim,
-        setup: setup,
-        paradas: avaria,            // ← 'paradas' (NÃO 'avaria'!)
-        motivo_perda: (avaria > 0 ? (produtoInfo.motivoPerda || 'Parada não especificada') : (setup > 0 ? 'Setup' : '')),
-        est: est,
-        real_kgh: realKgH,          // ← 'real_kgh'
-        produzido: produzido,
-        rejeicao: rejeicao,
-        aparas: aparas,
-        criado_em: new Date().toISOString()
-    };
-    
-    console.log("📝 Enviando para atualização:", registroAtualizado);
-    
-    // Atualizar no Supabase
-    try {
-        const { error } = await window.supabase
-            .from("oee_registros")
-            .update(registroAtualizado)
-            .eq('id', id);
+        if (!verificarPermissaoEscrita()) return;
         
-        if (error) {
-            console.error("Erro ao atualizar:", error);
-            showErrorToast(`Erro: ${error.message}`);
+        const id = parseInt(document.getElementById('editId').value);
+        const index = historico.findIndex(h => h.id === id);
+        if (index === -1) {
+            showErrorToast('Registro não encontrado!');
             return;
         }
         
-        // Atualizar no array local (compatibilidade)
-        const registroLocal = {
-            ...registroAtualizado,
-            id: id,
-            machine: machine,
-            disp: dispOP,
-            perf: perf,
-            qual: qual,
-            avaria: avaria,
-            realKgH: realKgH,
-            timestamp: new Date().toISOString(),
-            dispTurno: historico[index]?.dispTurno || 0
+        const date = document.getElementById('editDate').value;
+        const machine = document.getElementById('editMachine').value;
+        let turno = document.getElementById('editTurno').value;
+        const op = document.getElementById('editOP').value;
+        const produto = document.getElementById('editProduto').value;
+        const pedido = safeNumber(document.getElementById('editPedido').value);
+        const inicio = document.getElementById('editInicio').value;
+        const fim = document.getElementById('editFim').value;
+        const setup = safeNumber(document.getElementById('editSetup').value);
+        const avaria = safeNumber(document.getElementById('editAvaria').value);
+        const est = safeNumber(document.getElementById('editEst').value);
+        const produzido = safeNumber(document.getElementById('editProduzido').value);
+        const rejeicao = safeNumber(document.getElementById('editRejeicao').value);
+        const aparas = safeNumber(document.getElementById('editAparas').value);
+        
+        if (!date || !machine || !turno || !op || !produto || !inicio || !fim) {
+            showErrorToast('Preencha todos os campos obrigatórios!');
+            return;
+        }
+        
+        if (turno === 'C') {
+            turno = classificarTurnoC(inicio, fim);
+        }
+        
+        const conflitos = verificarSobreposicao(date, machine, inicio, fim, id);
+        if (conflitos.length > 0) {
+            let mensagem = `Conflito de horário na máquina ${machine}!\n\n`;
+            conflitos.forEach(c => {
+                mensagem += `• Conflito com OP ${c.op} (${c.inicio} - ${c.fim})\n`;
+            });
+            showErrorToast(mensagem);
+            return;
+        }
+        
+        const realKgH = calcularRealKgH(produzido, inicio, fim, setup, avaria);
+        const perf = calcularPerformance(est, produzido, inicio, fim, setup, avaria);
+        const qual = calcularQualidade(produzido, rejeicao, aparas);
+        const dispOP = calcularDisponibilidadeOP(inicio, fim, setup, avaria);
+        
+        const produtoInfo = produtos.find(p => p.displayName === produto) || { cliente: 'Sem cliente' };
+        
+        const registroAtualizado = {
+            data: date,
+            maquina: machine,
+            turno: turno,
+            op: op,
+            produto: produto,
+            cliente: produtoInfo.cliente,
+            disponibilidade: dispOP,
+            performance: perf,
+            qualidade: qual,
+            pedido: pedido,
+            inicio: inicio,
+            fim: fim,
+            setup: setup,
+            paradas: avaria,
+            motivo_perda: (avaria > 0 ? (produtoInfo.motivoPerda || 'Parada não especificada') : (setup > 0 ? 'Setup' : '')),
+            est: est,
+            real_kgh: realKgH,
+            produzido: produzido,
+            rejeicao: rejeicao,
+            aparas: aparas,
+            criado_em: new Date().toISOString()
         };
         
-        historico[index] = registroLocal;
-        
-        // Recalcular disponibilidades do turno
-        recalcularDisponibilidadesTurno(date, machine, turno);
-        
-        // Fechar modais e recarregar
-        closeEditModal();
-        
-        // Fechar qualquer modal de detalhes aberto
-        const modalDetalhes = document.getElementById('detalhesOPModal');
-        if (modalDetalhes) modalDetalhes.remove();
-        
-        const modalCliente = document.getElementById('detalhesClienteModal');
-        if (modalCliente) modalCliente.remove();
-        
-        const modalDia = document.getElementById('modalDiaDetalhes');
-        if (modalDia) modalDia.remove();
-        
-        filterByRange();
-        showToast('✅ Registro atualizado com sucesso!');
-        
-    } catch (error) {
-        console.error("Erro inesperado:", error);
-        showErrorToast('Erro ao salvar edição!');
+        try {
+            const { error } = await window.supabase
+                .from("oee_registros")
+                .update(registroAtualizado)
+                .eq('id', id);
+            
+            if (error) {
+                showErrorToast(`Erro: ${error.message}`);
+                return;
+            }
+            
+            const registroLocal = {
+                ...registroAtualizado,
+                id: id,
+                machine: machine,
+                disp: dispOP,
+                perf: perf,
+                qual: qual,
+                avaria: avaria,
+                realKgH: realKgH,
+                timestamp: new Date().toISOString(),
+                dispTurno: historico[index]?.dispTurno || 0
+            };
+            
+            historico[index] = registroLocal;
+            recalcularDisponibilidadesTurno(date, machine, turno);
+            closeEditModal();
+            
+            const modalDetalhes = document.getElementById('detalhesOPModal');
+            if (modalDetalhes) modalDetalhes.remove();
+            
+            const modalCliente = document.getElementById('detalhesClienteModal');
+            if (modalCliente) modalCliente.remove();
+            
+            const modalDia = document.getElementById('modalDiaDetalhes');
+            if (modalDia) modalDia.remove();
+            
+            filterByRange();
+            showToast('Registro atualizado com sucesso!');
+            
+        } catch (error) {
+            console.error("Erro inesperado:", error);
+            showErrorToast('Erro ao salvar edição!');
+        }
     }
-}
 
-    // ============================================
+        // ============================================
     // FUNÇÕES DE VIEW E FILTROS
     // ============================================
     function showView(viewId) {
@@ -4937,6 +4778,8 @@ function removerProduto(produtoNome, cliente) {
     }
 
     function openModal() { 
+        if (!verificarPermissaoEscrita()) return;
+        
         document.getElementById('regForm').reset();
         turnosTemp = [];
         paradasDetalhadas = [];
@@ -4983,6 +4826,22 @@ function removerProduto(produtoNome, cliente) {
 
     function closeModal() { 
         dadosPendentes = false;
+        turnosTemp = [];
+        paradasDetalhadas = [];
+        clienteSelecionado = null;
+        produtoSelecionado = null;
+        
+        const form = document.getElementById('regForm');
+        if (form) form.reset();
+        
+        const container = document.getElementById('paradas-detalhadas-container');
+        if (container) container.innerHTML = '';
+        
+        const regProd = document.getElementById('regProduto');
+        if (regProd) regProd.value = '';
+        
+        document.getElementById('clienteSelecionadoDisplay').style.display = 'none';
+        document.getElementById('selecaoClientesArea').style.display = 'block';
         document.getElementById('modal').style.display = 'none'; 
     }
 
@@ -5033,22 +4892,23 @@ function removerProduto(produtoNome, cliente) {
         
         renderData(filtered);
         renderPerdasChart(filtered);
-        
         atualizarCardsPerdasDashboard(filtered);
         
-        const activeView = document.querySelector('.view-content.active').id.replace('view-', '');
-        switch(activeView) {
-            case 'efficiency': renderEfficiencyView(filtered); break;
-            case 'op': renderOPView(filtered); break;
-            case 'history': renderHistoryView(filtered); 
-                document.getElementById('mediasKgHContainer').style.display = 'none';
-                break;
-            case 'clients': filtrarClientesLive(); break;
-            case 'perdas': renderPerdasView(filtered); break;
+        const activeView = document.querySelector('.view-content.active')?.id.replace('view-', '');
+        if (activeView) {
+            switch(activeView) {
+                case 'efficiency': renderEfficiencyView(filtered); break;
+                case 'op': renderOPView(filtered); break;
+                case 'history': renderHistoryView(filtered); 
+                    document.getElementById('mediasKgHContainer').style.display = 'none';
+                    break;
+                case 'clients': filtrarClientesLive(); break;
+                case 'perdas': renderPerdasView(filtered); break;
+            }
         }
         
         const periodInfo = document.getElementById('printPeriodInfo');
-        if (start && end) {
+        if (periodInfo && start && end) {
             periodInfo.innerHTML = `PERÍODO: ${start.split('-').reverse().join('/')} até ${end.split('-').reverse().join('/')}`;
         }
     }
@@ -5167,8 +5027,8 @@ function removerProduto(produtoNome, cliente) {
                         ${renderBar('QUAL', avgQual)}
                     </div>
                     <div class="mt-4 text-xs text-slate-400 border-t pt-2">
-                        📊 ${diasComProducao} dias com produção / ${totalDiasNoPeriodo} dias no período (até hoje)
-                        ${diasSemProducao > 0 ? '<span class="text-red-500 ml-2">⚠️ ' + diasSemProducao + ' dias sem produção</span>' : ''}
+                        ${diasComProducao} dias com produção / ${totalDiasNoPeriodo} dias no período (até hoje)
+                        ${diasSemProducao > 0 ? '<span class="text-red-500 ml-2">Atenção: ' + diasSemProducao + ' dias sem produção</span>' : ''}
                     </div>
                 </div>
             `;
@@ -5282,10 +5142,7 @@ function removerProduto(produtoNome, cliente) {
             
             if (avaria > 0) {
                 let motivo = reg.motivoPerda;
-                
-                if (!motivo || motivo === 'Setup') {
-                    motivo = 'Paradas não especificadas';
-                }
+                if (!motivo || motivo === 'Setup') motivo = 'Paradas não especificadas';
                 
                 perdasPorMotivo[motivo] = (perdasPorMotivo[motivo] || 0) + avaria;
                 totalGeralPerdas += avaria;
@@ -5389,7 +5246,7 @@ function removerProduto(produtoNome, cliente) {
             if (contadorSpan) contadorSpan.innerHTML = '0';
             listaContainer.innerHTML = `
                 <div class="bg-white p-12 rounded-2xl border border-slate-200 text-center">
-                    <p class="text-slate-400 text-lg">📊 Sem dados no período selecionado</p>
+                    <p class="text-slate-400 text-lg">Sem dados no período selecionado</p>
                     <p class="text-slate-400 text-sm mt-2">Selecione outro período ou insira dados</p>
                 </div>
             `;
@@ -5429,7 +5286,7 @@ function removerProduto(produtoNome, cliente) {
         if (clientesArray.length === 0) {
             listaContainer.innerHTML = `
                 <div class="bg-white p-12 rounded-2xl border border-slate-200 text-center">
-                    <p class="text-slate-400 text-lg">🔍 Nenhum cliente encontrado</p>
+                    <p class="text-slate-400 text-lg">Nenhum cliente encontrado</p>
                     <p class="text-slate-400 text-sm mt-2">Tente outro termo de busca</p>
                 </div>
             `;
@@ -5495,8 +5352,8 @@ function removerProduto(produtoNome, cliente) {
                         </div>
                     </div>
                     <div class="flex justify-end text-sm text-slate-400 border-t pt-2">
-                        <span>📅 ${periodo}</span>
-                        <span class="ml-4 text-blue-600 font-medium text-xs">👆 Clique para detalhes</span>
+                        <span>${periodo}</span>
+                        <span class="ml-4 text-blue-600 font-medium text-xs">Clique para detalhes</span>
                     </div>
                 </div>
             `;
@@ -5504,168 +5361,171 @@ function removerProduto(produtoNome, cliente) {
     }
 
     function abrirDetalhesCliente(cliente) {
-    const registrosCliente = historico.filter(r => r.cliente === cliente);
-    if (!registrosCliente.length) return;
-    
-    const produtosMap = new Map();
-    registrosCliente.forEach(r => {
-        const nomeProduto = r.produto ? r.produto.split(' - ')[1] || r.produto : 'Produto não identificado';
-        const produtoKey = r.produto || nomeProduto;
-        if (!produtosMap.has(produtoKey)) {
-            produtosMap.set(produtoKey, []);
-        }
-        produtosMap.get(produtoKey).push(r);
-    });
-    
-    const produtosArray = Array.from(produtosMap.keys()).sort();
-    
-    let conteudoHTML = '';
-    
-    produtosArray.forEach(produtoKey => {
-        const registros = produtosMap.get(produtoKey);
-        registros.sort((a, b) => new Date(b.data) - new Date(a.data));
+        const registrosCliente = historico.filter(r => r.cliente === cliente);
+        if (!registrosCliente.length) return;
         
-        let totalKg = 0, totalHoras = 0, somaDisp = 0, somaPerf = 0, somaQual = 0, somaOEE = 0;
-        let count = 0;
-        let estProduto = 0;
-        
-        registros.forEach(r => {
-            totalKg += r.produzido || 0;
-            const horas = calcularDuracaoHoras(r.inicio, r.fim);
-            totalHoras += horas;
-            somaDisp += r.disp || 0;
-            somaPerf += r.perf || 0;
-            somaQual += r.qual || 0;
-            const oee = calcularOEE(r.disp, r.perf, r.qual);
-            somaOEE += oee;
-            count++;
-            if (r.est > 0) estProduto = r.est;
+        const produtosMap = new Map();
+        registrosCliente.forEach(r => {
+            const nomeProduto = r.produto ? r.produto.split(' - ')[1] || r.produto : 'Produto não identificado';
+            const produtoKey = r.produto || nomeProduto;
+            if (!produtosMap.has(produtoKey)) {
+                produtosMap.set(produtoKey, []);
+            }
+            produtosMap.get(produtoKey).push(r);
         });
         
-        const mediaDisp = count > 0 ? Math.round(somaDisp / count) : 0;
-        const mediaPerf = count > 0 ? Math.round(somaPerf / count) : 0;
-        const mediaQual = count > 0 ? Math.round(somaQual / count) : 0;
-        const mediaOEE = count > 0 ? Math.round(somaOEE / count) : 0;
+        const produtosArray = Array.from(produtosMap.keys()).sort();
         
-        let tabelaLinhas = '';
-        registros.forEach((r, idx) => {
-            const dataFormatada = r.data.split('-').reverse().join('/');
-            const oee = calcularOEE(r.disp, r.perf, r.qual);
-            const statusOEE = oee >= 85 ? 'text-green-600' : 'text-red-600';
-            const statusPerf = getPerformanceStatus(r.est, r.realKgH);
+        let conteudoHTML = '';
+        
+        produtosArray.forEach(produtoKey => {
+            const registros = produtosMap.get(produtoKey);
+            registros.sort((a, b) => new Date(b.data) - new Date(a.data));
             
-            tabelaLinhas += `
-                <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} hover:bg-slate-100">
-                    <td class="py-2 px-2 text-center">${dataFormatada}<\/td>
-                    <td class="py-2 px-2 text-center font-bold">${r.machine}<\/td>
-                    <td class="py-2 px-2 text-center">${getTurnoDisplay(r.turno)}<\/td>
-                    <td class="py-2 px-2 text-center font-medium text-blue-600">${r.op}<\/td>
-                    <td class="py-2 px-2 text-center">${r.realKgH || 0}<\/td>
-                    <td class="py-2 px-2 text-center font-bold ${statusPerf.cor}">${r.perf || 0}%<\/td>
-                    <td class="py-2 px-2 text-center font-bold ${r.qual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${r.qual || 0}%<\/td>
-                    <td class="py-2 px-2 text-center font-bold ${statusOEE}">${oee}%<\/td>
-                    <td class="py-2 px-2 text-center">
-                        <button onclick="openEditModal(${r.id})" class="edit-btn mx-1" title="Editar">
-                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            <\/svg>
-                        <\/button>
-                        <button onclick="apagarRegistro(${r.id})" class="text-red-500 hover:text-red-700 mx-1" title="Apagar">
-                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            <\/svg>
-                        <\/button>
-                    <\/td>
-                 <\/tr>
+            let totalKg = 0, totalHoras = 0, somaDisp = 0, somaPerf = 0, somaQual = 0, somaOEE = 0;
+            let count = 0;
+            let estProduto = 0;
+            
+            registros.forEach(r => {
+                totalKg += r.produzido || 0;
+                const horas = calcularDuracaoHoras(r.inicio, r.fim);
+                totalHoras += horas;
+                somaDisp += r.disp || 0;
+                somaPerf += r.perf || 0;
+                somaQual += r.qual || 0;
+                const oee = calcularOEE(r.disp, r.perf, r.qual);
+                somaOEE += oee;
+                count++;
+                if (r.est > 0) estProduto = r.est;
+            });
+            
+            const mediaDisp = count > 0 ? Math.round(somaDisp / count) : 0;
+            const mediaPerf = count > 0 ? Math.round(somaPerf / count) : 0;
+            const mediaQual = count > 0 ? Math.round(somaQual / count) : 0;
+            const mediaOEE = count > 0 ? Math.round(somaOEE / count) : 0;
+            
+            let tabelaLinhas = '';
+            registros.forEach((r, idx) => {
+                const dataFormatada = r.data.split('-').reverse().join('/');
+                const oee = calcularOEE(r.disp, r.perf, r.qual);
+                const statusOEE = oee >= 85 ? 'text-green-600' : 'text-red-600';
+                const statusPerf = getPerformanceStatus(r.est, r.realKgH);
+                
+                // BOTOES SO APARECEM SE NAO FOR VISUALIZADOR
+                const botoesAcao = perfilUsuario !== 'visualizador' ? `
+                    <button onclick="openEditModal(${r.id})" class="edit-btn mx-1" title="Editar">
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                    </button>
+                    <button onclick="apagarRegistro(${r.id})" class="text-red-500 hover:text-red-700 mx-1" title="Apagar">
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                ` : '<span class="text-xs text-slate-400">Apenas leitura</span>';
+
+                tabelaLinhas += `
+                    <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} hover:bg-slate-100">
+                        <td class="py-2 px-2 text-center">${dataFormatada}<\/td>
+                        <td class="py-2 px-2 text-center font-bold">${r.machine}<\/td>
+                        <td class="py-2 px-2 text-center">${getTurnoDisplay(r.turno)}<\/td>
+                        <td class="py-2 px-2 text-center font-medium text-blue-600">${r.op}<\/td>
+                        <td class="py-2 px-2 text-center">${r.realKgH || 0}<\/td>
+                        <td class="py-2 px-2 text-center font-bold ${statusPerf.cor}">${r.perf || 0}%<\/td>
+                        <td class="py-2 px-2 text-center font-bold ${r.qual >= 98 ? 'text-green-600' : 'text-yellow-600'}">${r.qual || 0}%<\/td>
+                        <td class="py-2 px-2 text-center font-bold ${statusOEE}">${oee}%<\/td>
+                        <td class="py-2 px-2 text-center">${botoesAcao}<\/td>
+                     <\/tr>
+                `;
+            });
+            
+            const produtoInfo = produtos.find(p => p.displayName === registros[0]?.produto);
+            const estDisplay = produtoInfo ? `${produtoInfo.est} kg/h` : (estProduto > 0 ? `${estProduto} kg/h` : '--');
+            
+            conteudoHTML += `
+                <div class="produto-card-cliente">
+                    <div class="produto-header-cliente">
+                        <span class="produto-nome-cliente">${produtoKey}</span>
+                        <span class="produto-est-cliente">Est: ${estDisplay}</span>
+                    <\/div>
+                    
+                    <div class="produto-stats-cliente">
+                        <div class="produto-stat-item">
+                            <div class="produto-stat-label">Produção Total</div>
+                            <div class="produto-stat-value text-green-700">${formatarNumeroComPonto(totalKg)} kg</div>
+                        <\/div>
+                        <div class="produto-stat-item">
+                            <div class="produto-stat-label">Horas Produtivas</div>
+                            <div class="produto-stat-value text-blue-700">${totalHoras.toFixed(1)}h</div>
+                        <\/div>
+                        <div class="produto-stat-item">
+                            <div class="produto-stat-label">Pedidos</div>
+                            <div class="produto-stat-value text-purple-700">${registros.length}</div>
+                        <\/div>
+                        <div class="produto-stat-item">
+                            <div class="produto-stat-label">OEE Médio</div>
+                            <div class="produto-stat-value ${mediaOEE >= 85 ? 'text-green-700' : 'text-red-700'}">${mediaOEE}%</div>
+                        <\/div>
+                    <\/div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="produto-tabela">
+                            <thead>
+                                 <tr
+                                    <th>DATA</th>
+                                    <th>MÁQ</th>
+                                    <th>TURNO</th>
+                                    <th>OP</th>
+                                    <th>REAL (kg/h)</th>
+                                    <th>PERF</th>
+                                    <th>QUAL</th>
+                                    <th>OEE</th>
+                                    <th>AÇÕES</th>
+                                 <\/tr>
+                            <\/thead>
+                            <tbody>
+                                ${tabelaLinhas}
+                            <\/tbody>
+                         <\/table>
+                    <\/div>
+                    
+                    <div class="mt-3 pt-2 text-right text-xs text-slate-400 border-t">
+                        Médias: Disp ${mediaDisp}% | Perf ${mediaPerf}% | Qual ${mediaQual}% | OEE ${mediaOEE}%
+                    <\/div>
+                <\/div>
             `;
         });
         
-        const produtoInfo = produtos.find(p => p.displayName === registros[0]?.produto);
-        const estDisplay = produtoInfo ? `${produtoInfo.est} kg/h` : (estProduto > 0 ? `${estProduto} kg/h` : '--');
+        const existente = document.getElementById('detalhesClienteModal');
+        if (existente) existente.remove();
         
-        conteudoHTML += `
-            <div class="produto-card-cliente">
-                <div class="produto-header-cliente">
-                    <span class="produto-nome-cliente">📦 ${produtoKey}</span>
-                    <span class="produto-est-cliente">⚙️ Est: ${estDisplay}</span>
-                <\/div>
-                
-                <div class="produto-stats-cliente">
-                    <div class="produto-stat-item">
-                        <div class="produto-stat-label">Produção Total</div>
-                        <div class="produto-stat-value text-green-700">${formatarNumeroComPonto(totalKg)} kg</div>
-                    <\/div>
-                    <div class="produto-stat-item">
-                        <div class="produto-stat-label">Horas Produtivas</div>
-                        <div class="produto-stat-value text-blue-700">${totalHoras.toFixed(1)}h</div>
-                    <\/div>
-                    <div class="produto-stat-item">
-                        <div class="produto-stat-label">Pedidos</div>
-                        <div class="produto-stat-value text-purple-700">${registros.length}</div>
-                    <\/div>
-                    <div class="produto-stat-item">
-                        <div class="produto-stat-label">OEE Médio</div>
-                        <div class="produto-stat-value ${mediaOEE >= 85 ? 'text-green-700' : 'text-red-700'}">${mediaOEE}%</div>
-                    <\/div>
-                <\/div>
-                
-                <div class="overflow-x-auto">
-                    <table class="produto-tabela">
-                        <thead>
-                             <tr
-                                <th>DATA</th>
-                                <th>MÁQ</th>
-                                <th>TURNO</th>
-                                <th>OP</th>
-                                <th>REAL (kg/h)</th>
-                                <th>PERF</th>
-                                <th>QUAL</th>
-                                <th>OEE</th>
-                                <th>AÇÕES</th>
-                             <\/tr>
-                        <\/thead>
-                        <tbody>
-                            ${tabelaLinhas}
-                        <\/tbody>
-                     <\/table>
-                <\/div>
-                
-                <div class="mt-3 pt-2 text-right text-xs text-slate-400 border-t">
-                    📊 Médias: Disp ${mediaDisp}% | Perf ${mediaPerf}% | Qual ${mediaQual}% | OEE ${mediaOEE}%
-                <\/div>
-            <\/div>
-        `;
-    });
-    
-    const existente = document.getElementById('detalhesClienteModal');
-    if (existente) existente.remove();
-    
-    document.body.insertAdjacentHTML('beforeend', `
-        <div id="detalhesClienteModal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[200]" style="display: flex;">
-            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-6xl p-8 m-4 modal-content" style="height: 90vh; display: flex; flex-direction: column;">
-                
-                <div class="flex justify-between items-center pb-4 border-b sticky top-0 bg-white z-10">
-                    <div>
-                        <h2 class="font-black uppercase text-slate-800 text-2xl">${cliente}</h2>
-                        <p class="text-slate-500 text-sm mt-1">📋 Histórico de Produção por Produto</p>
+        document.body.insertAdjacentHTML('beforeend', `
+            <div id="detalhesClienteModal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[200]" style="display: flex;">
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-6xl p-8 m-4 modal-content" style="height: 90vh; display: flex; flex-direction: column;">
+                    
+                    <div class="flex justify-between items-center pb-4 border-b sticky top-0 bg-white z-10">
+                        <div>
+                            <h2 class="font-black uppercase text-slate-800 text-2xl">${cliente}</h2>
+                            <p class="text-slate-500 text-sm mt-1">Histórico de Produção por Produto</p>
+                        </div>
+                        <button onclick="fecharDetalhesCliente()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
                     </div>
-                    <button onclick="fecharDetalhesCliente()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
+                    
+                    <div class="flex-1 overflow-y-auto py-4 space-y-6">
+                        ${conteudoHTML}
+                    </div>
+                    
+                    <div class="flex justify-end pt-4 border-t sticky bottom-0 bg-white">
+                        <button onclick="fecharDetalhesCliente()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">
+                            Fechar
+                        </button>
+                    </div>
+                    
                 </div>
-                
-                <div class="flex-1 overflow-y-auto py-4 space-y-6">
-                    ${conteudoHTML}
-                </div>
-                
-                <div class="flex justify-end pt-4 border-t sticky bottom-0 bg-white">
-                    <button onclick="fecharDetalhesCliente()" class="px-6 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">
-                        Fechar
-                    </button>
-                </div>
-                
             </div>
-        </div>
-    `);
-}
+        `);
+    }
 
     function fecharDetalhesCliente() {
         const modal = document.getElementById('detalhesClienteModal');
@@ -5673,15 +5533,15 @@ function removerProduto(produtoNome, cliente) {
     }
 
     function getPerformanceStatus(est, real) {
-        if (!est || est <= 0) return { texto: "SEM ESTIMATIVA", cor: "text-gray-500", icone: "📊", bgCor: "bg-gray-100" };
+        if (!est || est <= 0) return { texto: "SEM ESTIMATIVA", cor: "text-gray-500", icone: "", bgCor: "bg-gray-100" };
         
         const diferencaPercentual = ((real - est) / est) * 100;
         
         if (diferencaPercentual > MARGEM_PERFORMANCE) {
-            return { texto: "ACIMA DO ESTIMADO", cor: "text-blue-600", bgCor: "bg-blue-100", icone: "📈", detalhe: `+${diferencaPercentual.toFixed(1)}%` };
+            return { texto: "ACIMA DO ESTIMADO", cor: "text-blue-600", bgCor: "bg-blue-100", icone: "", detalhe: `+${diferencaPercentual.toFixed(1)}%` };
         }
         else if (diferencaPercentual < -MARGEM_PERFORMANCE) {
-            return { texto: "ABAIXO DO ESTIMADO", cor: "text-red-600", bgCor: "bg-red-100", icone: "📉", detalhe: `${diferencaPercentual.toFixed(1)}%` };
+            return { texto: "ABAIXO DO ESTIMADO", cor: "text-red-600", bgCor: "bg-red-100", icone: "", detalhe: `${diferencaPercentual.toFixed(1)}%` };
         }
         else {
             return { texto: "DENTRO DO ESTIMADO", cor: "text-green-600", bgCor: "bg-green-100", icone: "✓", detalhe: "margem 10%" };
@@ -5751,6 +5611,15 @@ function removerProduto(produtoNome, cliente) {
             const p = rs[0];
             const per = p.data===rs[rs.length-1].data ? p.data.split('-').reverse().join('/') : `${p.data.split('-').reverse().join('/')} a ${rs[rs.length-1].data.split('-').reverse().join('/')}`;
             
+            // BOTAO DE APAGAR OP SO APARECE SE NAO FOR VISUALIZADOR
+            const botaoApagarOP = perfilUsuario !== 'visualizador' ? `
+                <button onclick="event.stopPropagation(); apagarOPCompleta('${op}')" class="delete-op-btn text-red-500 hover:text-red-700" title="Apagar OP completa">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+            ` : '';
+
             container.innerHTML += `
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-4 cursor-pointer hover:shadow-md hover:border-green-600 op-card" onclick="abrirDetalhesOP('${op}')">
                     <div class="flex justify-between items-start mb-3">
@@ -5759,11 +5628,7 @@ function removerProduto(produtoNome, cliente) {
                             <span class="text-sm font-bold px-3 py-1 rounded-full ${statusPerf.bgCor} ${statusPerf.cor}">
                                 ${statusPerf.icone} ${statusPerf.texto}
                             </span>
-                            <button onclick="event.stopPropagation(); apagarOPCompleta('${op}')" class="delete-op-btn text-red-500 hover:text-red-700" title="Apagar OP completa">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </button>
+                            ${botaoApagarOP}
                         </div>
                     </div>
                     <div class="grid grid-cols-4 gap-4 mb-4">
@@ -5773,8 +5638,8 @@ function removerProduto(produtoNome, cliente) {
                         <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs font-bold uppercase text-slate-400">OEE</span><div class="text-2xl font-black ${mOEE>=85?'text-green-600':'text-red-600'}">${mOEE}%</div></div>
                     </div>
                     <div class="flex justify-between items-center text-sm text-slate-500 border-t pt-3">
-                        <div><span class="font-medium">📦 ${formatarNumeroComPonto(totalProd)} kg</span><span class="mx-2">•</span><span>🎯 ${totalPed} kg</span><span class="mx-2">•</span><span>🕒 ${totalH.toFixed(1)}h</span></div>
-                        <div><span>📅 ${per}</span><span class="ml-4 text-blue-600 font-medium">👆 Clique para detalhes</span></div>
+                        <div><span class="font-medium">Produção: ${formatarNumeroComPonto(totalProd)} kg</span><span class="mx-2">|</span><span>Pedido: ${totalPed} kg</span><span class="mx-2">|</span><span>Horas: ${totalH.toFixed(1)}h</span></div>
+                        <div><span>${per}</span><span class="ml-4 text-blue-600 font-medium">Clique para detalhes</span></div>
                     </div>
                 </div>
             `;
@@ -5795,6 +5660,15 @@ function removerProduto(produtoNome, cliente) {
             
             tDisp += r.disp||0; tPerf += r.perf||0; tQual += r.qual||0; tOEE += o;
             
+            // BOTAO DE APAGAR TURNO SO APARECE SE NAO FOR VISUALIZADOR
+            const botaoApagarTurno = perfilUsuario !== 'visualizador' ? `
+                <button onclick="event.stopPropagation(); apagarTurnoDaOP(${r.id}, '${op}')" class="delete-turno-btn text-red-500 hover:text-red-700" title="Apagar este turno">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+            ` : '<span class="text-xs text-slate-400">-</span>';
+
             rows += `
                 <tr class="${i%2===0?'bg-white':'bg-slate-50'}">
                     <td class="py-3">${r.data.split('-').reverse().join('/')}<\/td>
@@ -5813,13 +5687,7 @@ function removerProduto(produtoNome, cliente) {
                     <td class="py-3 text-center font-bold ${statusPerf.cor}">${r.perf||0}%<\/td>
                     <td class="py-3 text-center font-bold ${r.qual>=98?'text-green-600':'text-yellow-600'}">${r.qual||0}%<\/td>
                     <td class="py-3 text-center font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%<\/td>
-                    <td class="py-3 text-center">
-                        <button onclick="event.stopPropagation(); apagarTurnoDaOP(${r.id}, '${op}')" class="delete-turno-btn text-red-500 hover:text-red-700" title="Apagar este turno">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
-                    <\/td>
+                    <td class="py-3 text-center">${botaoApagarTurno}<\/td>
                  <\/tr>
             `;
         });
@@ -5827,7 +5695,7 @@ function removerProduto(produtoNome, cliente) {
         const mDisp = Math.round(tDisp/rs.length), mPerf = Math.round(tPerf/rs.length), mQual = Math.round(tQual/rs.length), mOEE = Math.round(tOEE/rs.length);
         rows += `
             <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
-                <td colspan="4" class="py-3 text-blue-800">📊 MÉDIA DA OP<\/td>
+                <td colspan="4" class="py-3 text-blue-800">MÉDIA DA OP<\/td>
                 <td colspan="3" class="py-3 text-center"><\/td><td colspan="2" class="py-3 text-center"><\/td>
                 <td class="py-3 text-center text-blue-800">${mDisp}%<\/td><td class="py-3 text-center"><\/td>
                 <td class="py-3 text-center"><\/td><td class="py-3 text-center"><\/td>
@@ -5867,8 +5735,8 @@ function removerProduto(produtoNome, cliente) {
     }
 
     async function apagarOPCompleta(op) {
-		if (!verificarPermissaoEscrita()) return;
-        if (confirm(`⚠️ ATENÇÃO! Você está prestes a apagar TODOS os registros da OP ${op}. Esta ação é irreversível!\n\nDeseja continuar?`)) {
+        if (!verificarPermissaoEscrita()) return;
+        if (confirm(`ATENÇÃO! Você está prestes a apagar TODOS os registros da OP ${op}. Esta ação é irreversível!\n\nDeseja continuar?`)) {
             const registrosParaApagar = historico.filter(r => r.op === op);
             
             if (registrosParaApagar.length === 0) {
@@ -5885,23 +5753,23 @@ function removerProduto(produtoNome, cliente) {
             if (apagados === registrosParaApagar.length) {
                 historico = historico.filter(r => r.op !== op);
                 filterByRange();
-                showToast(`✅ OP ${op} apagada com sucesso! (${apagados} registros)`);
+                showToast(`OP ${op} apagada com sucesso! (${apagados} registros)`);
             } else {
-                showErrorToast(`❌ Erro ao apagar alguns registros da OP ${op}`);
+                showErrorToast(`Erro ao apagar alguns registros da OP ${op}`);
             }
         }
     }
     
     async function apagarTurnoDaOP(id, op) {
-		if (!verificarPermissaoEscrita()) return;
+        if (!verificarPermissaoEscrita()) return;
         if (confirm(`Deseja apagar este turno da OP ${op}?`)) {
             const sucesso = await apagarRegistroBanco(id);
             if (sucesso) {
                 historico = historico.filter(r => r.id !== id);
                 filterByRange();
-                showToast(`✅ Turno removido da OP ${op}!`);
+                showToast(`Turno removido da OP ${op}!`);
             } else {
-                showErrorToast('❌ Erro ao apagar turno!');
+                showErrorToast('Erro ao apagar turno!');
             }
         }
     }
@@ -5913,7 +5781,7 @@ function removerProduto(produtoNome, cliente) {
         tbody.innerHTML = '';
         
         if (data.length === 0) {
-            tbody.innerHTML = '77tr<td colspan="14" class="text-center py-8 text-slate-400">Nenhum registro encontrado no período.<\/tr>';
+            tbody.innerHTML = '<tr><td colspan="14" class="text-center py-8 text-slate-400">Nenhum registro encontrado no período.<\/tr>';
             return;
         }
         
@@ -5931,6 +5799,20 @@ function removerProduto(produtoNome, cliente) {
                 produtoDisplay = produtoDisplay.substring(0, 42) + '...';
             }
             
+            // BOTOES SO APARECEM SE NAO FOR VISUALIZADOR
+            const botoesAcao = perfilUsuario !== 'visualizador' ? `
+                <button onclick="openEditModal(${reg.id})" class="edit-btn mx-1" title="Editar">
+                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    <\/svg>
+                </button>
+                <button onclick="apagarRegistro(${reg.id})" class="text-red-500 hover:text-red-700 mx-1" title="Apagar">
+                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    <\/svg>
+                </button>
+            ` : '<span class="text-xs text-slate-400">Apenas leitura</span>';
+
             tbody.innerHTML += `
                 <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'} hover:bg-slate-100" style="border-bottom: 1px solid #e2e8f0;">
                     <td class="py-3 px-2 text-center" style="font-size: 12px;">${reg.data ? reg.data.split('-').reverse().join('/') : '-'}<\/td>
@@ -5950,18 +5832,7 @@ function removerProduto(produtoNome, cliente) {
                             ${statusText}
                         <\/span>
                     <\/td>
-                    <td class="py-3 px-2 text-center">
-                        <button onclick="openEditModal(${reg.id})" class="edit-btn mx-1" title="Editar">
-                            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            <\/svg>
-                        <\/button>
-                        <button onclick="apagarRegistro(${reg.id})" class="text-red-500 hover:text-red-700 mx-1" title="Apagar">
-                            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            <\/svg>
-                        <\/button>
-                    <\/td>
+                    <td class="py-3 px-2 text-center">${botoesAcao}<\/td>
                  <\/tr>
             `;
         });
@@ -5998,7 +5869,7 @@ function removerProduto(produtoNome, cliente) {
             
             periodInfo.style.display = 'none';
             periodInfo.classList.remove('print-visible');
-            showToast('📸 Relatório capturado com sucesso!');
+            showToast('Relatório capturado com sucesso!');
         }).catch(error => {
             console.error('Erro ao capturar:', error);
             alert('Erro ao capturar relatório. Tente novamente.');
@@ -6055,7 +5926,7 @@ function removerProduto(produtoNome, cliente) {
                     </div>
                 </div>
                 <div style="background: #f8fafc; padding: 12px 20px; text-align: center; border-bottom: 2px solid #005a2b;">
-                    <span style="font-size: 16px; font-weight: 700; color: #005a2b;">📅 PERÍODO: ${dataInicial} a ${dataFinal}</span>
+                    <span style="font-size: 16px; font-weight: 700; color: #005a2b;">PERÍODO: ${dataInicial} a ${dataFinal}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; gap: 15px; margin: 25px 20px;">
                     <div style="flex: 1; background: linear-gradient(135deg, #005a2b 0%, #00803d 100%); border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
@@ -6097,9 +5968,9 @@ function removerProduto(produtoNome, cliente) {
             
             let statusBadge = '';
             if (diferencaPercentual > 0) {
-                statusBadge = `<span style="display: inline-block; padding: 6px 12px; background-color: #dbeafe; color: #2563eb; border-radius: 20px; font-weight: 700; font-size: 12px; border: 1px solid #2563eb;">📈 ACIMA</span>`;
+                statusBadge = `<span style="display: inline-block; padding: 6px 12px; background-color: #dbeafe; color: #2563eb; border-radius: 20px; font-weight: 700; font-size: 12px; border: 1px solid #2563eb;">ACIMA</span>`;
             } else {
-                statusBadge = `<span style="display: inline-block; padding: 6px 12px; background-color: #fee2e2; color: #c4121a; border-radius: 20px; font-weight: 700; font-size: 12px; border: 1px solid #c4121a;">📉 ABAIXO</span>`;
+                statusBadge = `<span style="display: inline-block; padding: 6px 12px; background-color: #fee2e2; color: #c4121a; border-radius: 20px; font-weight: 700; font-size: 12px; border: 1px solid #c4121a;">ABAIXO</span>`;
             }
             
             conteudo += `
@@ -6125,15 +5996,15 @@ function removerProduto(produtoNome, cliente) {
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                         <div>
                             <div style="font-size: 14px; color: #1f2937;">
-                                <span style="font-weight: 700;">📅 Período:</span> ${dataInicial} a ${dataFinal}
+                                <span style="font-weight: 700;">Período:</span> ${dataInicial} a ${dataFinal}
                             </div>
                             <div style="font-size: 14px; color: #1f2937; margin-top: 5px;">
-                                <span style="font-weight: 700;">📊 Total de pedidos:</span> ${registrosForaMargem.length}
+                                <span style="font-weight: 700;">Total de pedidos:</span> ${registrosForaMargem.length}
                             </div>
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 14px; color: #1f2937;">
-                                <span style="font-weight: 700;">🕒 Gerado em:</span> ${new Date().toLocaleDateString('pt-PT')} às ${new Date().toLocaleTimeString('pt-PT')}
+                                <span style="font-weight: 700;">Gerado em:</span> ${new Date().toLocaleDateString('pt-PT')} às ${new Date().toLocaleTimeString('pt-PT')}
                             </div>
                             <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">
                                 Relatório para PCP - Ajuste de parâmetros
@@ -6170,7 +6041,7 @@ function removerProduto(produtoNome, cliente) {
             link.click();
             
             document.body.removeChild(elementoRelatorio);
-            showToast(`📊 Relatório PCP gerado com ${registrosForaMargem.length} pedidos!`);
+            showToast(`Relatório PCP gerado com ${registrosForaMargem.length} pedidos!`);
         }).catch(error => {
             console.error('Erro ao gerar relatório:', error);
             showErrorToast('Erro ao gerar relatório PCP!');
@@ -6227,7 +6098,7 @@ function removerProduto(produtoNome, cliente) {
         
         const dataInicio = start ? start.split('-').reverse().join('/') : 'início';
         const dataFim = end ? end.split('-').reverse().join('/') : 'hoje';
-        periodoInfo.innerHTML = `📊 Médias do período: ${dataInicio} a ${dataFim} | Total de registros: ${dadosPeriodo.length}`;
+        periodoInfo.innerHTML = `Médias do período: ${dataInicio} a ${dataFim} | Total de registros: ${dadosPeriodo.length}`;
         
         container.style.display = 'grid';
         container.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -6288,7 +6159,7 @@ function removerProduto(produtoNome, cliente) {
         modal.innerHTML = `
             <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-6 m-4 modal-content">
                 <div class="flex justify-between items-center mb-4 border-b pb-3">
-                    <h2 class="font-black uppercase text-slate-800 text-xl">📊 TOTAL DE APARAS</h2>
+                    <h2 class="font-black uppercase text-slate-800 text-xl">TOTAL DE APARAS</h2>
                     <button onclick="this.closest('#modalTotalAparas').remove()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
                 </div>
                 
@@ -6309,7 +6180,7 @@ function removerProduto(produtoNome, cliente) {
                 </div>
                 
                 <div class="bg-slate-50 rounded-2xl p-4 mb-4">
-                    <h3 class="font-bold text-slate-700 mb-3 text-center">📈 DETALHAMENTO POR MÁQUINA</h3>
+                    <h3 class="font-bold text-slate-700 mb-3 text-center">DETALHAMENTO POR MÁQUINA</h3>
                     <div class="grid grid-cols-3 gap-4">
                         <div class="text-center p-3 bg-white rounded-xl">
                             <div class="font-bold text-green-700">M1</div>
@@ -6387,6 +6258,12 @@ function removerProduto(produtoNome, cliente) {
         
         data.sort((a,b)=>new Date(b.data)-new Date(a.data)).forEach(r => {
             const o = calcularOEE(r.dispTurno, r.perf, r.qual);
+            
+            const botoesAcao = perfilUsuario !== 'visualizador' ? `
+                <button onclick="openEditModal(${r.id})" class="edit-btn mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/><\/svg><\/button>
+                <button onclick="apagarRegistro(${r.id})" class="text-red-500 hover:text-red-700 mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/><\/svg><\/button>
+            ` : '<span class="text-xs text-slate-400">-</span>';
+
             tbody.innerHTML += `
                 <tr class="border-b">
                     <td class="py-2">${r.data ? r.data.split('-').reverse().join('/') : '-'}<\/td>
@@ -6400,11 +6277,8 @@ function removerProduto(produtoNome, cliente) {
                     <td class="py-2 text-right">${r.perf || 0}%<\/td>
                     <td class="py-2 text-right">${r.qual || 0}%<\/td>
                     <td class="py-2 text-right font-bold ${o>=85?'text-green-600':'text-red-600'}">${o}%<\/td>
-                    <td class="py-2 text-center"><span class="inline-block px-2 py-1 rounded-full text-[8px] font-bold uppercase ${o>=85?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${o>=85?'✅ META':'⚠️ ABAIXO'}</span><\/td>
-                    <td class="py-2 text-center">
-                        <button onclick="openEditModal(${r.id})" class="edit-btn mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/><\/svg><\/button>
-                        <button onclick="apagarRegistro(${r.id})" class="text-red-500 hover:text-red-700 mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/><\/svg><\/button>
-                    <\/td>
+                    <td class="py-2 text-center"><span class="inline-block px-2 py-1 rounded-full text-[8px] font-bold uppercase ${o>=85?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${o>=85?'META':'ABAIXO'}</span><\/td>
+                    <td class="py-2 text-center">${botoesAcao}<\/td>
                  <\/tr>
             `;
         });
@@ -6537,263 +6411,39 @@ function removerProduto(produtoNome, cliente) {
     }
 
     function renderPerdasTurnoComparativoChart(perdasPorTurno) {
-    const ctx = document.getElementById('perdasTurnoComparativoChart')?.getContext('2d');
-    if (!ctx) return;
-    
-    if (perdasTurnoComparativoChart) perdasTurnoComparativoChart.destroy();
-    
-    // CORREÇÃO: Definir o array turnos
-    const turnos = ['A', 'B', 'C'];
-    const valores = turnos.map(t => perdasPorTurno[t] || 0);
-    
-    perdasTurnoComparativoChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Turno A', 'Turno B', 'Turno C'],
-            datasets: [{
-                label: 'Perdas (minutos)',
-                data: valores,
-                backgroundColor: ['#FFD700', '#005a2b', '#c4121a']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                datalabels: {
-                    anchor: 'end',
-                    align: 'top',
-                    formatter: val => val + ' min',
-                    font: { weight: 'bold', size: 10 }
-                }
-            },
-            scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
-        }
-    });
-}
-
-function renderPerdasDetalheChart(perdasMaq) {
-    const ctx = document.getElementById('perdasMaquinaDetalheChart')?.getContext('2d');
-    if (!ctx) return;
-    
-    if (perdasMaquinaDetalheChart) perdasMaquinaDetalheChart.destroy();
-    
-    perdasMaquinaDetalheChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['M1', 'M2', 'M3'],
-            datasets: [
-                { 
-                    label: 'Setup', 
-                    data: [perdasMaq.M1.setup, perdasMaq.M2.setup, perdasMaq.M3.setup], 
-                    backgroundColor: '#f59e0b' 
-                },
-                { 
-                    label: 'Paradas', 
-                    data: [perdasMaq.M1.avaria, perdasMaq.M2.avaria, perdasMaq.M3.avaria], 
-                    backgroundColor: '#ef4444' 
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { 
-                datalabels: { 
-                    anchor: 'end', 
-                    align: 'top', 
-                    formatter: val => Math.round(val) + ' min', 
-                    font: { weight: 'bold', size: 10 } 
-                } 
-            },
-            scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
-        }
-    });
-}
-
-function renderPerdasMotivoChart(perdasMot) {
-    const ctx = document.getElementById('perdasMotivoChart')?.getContext('2d');
-    if (!ctx) return;
-    
-    if (perdasMotivoChart) perdasMotivoChart.destroy();
-    
-    const apenasParadas = {};
-    Object.entries(perdasMot).forEach(([motivo, valor]) => {
-        if (motivo !== 'Setup' && motivo !== 'Aparas' && valor > 0) {
-            apenasParadas[motivo] = valor;
-        }
-    });
-    
-    if (Object.keys(apenasParadas).length === 0) {
-        perdasMotivoChart = new Chart(ctx, {
+        const ctx = document.getElementById('perdasTurnoComparativoChart')?.getContext('2d');
+        if (!ctx) return;
+        
+        if (perdasTurnoComparativoChart) perdasTurnoComparativoChart.destroy();
+        
+        const turnos = ['A', 'B', 'C'];
+        const valores = turnos.map(t => perdasPorTurno[t] || 0);
+        
+        perdasTurnoComparativoChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Sem paradas'],
+                labels: ['Turno A', 'Turno B', 'Turno C'],
                 datasets: [{
-                    label: 'Minutos',
-                    data: [0],
-                    backgroundColor: ['#e5e7eb'],
-                    borderRadius: 8
+                    label: 'Perdas (minutos)',
+                    data: valores,
+                    backgroundColor: ['#FFD700', '#005a2b', '#c4121a']
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                indexAxis: 'y',
                 plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: () => 'Nenhuma parada registrada' } },
-                    datalabels: { display: false }
-                }
-            }
-        });
-        return;
-    }
-    
-    const motivosOrdenados = Object.entries(apenasParadas).sort((a, b) => b[1] - a[1]);
-    const totalParadas = motivosOrdenados.reduce((sum, [_, val]) => sum + val, 0);
-    
-    const cores = [
-        '#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', 
-        '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16', 
-        '#a855f7', '#eab308', '#d946ef', '#22c55e', '#6b7280'
-    ];
-    
-    const labels = motivosOrdenados.map(m => {
-        const nome = m[0];
-        return nome.length > 30 ? nome.substring(0, 27) + '...' : nome;
-    });
-    
-    perdasMotivoChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Minutos de Parada',
-                data: motivosOrdenados.map(m => m[1]),
-                backgroundColor: motivosOrdenados.map((_, i) => cores[i % cores.length]),
-                borderRadius: 8,
-                barPercentage: 0.7,
-                categoryPercentage: 0.8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: (context) => {
-                            const valor = context.raw;
-                            const motivoOriginal = motivosOrdenados[context.dataIndex][0];
-                            const percentual = totalParadas > 0 ? ((valor / totalParadas) * 100).toFixed(1) : 0;
-                            return [`${motivoOriginal}: ${Math.round(valor)} minutos`, `${percentual}% do total de paradas`];
-                        }
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        formatter: val => val + ' min',
+                        font: { weight: 'bold', size: 10 }
                     }
                 },
-                datalabels: {
-                    anchor: 'end',
-                    align: 'right',
-                    formatter: (val, context) => {
-                        const percentual = totalParadas > 0 ? ((val / totalParadas) * 100).toFixed(1) : 0;
-                        return `${Math.round(val)} min (${percentual}%)`;
-                    },
-                    font: { weight: 'bold', size: 10 },
-                    color: '#374151',
-                    backgroundColor: '#f3f4f6',
-                    padding: { left: 4, right: 4, top: 2, bottom: 2 },
-                    borderRadius: 4
-                }
-            },
-            scales: {
-                x: { display: true },
-                y: { display: true }
-            },
-            layout: {
-                padding: {
-                    left: 10,
-                    right: 80,
-                    top: 20,
-                    bottom: 10
-                }
+                scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
             }
-        }
-    });
-}
-
-function renderPerdasTipoChart(perdasMaq) {
-    const ctx = document.getElementById('perdasTipoChart')?.getContext('2d');
-    if (!ctx) return;
-    
-    const totalSetup = perdasMaq.M1.setup + perdasMaq.M2.setup + perdasMaq.M3.setup;
-    const totalAvaria = perdasMaq.M1.avaria + perdasMaq.M2.avaria + perdasMaq.M3.avaria;
-    const totalAparas = perdasMaq.M1.aparas + perdasMaq.M2.aparas + perdasMaq.M3.aparas;
-    
-    if (perdasTipoChart) perdasTipoChart.destroy();
-    
-    perdasTipoChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Setup', 'Paradas', 'Aparas'],
-            datasets: [{
-                label: 'Minutos',
-                data: [totalSetup, totalAvaria, totalAparas],
-                backgroundColor: ['#f59e0b', '#ef4444', '#10b981']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                datalabels: {
-                    anchor: 'end',
-                    align: 'top',
-                    formatter: val => Math.round(val) + ' min',
-                    font: { weight: 'bold', size: 11 }
-                }
-            },
-            scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
-        }
-    });
-}
-
-function renderPerdasEvolucaoChart(perdasDia) {
-    const ctx = document.getElementById('perdasEvolucaoChart')?.getContext('2d');
-    if (!ctx) return;
-    
-    const dias = Object.keys(perdasDia).sort();
-    const valores = dias.map(d => perdasDia[d]);
-    
-    if (perdasEvolucaoChart) perdasEvolucaoChart.destroy();
-    
-    perdasEvolucaoChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: dias.map(d => d.split('-').reverse().join('/')),
-            datasets: [{
-                label: 'Perdas Totais (min)',
-                data: valores,
-                borderColor: '#ef4444',
-                backgroundColor: 'rgba(239,68,68,0.1)',
-                fill: true,
-                tension: 0.4,
-                borderWidth: 3,
-                pointRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { 
-                datalabels: { display: false },
-                tooltip: { callbacks: { label: (ctx) => Math.round(ctx.raw) + ' min' } }
-            },
-            scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
-        }
-    });
-}
+        });
+    }
 
     function renderPerdasDetalheChart(perdasMaq) {
         const ctx = document.getElementById('perdasMaquinaDetalheChart')?.getContext('2d');
@@ -6867,10 +6517,6 @@ function renderPerdasEvolucaoChart(perdasDia) {
                         legend: { display: false },
                         tooltip: { callbacks: { label: () => 'Nenhuma parada registrada' } },
                         datalabels: { display: false }
-                    },
-                    scales: {
-                        x: { display: true, title: { display: false } },
-                        y: { display: true, title: { display: false } }
                     }
                 }
             });
@@ -6940,14 +6586,8 @@ function renderPerdasEvolucaoChart(perdasDia) {
                     }
                 },
                 scales: {
-                    x: { 
-                        display: true,
-                        title: { display: false }
-                    },
-                    y: { 
-                        display: true,
-                        title: { display: false }
-                    }
+                    x: { display: true },
+                    y: { display: true }
                 },
                 layout: {
                     padding: {
@@ -7200,41 +6840,30 @@ function renderPerdasEvolucaoChart(perdasDia) {
     }
 
     // ============================================
-// FUNÇÕES DE LOGOUT E INICIALIZAÇÃO
-// ============================================
-window.fazerLogout = function() {
-    console.log("🔵 Fazendo logout...");
-    
-    if (!window.supabase) {
-        console.error("❌ Supabase não encontrado!");
-        window.location.href = "login.html";
-        return;
-    }
-    
-    window.supabase.auth.signOut()
-        .then(({ error }) => {
-            if (error) {
-                console.error("Erro:", error);
-                alert("Erro ao sair. Redirecionando...");
-            } else {
-                console.log("✅ Logout OK!");
-            }
+    // FUNÇÕES DE LOGOUT E INICIALIZAÇÃO
+    // ============================================
+    window.fazerLogout = function() {
+        if (!window.supabase) {
             window.location.href = "login.html";
-        })
-        .catch(erro => {
-            console.error("Erro inesperado:", erro);
-            window.location.href = "login.html";
-        });
-};
+            return;
+        }
+        
+        window.supabase.auth.signOut()
+            .then(({ error }) => {
+                if (error) console.error("Erro:", error);
+                window.location.href = "login.html";
+            })
+            .catch(erro => {
+                console.error("Erro inesperado:", erro);
+                window.location.href = "login.html";
+            });
+    };
 
-window.supabase.auth.getUser().then(({ data: { user } }) => {
-    if (!user) {
-        console.log("❌ Sem usuário - redirecionando");
-        window.location.href = "login.html";
-    } else {
-        console.log("✅ Usuário logado:", user.email);
-    }
-});
+    window.supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user) {
+            window.location.href = "login.html";
+        }
+    });
 
     window.addEventListener('beforeunload', function() {
         sessionStorage.removeItem('session_checked');
@@ -7255,7 +6884,6 @@ window.supabase.auth.getUser().then(({ data: { user } }) => {
     document.onkeypress = reiniciarTimer;
     document.onclick = reiniciarTimer;
 
-    // Configurar eventos para o modal de sem pedido
     document.addEventListener('DOMContentLoaded', function() {
         const tempoSelect = document.getElementById('semPedidoTempo');
         if (tempoSelect) {
@@ -7281,272 +6909,87 @@ window.supabase.auth.getUser().then(({ data: { user } }) => {
         }
     });
 
-    setTimeout(function() {
-        const botoes = document.querySelectorAll('button');
-        let botaoSair = null;
-        
-        for(let botao of botoes) {
-            if(botao.textContent.includes('Sair') || botao.classList.contains('btn-logout')) {
-                botaoSair = botao;
-                break;
-            }
-        }
-        
-        if(botaoSair) {
-            console.log("✅ Botão de logout encontrado e configurado");
-            botaoSair.onclick = function(e) {
-                e.preventDefault();
-                window.fazerLogout();
-            };
-        } else {
-            console.error("❌ Botão de logout não encontrado");
-        }
-    }, 1000);
-
     async function carregarDados() {
-        console.log("📥 Carregando dados do banco...");
+        console.log("Carregando dados do banco...");
         
-        const clientesSalvos = localStorage.getItem('lusitano_clientes');
-        const produtosSalvos = localStorage.getItem('lusitano_produtos');
-        
-        if (clientesSalvos) {
-            try { clientes = JSON.parse(clientesSalvos); } catch (e) {}
+        // Busca perfil
+        const { data: { user } } = await window.supabase.auth.getUser();
+        if (user) {
+            const { data: perfil } = await window.supabase.from('perfis').select('role').eq('user_id', user.id).single();
+            if (perfil) perfilUsuario = perfil.role;
         }
-        
-        if (produtosSalvos) {
-            try { produtos = JSON.parse(produtosSalvos); } catch (e) {}
+
+        // Esconde botoes se for visualizador
+        if (perfilUsuario === 'visualizador') {
+            document.querySelectorAll('.btn-action').forEach(btn => {
+                if (!btn.textContent.includes('Sair') && !btn.textContent.includes('Relatório') && !btn.textContent.includes('MÉDIAS') && !btn.textContent.includes('QUANTIDADES')) {
+                    btn.style.display = 'none';
+                }
+            });
         }
+
+        const { data: clientesBanco } = await window.supabase.from('clientes').select('nome').order('nome');
+        if (clientesBanco) clientes = clientesBanco.map(c => c.nome);
+
+        const { data: produtosBanco } = await window.supabase.from('produtos').select('id, nome, maquina, est, clientes(nome)').order('nome');
+        if (produtosBanco) {
+            produtos = produtosBanco.map(p => ({
+                id: p.id,
+                cliente: p.clientes?.nome || 'Sem cliente',
+                nome: p.nome,
+                maquina: p.maquina,
+                est: Number(p.est),
+                displayName: `${p.clientes?.nome || 'Sem cliente'} - ${p.nome} (${p.est} kg/h) - ${p.maquina}`
+            }));
+        }
+
+        await carregarDiasSemPedido();
         
         const registrosBanco = await listarRegistros();
-        console.log(`📊 Encontrados ${registrosBanco.length} registros no banco`);
-        
         if (registrosBanco && registrosBanco.length > 0) {
             historico = registrosBanco.map(reg => {
-    const realKgH = calcularRealKgH(
-        reg.produzido || 0, 
-        reg.inicio || '00:00', 
-        reg.fim || '00:00', 
-        reg.setup || 0, 
-        reg.paradas || 0    // ← 'paradas', NÃO 'avaria'
-    );
-    
-    const perf = calcularPerformance(
-        reg.est || 0,
-        reg.produzido || 0,
-        reg.inicio || '00:00',
-        reg.fim || '00:00',
-        reg.setup || 0,
-        reg.paradas || 0    // ← 'paradas'
-    );
-    
-    const dispOP = calcularDisponibilidadeOP(
-        reg.inicio || '00:00',
-        reg.fim || '00:00',
-        reg.setup || 0,
-        reg.paradas || 0    // ← 'paradas'
-    );
-    
-    const qual = calcularQualidade(
-        reg.produzido || 0,
-        reg.rejeicao || 0,
-        reg.aparas || 0
-    );
-    
-    return {
-        id: reg.id,
-        data: reg.data,
-        machine: reg.maquina || 'M1',     // ← 'maquina'
-        turno: reg.turno || 'A',
-        op: reg.op || '---',
-        produto: reg.produto || '---',
-        cliente: reg.cliente || '---',
-        disp: reg.disponibilidade || 0,    // ← 'disponibilidade'
-        perf: reg.performance || 0,        // ← 'performance'
-        qual: reg.qualidade || 0,          // ← 'qualidade'
-        pedido: reg.pedido || 0,
-        inicio: reg.inicio || '00:00',
-        fim: reg.fim || '00:00',
-        setup: reg.setup || 0,
-        avaria: reg.paradas || 0,          // ← 'paradas' mapeado para 'avaria' no front
-        motivoPerda: reg.motivo_perda || '',
-        est: reg.est || 0,
-        realKgH: realKgH,
-        produzido: reg.produzido || 0,
-        rejeicao: reg.rejeicao || 0,
-        aparas: reg.aparas || 0,
-        timestamp: reg.criado_em || new Date().toISOString(),
-        dispTurno: 0
-    };
-});
-            
-            console.log(`✅ Processados ${historico.length} registros`);
-            
+                const realKgH = calcularRealKgH(reg.produzido || 0, reg.inicio || '00:00', reg.fim || '00:00', reg.setup || 0, reg.paradas || 0);
+                return {
+                    id: reg.id, data: reg.data, machine: reg.maquina || 'M1', turno: reg.turno || 'A',
+                    op: reg.op || '---', produto: reg.produto || '---', cliente: reg.cliente || '---',
+                    disp: reg.disponibilidade || 0, perf: reg.performance || 0, qual: reg.qualidade || 0,
+                    pedido: reg.pedido || 0, inicio: reg.inicio || '00:00', fim: reg.fim || '00:00',
+                    setup: reg.setup || 0, avaria: reg.paradas || 0, motivoPerda: reg.motivo_perda || '',
+                    est: reg.est || 0, realKgH: realKgH, produzido: reg.produzido || 0,
+                    rejeicao: reg.rejeicao || 0, aparas: reg.aparas || 0,
+                    timestamp: reg.criado_em || new Date().toISOString(), dispTurno: 0
+                };
+            });
+
             const grupos = {};
             historico.forEach(reg => {
                 const key = `${reg.data}-${reg.machine}-${reg.turno}`;
                 if (!grupos[key]) grupos[key] = [];
                 grupos[key].push(reg);
             });
-            
             Object.values(grupos).forEach(grupo => {
-                if (grupo.length > 0) {
-                    const dispTurno = calcularDisponibilidadeTurno(grupo);
-                    grupo.forEach(op => {
-                        op.dispTurno = dispTurno;
-                    });
-                }
+                const dispTurno = calcularDisponibilidadeTurno(grupo);
+                grupo.forEach(op => op.dispTurno = dispTurno);
             });
-            
-            console.log("✅ Dados carregados com sucesso!");
-        } else {
-            historico = [];
-            console.log("📭 Nenhum registro encontrado no banco");
         }
-        
+
         filterByRange();
     }
-	async function corrigirTurnosCDireto() {
-    console.log("🚀 CORREÇÃO DIRETA DOS TURNOS C...");
-    
-    // Buscar todos os registros C1 com horário 22:00-06:00
-    const registrosErrados = historico.filter(reg => 
-        (reg.turno === 'C1' || reg.turno === 'C') && 
-        reg.inicio === '22:00' && 
-        reg.fim === '06:00'
-    );
-    
-    console.log(`📋 Encontrados ${registrosErrados.length} registros para corrigir`);
-    
-    if (registrosErrados.length === 0) {
-        console.log("ℹ️ Nenhum registro encontrado para corrigir");
-        return;
-    }
-    
-    let corrigidos = 0;
-    
-    for (const reg of registrosErrados) {
-        console.log(`\n🔧 Corrigindo OP ${reg.op} - ID: ${reg.id} - Data: ${reg.data}`);
-        
-        const producaoTotal = reg.produzido || 0;
-        const producaoC1 = (producaoTotal * 2) / 8;  // 22h-00h = 2h
-        const producaoC2 = (producaoTotal * 6) / 8;  // 00h-06h = 6h
-        
-        // Data do dia seguinte
-        const dataObj = new Date(reg.data);
-        dataObj.setDate(dataObj.getDate() + 1);
-        const dataC2 = dataObj.toISOString().split('T')[0];
-        
-        // 1. ATUALIZAR o registro original para C1 (termina 00:00)
-        console.log(`   Atualizando C1: ${reg.data} 22:00-00:00 (${producaoC1.toFixed(2)}kg)`);
-        
-        const updateData = {
-            turno: 'C1',
-            fim: '00:00',
-            produzido: producaoC1
-        };
-        
-        const { error: updateError } = await window.supabase
-            .from("oee_registros")
-            .update(updateData)
-            .eq('id', reg.id);
-        
-        if (updateError) {
-            console.error(`   ❌ Erro: ${updateError.message}`);
-            continue;
-        }
-        
-        // 2. CRIAR novo registro C2
-        console.log(`   Criando C2: ${dataC2} 00:00-06:00 (${producaoC2.toFixed(2)}kg)`);
-        
-        const newRegistro = {
-            data: dataC2,
-            maquina: reg.machine,
-            turno: 'C2',
-            op: reg.op,
-            produto: reg.produto,
-            cliente: reg.cliente,
-            disponibilidade: reg.disp,
-            performance: reg.perf,
-            qualidade: reg.qual,
-            pedido: reg.pedido,
-            inicio: '00:00',
-            fim: '06:00',
-            setup: reg.setup || 0,
-            paradas: reg.avaria || 0,
-            motivo_perda: reg.motivoPerda || '',
-            est: reg.est || 0,
-            real_kgh: reg.realKgH || 0,
-            produzido: producaoC2,
-            rejeicao: reg.rejeicao || 0,
-            aparas: reg.aparas || 0,
-            criado_em: new Date().toISOString()
-        };
-        
-        const { error: insertError } = await window.supabase
-            .from("oee_registros")
-            .insert([newRegistro]);
-        
-        if (insertError) {
-            console.error(`   ❌ Erro ao criar C2: ${insertError.message}`);
-        } else {
-            console.log(`   ✅ OP ${reg.op} corrigida com sucesso!`);
-            corrigidos++;
-        }
-    }
-    
-    console.log(`\n✅ Correção finalizada! ${corrigidos} registros corrigidos.`);
-    console.log("🔄 Recarregando dados...");
-    await carregarDados();
-    console.log("✅ Dados recarregados! Atualize a página.");
-}
 
-// EXECUTAR
-corrigirTurnosCDireto();
-	
-	function verificarProdutos() {
-    console.log("=== VERIFICAÇÃO DE PRODUTOS ===");
-    console.log("Total de produtos:", produtos.length);
-    console.log("Primeiros 5 produtos:", produtos.slice(0, 5));
-    console.log("Produtos vindos do localStorage?", localStorage.getItem('lusitano_produtos'));
-    
-    const selectEdit = document.getElementById('editProduto');
-    if (selectEdit) {
-        console.log("Select de edição tem:", selectEdit.options.length, "opções");
-   	}
-   }
-	function debugEditModal() {
-    console.log("===== DEBUG EDIT MODAL =====");
-    console.log("1. produtos.length:", produtos.length);
-    console.log("2. Primeiro produto:", produtos[0]);
-    console.log("3. Select editProduto existe?", document.getElementById('editProduto'));
-    
-    const select = document.getElementById('editProduto');
-    if (select) {
-        console.log("4. Opções do select:", select.options.length);
-        for (let i = 0; i < Math.min(5, select.options.length); i++) {
-            console.log("   Opção", i, ":", select.options[i].value);
-        }
+    function verificarProdutos() {
+        console.log("Total de produtos:", produtos.length);
     }
-    console.log("===========================");
-}
+    
+    function debugEditModal() {
+        const select = document.getElementById('editProduto');
+        if (select) console.log("Opções do select:", select.options.length);
+    }
 
-    // INICIALIZAÇÃO
+    // INICIALIZAÇÃO FINAL
     window.onload = async function() {
-        console.log("🚀 Inicializando sistema...");
         reiniciarTimer();
         
-        carregarDiasSemPedido();
-        
         await carregarDados();
-        
-        setTimeout(() => {
-            if (historico.length === 0) {
-                console.log("⚠️ Nenhum dado carregado. Tentando novamente...");
-                carregarDados();
-            } else {
-                console.log(`✅ Sistema pronto com ${historico.length} registros!`);
-            }
-        }, 1000);
         
         const end = new Date().toISOString().split('T')[0];
         const start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -7556,7 +6999,6 @@ corrigirTurnosCDireto();
         filterByRange();
         atualizarSelectClientesProduto();
         atualizarListaClientesProdutos();
-        
         adicionarPreviewListeners();
         atualizarPreview();
         
@@ -7566,10 +7008,7 @@ corrigirTurnosCDireto();
         if (maquinaFilter) maquinaFilter.value = 'ALL';
         
         document.getElementById('regTurno').addEventListener('change', atualizarHorarioPorTurno);
-        
         carregarCalendario();
-        
-        console.log("✅ Sistema inicializado - todas as funcionalidades ativas!");
     };
     </script>
 </body>

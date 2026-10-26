@@ -2536,14 +2536,19 @@
         document.getElementById('modalQuantidades').style.display = 'none';
     }
 
-    // ============================================
-    // FUNÇÕES DE TOAST E NÚMEROS
-    // ============================================
     function showErrorToast(mensagem) {
         const toast = document.getElementById("toast");
         toast.innerHTML = "❌ " + mensagem;
         toast.className = "show error-toast";
         setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
+    }
+
+	function verificarPermissaoEscrita() {
+        if (perfilUsuario === 'visualizador') {
+            showErrorToast("Acesso negado: seu usuário possui permissão somente para visualização.");
+            return false;
+        }
+        return true;
     }
 
     function showWarningToast(mensagem) {
@@ -2691,7 +2696,9 @@
         }
     }
 
-    function salvarSemPedido() {
+        async function salvarSemPedido() {
+        if (!verificarPermissaoEscrita()) return; 
+
         const data = document.getElementById('semPedidoData').value;
         const turno = document.getElementById('semPedidoTurno').value;
         const maquina = document.getElementById('semPedidoMaquina').value;
@@ -2737,13 +2744,27 @@
             timestamp: new Date().toISOString()
         };
         
-        let semPedidos = JSON.parse(localStorage.getItem('diasSemPedido') || '[]');
-        semPedidos.push(semPedidoReg);
-        localStorage.setItem('diasSemPedido', JSON.stringify(semPedidos));
+        // SALVANDO NO SUPABASE (Substituindo o localStorage)
+        const { error } = await window.supabase
+            .from('dias_sem_pedido')
+            .insert([{
+                data: semPedidoReg.data,
+                turno: semPedidoReg.turno,
+                maquina: semPedidoReg.maquina,
+                inicio: semPedidoReg.inicio,
+                fim: semPedidoReg.fim,
+                horas_parado: semPedidoReg.horasParado,
+                motivo: semPedidoReg.motivo
+            }]);
+
+        if (error) {
+            showErrorToast(`Erro ao salvar: ${error.message}`);
+            return;
+        }
         
-        carregarDiasSemPedido();
+        await carregarDiasSemPedido();
         
-        showToast(`✅ Registrado: ${motivoCompleto}`);
+        showToast(`Registrado: ${motivoCompleto}`);
         fecharModalSemPedido();
         
         carregarCalendario();
@@ -3010,6 +3031,7 @@
     }
 
     async function apagarRegistro(id) {
+		if (!verificarPermissaoEscrita()) return;
         const idNum = typeof id === 'string' ? parseInt(id) : id;
         
         if (confirm("Deseja apagar este registo permanentemente?")) {
@@ -4381,6 +4403,7 @@ function removerProduto(produtoNome, cliente) {
     }
 
     async function salvarTurnoUnico() {
+		if (!verificarPermissaoEscrita()) return;
         console.log("📝 Salvando turno único...");
         
         const data = document.getElementById('regDate').value;
@@ -4505,6 +4528,7 @@ function removerProduto(produtoNome, cliente) {
     }
 
     async function salvarMultiplosTurnos() {
+	if (!verificarPermissaoEscrita()) return;
     console.log("🟢 Salvando múltiplos turnos...");
     
     if (turnosTemp.length === 0) {
@@ -4672,70 +4696,60 @@ function removerProduto(produtoNome, cliente) {
         return conflitos;
     }
 
-    function openEditModal(id) {
-    const idNum = typeof id === 'string' ? parseInt(id) : id;
-    
-    const reg = historico.find(h => h.id === idNum);
-    if (!reg) {
-        showErrorToast('Registro não encontrado!');
-        return;
-    }
-    
-    console.log("📝 Editando registro:", reg.id);
-    console.log("📦 Produto a ser selecionado:", reg.produto);
-    
-    // 1. Preencher campos básicos
-    document.getElementById('editId').value = reg.id;
-    document.getElementById('editDate').value = reg.data;
-    document.getElementById('editMachine').value = reg.machine;
-    document.getElementById('editTurno').value = getTurnoDisplay(reg.turno);
-    document.getElementById('editOP').value = reg.op || '';
-    document.getElementById('editPedido').value = reg.pedido || 0;
-    document.getElementById('editInicio').value = reg.inicio || '06:00';
-    document.getElementById('editFim').value = reg.fim || '14:00';
-    document.getElementById('editSetup').value = reg.setup || 0;
-    document.getElementById('editAvaria').value = reg.avaria || 0;
-    document.getElementById('editEst').value = reg.est || 90;
-    document.getElementById('editProduzido').value = reg.produzido || 0;
-    document.getElementById('editRejeicao').value = reg.rejeicao || 0;
-    document.getElementById('editAparas').value = reg.aparas || 0;
-    
-    // 2. POPULAR SELECT DE PRODUTOS
-    const selectProduto = document.getElementById('editProduto');
-    selectProduto.innerHTML = '<option value="">🔍 Selecione cliente/produto...</option>';
-    
-    // Adicionar todos os produtos
-    for (let i = 0; i < produtos.length; i++) {
-        const p = produtos[i];
-        if (p && p.displayName) {
-            const option = document.createElement('option');
-            option.value = p.displayName;
-            option.textContent = p.displayName;
-            selectProduto.appendChild(option);
-        }
-    }
-    
-    console.log(`📋 Select populado com ${selectProduto.options.length - 1} produtos`);
-    
-    // 3. SELECIONAR O PRODUTO (FORÇADO)
-    if (reg.produto && reg.produto !== '') {
-        // Tentativa 1: selecionar direto
-        selectProduto.value = reg.produto;
+        function openEditModal(id) {
+        if (!verificarPermissaoEscrita()) return; // Bloqueia visualizador
         
-        // Tentativa 2: se falhou, tentar por correspondência
-        if (selectProduto.value !== reg.produto) {
-            const clienteNome = reg.produto.split(' - ')[0];
-            for (let i = 0; i < selectProduto.options.length; i++) {
-                const opt = selectProduto.options[i];
-                if (opt.value && opt.value.startsWith(clienteNome)) {
-                    selectProduto.value = opt.value;
-                    console.log("✅ Encontrado por correspondência:", opt.value);
-                    break;
+        const idNum = typeof id === 'string' ? parseInt(id) : id;
+        const reg = historico.find(h => h.id === idNum);
+        
+        if (!reg) {
+            showErrorToast('Registro não encontrado!');
+            return;
+        }
+        
+        // Preenche os campos básicos
+        document.getElementById('editId').value = reg.id;
+        document.getElementById('editDate').value = reg.data;
+        document.getElementById('editMachine').value = reg.machine;
+        document.getElementById('editTurno').value = getTurnoDisplay(reg.turno);
+        document.getElementById('editOP').value = reg.op || '';
+        document.getElementById('editPedido').value = reg.pedido || 0;
+        document.getElementById('editInicio').value = reg.inicio || '06:00';
+        document.getElementById('editFim').value = reg.fim || '14:00';
+        document.getElementById('editSetup').value = reg.setup || 0;
+        document.getElementById('editAvaria').value = reg.avaria || 0;
+        document.getElementById('editEst').value = reg.est || 90;
+        document.getElementById('editProduzido').value = reg.produzido || 0;
+        document.getElementById('editRejeicao').value = reg.rejeicao || 0;
+        document.getElementById('editAparas').value = reg.aparas || 0;
+        
+        // Popula o Select de Produtos
+        const selectProduto = document.getElementById('editProduto');
+        selectProduto.innerHTML = '<option value="">Selecione cliente/produto...</option>';
+        
+        produtos.forEach(p => {
+            if (p && p.displayName) {
+                const option = document.createElement('option');
+                option.value = p.displayName;
+                option.textContent = p.displayName;
+                selectProduto.appendChild(option);
+            }
+        });
+        
+        // A MÁGICA ACONTECE AQUI: Força a seleção do produto que veio do banco
+        if (reg.produto) {
+            selectProduto.value = reg.produto;
+            
+            // Se não encontrou exato, tenta buscar pelo nome parecido (segurança extra)
+            if (selectProduto.value === "") {
+                const optionEncontrada = Array.from(selectProduto.options).find(opt => opt.value.includes(reg.produto));
+                if (optionEncontrada) {
+                    selectProduto.value = optionEncontrada.value;
                 }
             }
         }
         
-        console.log("🎯 Valor selecionado:", selectProduto.value);
+        document.getElementById('editModal').style.display = 'flex';
     }
     
     // 4. GARANTIR QUE O SELECT NÃO SEJA LIMPO DEPOIS
@@ -4780,6 +4794,7 @@ function removerProduto(produtoNome, cliente) {
     }
 
     async function salvarEdicao() {
+	if (!verificarPermissaoEscrita()) return;
     const id = parseInt(document.getElementById('editId').value);
     const index = historico.findIndex(h => h.id === id);
     if (index === -1) {
@@ -5865,6 +5880,7 @@ function removerProduto(produtoNome, cliente) {
     }
 
     async function apagarOPCompleta(op) {
+		if (!verificarPermissaoEscrita()) return;
         if (confirm(`⚠️ ATENÇÃO! Você está prestes a apagar TODOS os registros da OP ${op}. Esta ação é irreversível!\n\nDeseja continuar?`)) {
             const registrosParaApagar = historico.filter(r => r.op === op);
             
@@ -5890,6 +5906,7 @@ function removerProduto(produtoNome, cliente) {
     }
     
     async function apagarTurnoDaOP(id, op) {
+		if (!verificarPermissaoEscrita()) return;
         if (confirm(`Deseja apagar este turno da OP ${op}?`)) {
             const sucesso = await apagarRegistroBanco(id);
             if (sucesso) {

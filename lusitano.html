@@ -2533,13 +2533,13 @@
         document.getElementById('modalQuantidades').style.display = 'flex';
     }
     
-    function fecharModalQuantidades() {
+        function fecharModalQuantidades() {
         document.getElementById('modalQuantidades').style.display = 'none';
     }
 
-        function verificarPermissaoEscrita() {
+    function verificarPermissaoEscrita() {
         if (perfilUsuario === 'visualizador') {
-            showErrorToast("Acesso negado: seu usuario possui permissao somente para visualizacao.");
+            showErrorToast("Acesso negado: seu usuário possui permissão somente para visualização.");
             return false;
         }
         return true;
@@ -2562,30 +2562,6 @@
     function showToast(mensagem) {
         const toast = document.getElementById("toast");
         toast.innerHTML = mensagem; 
-        toast.className = "show";
-        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-    }
-        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
-    }
-
-	function verificarPermissaoEscrita() {
-        if (perfilUsuario === 'visualizador') {
-            showErrorToast("Acesso negado: seu usuário possui permissão somente para visualização.");
-            return false;
-        }
-        return true;
-    }
-
-    function showWarningToast(mensagem) {
-        const toast = document.getElementById("toast");
-        toast.innerHTML = "⚠️ " + mensagem;
-        toast.className = "show warning-toast";
-        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
-    }
-
-    function showToast(mensagem) {
-        const toast = document.getElementById("toast");
-        toast.innerHTML = "✅ " + mensagem;
         toast.className = "show";
         setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
     }

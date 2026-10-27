@@ -6910,19 +6910,24 @@
         }
     });
 
-    async function carregarDados() {
+       async function carregarDados() {
         console.log("Carregando dados do banco...");
         
-                // Busca perfil
+        // Busca o usuário logado
         const { data: { user } } = await window.supabase.auth.getUser();
+        
         if (user) {
-            const { data: perfil } = await window.supabase
-                .from('perfis')
-                .select('*') // Puxa tudo para você ver no console como está no seu banco
-                .eq('user_id', user.id)
-                .single();
+            // Puxa a permissão do user_metadata (onde acabamos de salvar "admin")
+            const roleDoBanco = user.user_metadata?.role;
             
-            console.log("Dados do perfil no banco:", perfil); // Isso vai te mostrar no F12 o que o banco está devolvendo
+            if (roleDoBanco) {
+                perfilUsuario = roleDoBanco;
+            } else {
+                perfilUsuario = 'visualizador'; 
+            }
+        }
+        
+        console.log("Perfil do usuário logado:", perfilUsuario);
 
             if (perfil) {
                 // Se no seu banco a coluna tiver outro nome (ex: tipo, permissao), troque aqui:

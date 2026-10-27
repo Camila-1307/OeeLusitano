@@ -6910,40 +6910,24 @@
         }
     });
 
-       async function carregarDados() {
+           async function carregarDados() {
         console.log("Carregando dados do banco...");
         
-        // Busca o usuário logado
+        // 1. Busca o usuário logado
         const { data: { user } } = await window.supabase.auth.getUser();
         
+        // 2. Verifica a permissão
         if (user) {
-            // Puxa a permissão do user_metadata (onde acabamos de salvar "admin")
             const roleDoBanco = user.user_metadata?.role;
-            
-            if (roleDoBanco) {
-                perfilUsuario = roleDoBanco;
-            } else {
-                perfilUsuario = 'visualizador'; 
-            }
+            perfilUsuario = roleDoBanco ? roleDoBanco : 'visualizador';
         }
-        
         console.log("Perfil do usuário logado:", perfilUsuario);
 
-            if (perfil) {
-                // Se no seu banco a coluna tiver outro nome (ex: tipo, permissao), troque aqui:
-                const roleDoBanco = perfil.role || perfil.tipo || perfil.permissao; 
-                
-                if (roleDoBanco) {
-                    perfilUsuario = roleDoBanco;
-                } else {
-                    perfilUsuario = 'admin'; // Se não achar a coluna, libera como admin para não travar
-                }
-            }
-        }
-
+        // 3. Carrega os clientes
         const { data: clientesBanco } = await window.supabase.from('clientes').select('nome').order('nome');
         if (clientesBanco) clientes = clientesBanco.map(c => c.nome);
 
+        // 4. Carrega os produtos
         const { data: produtosBanco } = await window.supabase.from('produtos').select('id, nome, maquina, est, clientes(nome)').order('nome');
         if (produtosBanco) {
             produtos = produtosBanco.map(p => ({
@@ -6956,8 +6940,10 @@
             }));
         }
 
+        // 5. Carrega dias sem pedido
         await carregarDiasSemPedido();
         
+        // 6. Carrega os registros OEE
         const registrosBanco = await listarRegistros();
         if (registrosBanco && registrosBanco.length > 0) {
             historico = registrosBanco.map(reg => {

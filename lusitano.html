@@ -3259,6 +3259,7 @@
     }
 
     function openClientModal() {
+		if (!verificarPermissaoEscrita()) return;
         atualizarSelectClientesProduto();
         atualizarListaClientesProdutos();
         document.getElementById('produtosPreviewContainer').style.display = 'none';
@@ -6912,20 +6913,27 @@
     async function carregarDados() {
         console.log("Carregando dados do banco...");
         
-        // Busca perfil
+                // Busca perfil
         const { data: { user } } = await window.supabase.auth.getUser();
         if (user) {
-            const { data: perfil } = await window.supabase.from('perfis').select('role').eq('user_id', user.id).single();
-            if (perfil) perfilUsuario = perfil.role;
-        }
+            const { data: perfil } = await window.supabase
+                .from('perfis')
+                .select('*') // Puxa tudo para você ver no console como está no seu banco
+                .eq('user_id', user.id)
+                .single();
+            
+            console.log("Dados do perfil no banco:", perfil); // Isso vai te mostrar no F12 o que o banco está devolvendo
 
-        // Esconde botoes se for visualizador
-        if (perfilUsuario === 'visualizador') {
-            document.querySelectorAll('.btn-action').forEach(btn => {
-                if (!btn.textContent.includes('Sair') && !btn.textContent.includes('Relatório') && !btn.textContent.includes('MÉDIAS') && !btn.textContent.includes('QUANTIDADES')) {
-                    btn.style.display = 'none';
+            if (perfil) {
+                // Se no seu banco a coluna tiver outro nome (ex: tipo, permissao), troque aqui:
+                const roleDoBanco = perfil.role || perfil.tipo || perfil.permissao; 
+                
+                if (roleDoBanco) {
+                    perfilUsuario = roleDoBanco;
+                } else {
+                    perfilUsuario = 'admin'; // Se não achar a coluna, libera como admin para não travar
                 }
-            });
+            }
         }
 
         const { data: clientesBanco } = await window.supabase.from('clientes').select('nome').order('nome');

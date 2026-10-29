@@ -4628,6 +4628,13 @@
                     selectProduto.value = optionEncontrada.value;
                 }
             }
+            if (selectProduto.value === "") {
+                const optionRegistro = document.createElement('option');
+                optionRegistro.value = reg.produto;
+                optionRegistro.textContent = reg.produto + ' (não cadastrado)';
+                selectProduto.appendChild(optionRegistro);
+                selectProduto.value = reg.produto;
+            }
         }
         
         document.getElementById('editModal').style.display = 'flex';
@@ -4686,7 +4693,7 @@
         const qual = calcularQualidade(produzido, rejeicao, aparas);
         const dispOP = calcularDisponibilidadeOP(inicio, fim, setup, avaria);
         
-        const produtoInfo = produtos.find(p => p.displayName === produto) || { cliente: 'Sem cliente' };
+        const produtoInfo = produtos.find(p => p.displayName === produto) || { cliente: historico[index].cliente || 'Sem cliente' };
         
         const registroAtualizado = {
             data: date,
@@ -5473,7 +5480,7 @@
                     <div class="overflow-x-auto">
                         <table class="produto-tabela">
                             <thead>
-                                 <tr
+                                 <tr>
                                     <th>DATA</th>
                                     <th>MÁQ</th>
                                     <th>TURNO</th>

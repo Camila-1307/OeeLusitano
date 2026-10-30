@@ -2297,6 +2297,7 @@
     let paradasDetalhadas = [];
     let autoSaveTimer = null;
     let dadosPendentes = false;
+    let salvandoRegistro = false; // evita salvar o mesmo registro duas vezes (clique duplo)
     let opsCache = [];
     let opSearchTerm = '';
     let diasSemPedido = [];
@@ -4298,16 +4299,22 @@
 
     async function calcularESalvar() {
         if (!verificarPermissaoEscrita()) return;
+        if (salvandoRegistro) return;
 
         if (!document.getElementById('regProduto').value) {
             showErrorToast('Selecione um cliente e produto!');
             return;
         }
         
-        if (turnosTemp.length > 0) {
-            await salvarMultiplosTurnos();
-        } else {
-            await salvarTurnoUnico();
+        salvandoRegistro = true;
+        try {
+            if (turnosTemp.length > 0) {
+                await salvarMultiplosTurnos();
+            } else {
+                await salvarTurnoUnico();
+            }
+        } finally {
+            salvandoRegistro = false;
         }
     }
 

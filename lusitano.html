@@ -22,6 +22,10 @@
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
+        @media (min-width: 1024px) {
+            html { zoom: 0.8; }
+        }
+
         body { 
             background-color: #f8fafc; 
             font-family: 'Inter', sans-serif; 
@@ -1465,7 +1469,7 @@
             </div>
             
             <div class="chart-container mb-8">
-                <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Perdas por Máquina (minutos) - Comparativo</h3>
+                <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Perdas por Máquina (setup + paradas, em minutos) - Comparativo</h3>
                 <div class="h-[300px]"><canvas id="perdasMaquinaChart"></canvas></div>
             </div>
             
@@ -2540,7 +2544,7 @@
         document.getElementById('qtdRealM2').innerHTML = formatarNumeroComPonto(quantidades.M2.real) + ' kg';
         document.getElementById('qtdRealM3').innerHTML = formatarNumeroComPonto(quantidades.M3.real) + ' kg';
         document.getElementById('qtdRealTotal').innerHTML = formatarNumeroComPonto(totalReal) + ' kg';
-        document.getElementById('qtdEstimadoTotal').innerHTML = formatarNumeroComPonto(totalEstimado) + ' kg';
+        document.getElementById('qtdEstimadoTotal').innerHTML = formatarNumeroComPonto(Math.round(totalEstimado)) + ' kg';
         document.getElementById('qtdRealTotalGrande').innerHTML = formatarNumeroComPonto(totalReal) + ' kg';
         
         document.getElementById('modalQuantidades').style.display = 'flex';
@@ -3892,7 +3896,7 @@
                 horas: horasLimitadas, 
                 kg: totalKg, 
                 oee: pedidos.length > 0 ? Math.round(somaOEE / pedidos.length) : 0, 
-                pedidos: pedidos.length 
+                pedidos: new Set(pedidos.map(p => p.op)).size 
             };
         }
         
@@ -4739,6 +4743,12 @@
         
         const produtoInfo = produtos.find(p => p.displayName === produto) || { cliente: historico[index].cliente || 'Sem cliente' };
         
+        const criadoEmOriginal = historico[index].timestamp || new Date().toISOString();
+        const motivoAnterior = historico[index].motivoPerda || '';
+        const motivoNovo = avaria > 0
+            ? ((motivoAnterior && motivoAnterior !== 'Setup') ? motivoAnterior : 'Paradas não especificadas')
+            : (setup > 0 ? 'Setup' : '');
+        
         const registroAtualizado = {
             data: date,
             maquina: machine,
@@ -4754,13 +4764,13 @@
             fim: fim,
             setup: setup,
             paradas: avaria,
-            motivo_perda: (avaria > 0 ? (produtoInfo.motivoPerda || 'Parada não especificada') : (setup > 0 ? 'Setup' : '')),
+            motivo_perda: motivoNovo,
             est: est,
             real_kgh: realKgH,
             produzido: produzido,
             rejeicao: rejeicao,
             aparas: aparas,
-            criado_em: new Date().toISOString()
+            criado_em: criadoEmOriginal
         };
         
         try {
@@ -4783,7 +4793,8 @@
                 qual: qual,
                 avaria: avaria,
                 realKgH: realKgH,
-                timestamp: new Date().toISOString(),
+                motivoPerda: motivoNovo,
+                timestamp: criadoEmOriginal,
                 dispTurno: historico[index]?.dispTurno || 0
             };
             
@@ -5082,8 +5093,8 @@
                         ${renderBar('QUAL', avgQual)}
                     </div>
                     <div class="mt-4 text-xs text-slate-400 border-t pt-2">
-                        ${diasComProducao} dias com produção / ${totalDiasMaq} dias no período (até hoje)${(totalDiasNoPeriodo - totalDiasMaq) > 0 ? ' (' + (totalDiasNoPeriodo - totalDiasMaq) + ' domingo(s) sem produção desconsiderado(s))' : ''}
-                        ${diasSemProducao > 0 ? '<span class="text-red-500 ml-2">Atenção: ' + diasSemProducao + ' dias sem produção</span>' : ''}
+                        ${diasComProducao} dias com produção / ${totalDiasMaq} dias no período (até hoje)${(totalDiasNoPeriodo - totalDiasMaq) > 0 ? ' (' + (totalDiasNoPeriodo - totalDiasMaq) + ((totalDiasNoPeriodo - totalDiasMaq) === 1 ? ' domingo sem produção fora do cálculo)' : ' domingos sem produção fora do cálculo)') : ''}
+                        ${diasSemProducao > 0 ? '<span class="text-red-500 ml-2">Atenção: ' + diasSemProducao + (diasSemProducao === 1 ? ' dia sem produção' : ' dias sem produção') + '</span>' : ''}
                     </div>
                 </div>
             `;
@@ -5190,6 +5201,11 @@
         });
     }
 
+    function normalizarMotivoParada(motivo) {
+        if (!motivo || motivo === 'Setup' || /n[aã]o especificad/i.test(motivo)) return 'Paradas não especificadas';
+        return motivo;
+    }
+
     function atualizarCardsPerdasDashboard(data) {
         const perdasPorMotivo = {};
         let totalGeralPerdas = 0;
@@ -5198,8 +5214,7 @@
             const avaria = reg.avaria || 0;
             
             if (avaria > 0) {
-                let motivo = reg.motivoPerda;
-                if (!motivo || motivo === 'Setup') motivo = 'Paradas não especificadas';
+                const motivo = normalizarMotivoParada(reg.motivoPerda);
                 
                 perdasPorMotivo[motivo] = (perdasPorMotivo[motivo] || 0) + avaria;
                 totalGeralPerdas += avaria;
@@ -5397,7 +5412,7 @@
                         </div>
                         <div>
                             <span class="text-[10px] font-bold uppercase text-slate-400">Pedidos</span>
-                            <div class="text-lg font-black">${rs.length}</div>
+                            <div class="text-lg font-black">${new Set(rs.map(r => r.op)).size}</div>
                         </div>
                         <div>
                             <span class="text-[10px] font-bold uppercase text-slate-400">Horas</span>
@@ -5518,7 +5533,7 @@
                         <\/div>
                         <div class="produto-stat-item">
                             <div class="produto-stat-label">Pedidos</div>
-                            <div class="produto-stat-value text-purple-700">${registros.length}</div>
+                            <div class="produto-stat-value text-purple-700">${new Set(registros.map(r => r.op)).size}</div>
                         <\/div>
                         <div class="produto-stat-item">
                             <div class="produto-stat-label">OEE Médio</div>
@@ -5666,7 +5681,9 @@
             const statusPerf = getPerformanceStatus(estMedio, realMedio);
             
             const p = rs[0];
-            const per = p.data===rs[rs.length-1].data ? p.data.split('-').reverse().join('/') : `${p.data.split('-').reverse().join('/')} a ${rs[rs.length-1].data.split('-').reverse().join('/')}`;
+            const datasOP = rs.map(r => r.data).sort();
+            const fmtData = d => d.split('-').reverse().join('/');
+            const per = datasOP[0] === datasOP[datasOP.length - 1] ? fmtData(datasOP[0]) : `${fmtData(datasOP[0])} a ${fmtData(datasOP[datasOP.length - 1])}`;
             
             // BOTAO DE APAGAR OP SO APARECE SE NAO FOR VISUALIZADOR
             const botaoApagarOP = perfilUsuario !== 'visualizador' ? `
@@ -5749,7 +5766,7 @@
             `;
         });
         
-        const mDisp = Math.round(tDisp/rs.length), mPerf = Math.round(tPerf/rs.length), mQual = Math.round(tQual/rs.length), mOEE = Math.round(tOEE/rs.length);
+        const mDisp = Math.round(tDisp/rs.length), mPerf = Math.round(tPerf/rs.length), mQual = Math.round(tQual/rs.length), mOEE = calcularOEE(mDisp, mPerf, mQual);
         rows += `
             <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
                 <td colspan="4" class="py-3 text-blue-800">MÉDIA DA OP<\/td>
@@ -5903,6 +5920,13 @@
         }
     }
 
+    function capturarSemZoom(elemento, opcoes) {
+        const raiz = document.documentElement;
+        const zoomAnterior = raiz.style.zoom;
+        raiz.style.zoom = '1';
+        return html2canvas(elemento, opcoes).finally(() => { raiz.style.zoom = zoomAnterior; });
+    }
+
     function capturarDashboard() {
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
@@ -5912,7 +5936,7 @@
         periodInfo.style.display = 'block';
         periodInfo.classList.add('print-visible');
         
-        html2canvas(document.getElementById('dashboard-content'), {
+        capturarSemZoom(document.getElementById('dashboard-content'), {
             scale: 2,
             backgroundColor: '#ffffff',
             logging: false,
@@ -5979,7 +6003,7 @@
                     </div>
                     <div style="position: absolute; bottom: 15px; right: 25px; text-align: right;">
                         <div style="font-size: 18px; font-weight: 600; color: white; text-transform: uppercase; letter-spacing: 1px; opacity: 0.95;">RELATÓRIO PCP</div>
-                        <div style="font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.8); margin-top: 2px;">Pedidos fora da margem de ${MARGEM_PERFORMANCE}%</div>
+                        <div style="font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.8); margin-top: 2px;">Registros fora da margem de ${MARGEM_PERFORMANCE}%</div>
                     </div>
                 </div>
                 <div style="background: #f8fafc; padding: 12px 20px; text-align: center; border-bottom: 2px solid #005a2b;">
@@ -6056,7 +6080,7 @@
                                 <span style="font-weight: 700;">Período:</span> ${dataInicial} a ${dataFinal}
                             </div>
                             <div style="font-size: 14px; color: #1f2937; margin-top: 5px;">
-                                <span style="font-weight: 700;">Total de pedidos:</span> ${registrosForaMargem.length}
+                                <span style="font-weight: 700;">Total de registros:</span> ${registrosForaMargem.length}
                             </div>
                         </div>
                         <div style="text-align: right;">
@@ -6085,7 +6109,7 @@
         elementoRelatorio.style.width = '1200px';
         document.body.appendChild(elementoRelatorio);
         
-        html2canvas(elementoRelatorio, {
+        capturarSemZoom(elementoRelatorio, {
             scale: 2,
             backgroundColor: '#ffffff',
             logging: false,
@@ -6098,7 +6122,7 @@
             link.click();
             
             document.body.removeChild(elementoRelatorio);
-            showToast(`Relatório PCP gerado com ${registrosForaMargem.length} pedidos!`);
+            showToast(`Relatório PCP gerado com ${registrosForaMargem.length} registros!`);
         }).catch(error => {
             console.error('Erro ao gerar relatório:', error);
             showErrorToast('Erro ao gerar relatório PCP!');
@@ -6366,7 +6390,7 @@
             }
             
             if (avaria > 0) {
-                let motivo = reg.motivoPerda || 'Avaria não especificada';
+                const motivo = normalizarMotivoParada(reg.motivoPerda);
                 perdasMot[motivo] = (perdasMot[motivo] || 0) + avaria;
             }
             

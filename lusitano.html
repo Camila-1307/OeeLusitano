@@ -601,6 +601,20 @@
             box-shadow: none;
         }
 
+        #calendarGrid > div.cal-head {
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: default;
+            padding: 8px;
+        }
+
+        #calendarGrid > div.cal-head:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
         #calendarGrid > div:hover {
             transform: scale(1.02);
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -1557,9 +1571,9 @@
             
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                 <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6">Detalhamento de Perdas por Registro</h3>
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto overflow-y-auto max-h-[400px]">
                     <table class="w-full text-left text-sm">
-                        <thead>
+                        <thead class="sticky top-0 bg-white">
                             <tr class="text-[10px] uppercase text-slate-400 border-b">
                                 <th class="pb-4">Data</th>
                                 <th class="pb-4">Máq</th>
@@ -3716,6 +3730,11 @@
     // ============================================
     // FUNÇÕES DE CALENDÁRIO
     // ============================================
+    function ehDomingo(dataStr) {
+        const p = dataStr.split('-').map(Number);
+        return new Date(p[0], p[1] - 1, p[2]).getDay() === 0;
+    }
+
     function carregarCalendario() {
         const maquinaCalendario = document.getElementById('machineCalendarSelect').value;
         const ano = dataCalendarioAtual.getFullYear();
@@ -3730,7 +3749,7 @@
         
         const historicoProcessado = processarRegistrosComTurnoC(historico);
         
-        let dias = [];
+        let dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(n => `<div class="cal-head">${n}</div>`);
         
         for (let i = 0; i < primeiroDia.getDay(); i++) {
             dias.push('<div class="bg-slate-50 p-4 rounded-xl text-slate-300"></div>');
@@ -3776,6 +3795,7 @@
             const turnosTexto = Array.from(turnosSet).sort().join(', ');
             
             let classeDia = '';
+            let domingoSemProducao = false;
             let onclickAttr = `onclick="abrirModalDia('${dataStr}')"`;
             let tooltipText = '';
             
@@ -3790,6 +3810,10 @@
                 }
             } else if (temProducao) {
                 classeDia = 'com-producao';
+            } else if (dataAtual.getDay() === 0) {
+                classeDia = 'dia-sem-pedido';
+                domingoSemProducao = true;
+                tooltipText = 'Domingo sem produção: a empresa não opera em todos os domingos';
             } else {
                 classeDia = 'sem-producao';
             }
@@ -3799,7 +3823,7 @@
                      class="${classeDia} cursor-pointer transition-all hover:scale-105 p-3 rounded text-center font-semibold"
                      title="${tooltipText || turnosTexto || 'Sem registro'}">
                     ${d}
-                    ${temSemPedido ? '<div class="text-[8px] font-bold text-amber-600 mt-1">sem pedido</div>' : ''}
+                    ${(temSemPedido || domingoSemProducao) ? '<div class="text-[8px] font-bold text-amber-600 mt-1">sem pedido</div>' : ''}
                 </div>
             `);
         }
@@ -4977,6 +5001,9 @@
         
         ['M1', 'M2', 'M3'].forEach(mId => {
             const machineData = data.filter(d => d.machine === mId);
+            const diasComRegistroMaq = new Set(machineData.map(d => d.data));
+            const listaDiasMaq = listaDias.filter(dia => !(ehDomingo(dia) && !diasComRegistroMaq.has(dia)));
+            const totalDiasMaq = listaDiasMaq.length;
             
             let somaOEE = 0;
             let diasComProducao = 0;
@@ -5001,7 +5028,7 @@
                     }
                 });
                 
-                var mediaOEE = Math.round(somaOEE / totalDiasNoPeriodo);
+                var mediaOEE = totalDiasMaq > 0 ? Math.round(somaOEE / totalDiasMaq) : 0;
             } else if (machineData.length > 0) {
                 let somaOeeTemp = 0;
                 machineData.forEach(d => { 
@@ -5036,11 +5063,11 @@
                 dispTurno: avgDispTurno,
                 oee: mediaOEE,
                 diasComProducao: diasComProducao,
-                totalDias: totalDiasNoPeriodo
+                totalDias: totalDiasMaq
             });
             
             const atingida = mediaOEE >= META;
-            const diasSemProducao = totalDiasNoPeriodo - diasComProducao;
+            const diasSemProducao = totalDiasMaq - diasComProducao;
             
             grid.innerHTML += `
                 <div class="card-machine">
@@ -5055,7 +5082,7 @@
                         ${renderBar('QUAL', avgQual)}
                     </div>
                     <div class="mt-4 text-xs text-slate-400 border-t pt-2">
-                        ${diasComProducao} dias com produção / ${totalDiasNoPeriodo} dias no período (até hoje)
+                        ${diasComProducao} dias com produção / ${totalDiasMaq} dias no período (até hoje)${(totalDiasNoPeriodo - totalDiasMaq) > 0 ? ' (' + (totalDiasNoPeriodo - totalDiasMaq) + ' domingo(s) sem produção desconsiderado(s))' : ''}
                         ${diasSemProducao > 0 ? '<span class="text-red-500 ml-2">Atenção: ' + diasSemProducao + ' dias sem produção</span>' : ''}
                     </div>
                 </div>
@@ -5080,7 +5107,9 @@
                 });
                 
                 listaDias.forEach(dia => {
-                    if (oeePorDia[dia] && oeePorDia[dia].length > 0) {
+                    const temReg = oeePorDia[dia] && oeePorDia[dia].length > 0;
+                    if (!temReg && ehDomingo(dia)) return;
+                    if (temReg) {
                         const somaOeeDia = oeePorDia[dia].reduce((a, b) => a + b, 0);
                         const mediaOeeDia = somaOeeDia / oeePorDia[dia].length;
                         somaGlobal += mediaOeeDia;
@@ -6248,7 +6277,7 @@
         cards.innerHTML = '';
         
         ['A','B','C'].forEach(t => {
-            const td = filtered.filter(d => d.turno === t);
+            const td = filtered.filter(d => ((d.turno === 'C1' || d.turno === 'C2') ? 'C' : d.turno) === t);
             if (!td.length) {
                 cards.innerHTML += `<div class="bg-white p-6 rounded-xl border border-slate-200"><p class="text-xs font-bold uppercase text-slate-400 mb-2">Turno ${t}</p><p class="text-slate-400">Sem dados</p></div>`;
                 return;
@@ -6725,9 +6754,12 @@
             totalDiasPeriodo = listaDias.length;
         }
         
+        const listaDiasValidos = listaDias.filter(dia => !(ehDomingo(dia) && !data.some(h => h.data === dia)));
+        const totalDiasValidos = listaDiasValidos.length;
+        
         const trendCtx = document.getElementById('weeklyChart')?.getContext('2d');
-        if (trendCtx && listaDias.length > 0) {
-            const trendVals = listaDias.map(dia => {
+        if (trendCtx && listaDiasValidos.length > 0) {
+            const trendVals = listaDiasValidos.map(dia => {
                 const dayData = data.filter(h => h.data === dia);
                 if (dayData.length === 0) return 0;
                 let somaOEE = 0;
@@ -6738,7 +6770,7 @@
             trendChart = new Chart(trendCtx, {
                 type: 'line',
                 data: {
-                    labels: listaDias.map(d => d.split('-').reverse().join('/')),
+                    labels: listaDiasValidos.map(d => d.split('-').reverse().join('/')),
                     datasets: [{
                         label: 'OEE Médio %',
                         data: trendVals,
@@ -6813,16 +6845,16 @@
         const shiftCtx = document.getElementById('shiftChart')?.getContext('2d');
         if (shiftCtx) {
             const shiftVals = ['A','B','C'].map(turno => {
-                if (totalDiasPeriodo === 0) return 0;
+                if (totalDiasValidos === 0) return 0;
                 let somaOEEPeriodo = 0;
                 listaDias.forEach(dia => {
-                    const registrosDia = data.filter(d => d.turno === turno && d.data === dia);
+                    const registrosDia = data.filter(d => ((d.turno === 'C1' || d.turno === 'C2') ? 'C' : d.turno) === turno && d.data === dia);
                     if (registrosDia.length > 0) {
                         const somaOeeDia = registrosDia.reduce((s, r) => s + calcularOEE(r.disp, r.perf, r.qual), 0);
                         somaOEEPeriodo += somaOeeDia / registrosDia.length;
                     }
                 });
-                return Math.round(somaOEEPeriodo / totalDiasPeriodo);
+                return Math.round(somaOEEPeriodo / totalDiasValidos);
             });
             
             if (shiftChart) shiftChart.destroy();

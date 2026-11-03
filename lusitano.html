@@ -1808,7 +1808,7 @@
     <div id="modal">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
             <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 class="font-black uppercase text-slate-800 text-xl">NOVO REGISTO - OEE</h2>
+                <h2 class="font-black uppercase text-slate-800 text-xl">NOVO REGISTRO - OEE</h2>
                 <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
             </div>
             
@@ -2057,7 +2057,7 @@
     <div id="editModal">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl p-8 m-4 modal-content" style="max-height: 90vh; overflow-y: auto;">
             <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 class="font-black uppercase text-slate-800 text-xl">Editar Registo - OEE</h2>
+                <h2 class="font-black uppercase text-slate-800 text-xl">Editar Registro - OEE</h2>
                 <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
             </div>
             
@@ -3005,7 +3005,7 @@
         if (!verificarPermissaoEscrita()) return;
         const idNum = typeof id === 'string' ? parseInt(id) : id;
         
-        if (confirm("Deseja apagar este registo permanentemente?")) {
+        if (confirm("Deseja apagar este registro permanentemente?")) {
             const apagado = await apagarRegistroBanco(idNum);
             if (apagado) {
                 historico = historico.filter(h => h.id !== idNum);
@@ -5227,7 +5227,7 @@
         }
         
         if (turnoFilter !== 'ALL') {
-            dadosFiltrados = dadosFiltrados.filter(h => h.turno === turnoFilter);
+            dadosFiltrados = dadosFiltrados.filter(h => turnoFilter === 'C' ? (h.turno === 'C' || h.turno === 'C1' || h.turno === 'C2') : h.turno === turnoFilter);
         }
         
         if (maquinaFilter !== 'ALL') {
@@ -6353,8 +6353,9 @@
                 perdasDia[reg.data] = (perdasDia[reg.data] || 0) + total;
             }
             
-            if (reg.turno && perdasPorTurno.hasOwnProperty(reg.turno)) {
-                perdasPorTurno[reg.turno] += total;
+            const turnoPerda = (reg.turno === 'C1' || reg.turno === 'C2') ? 'C' : reg.turno;
+            if (turnoPerda && perdasPorTurno.hasOwnProperty(turnoPerda)) {
+                perdasPorTurno[turnoPerda] += total;
             }
         });
         

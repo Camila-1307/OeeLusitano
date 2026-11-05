@@ -2273,7 +2273,7 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-slate-50 rounded-xl">
                 <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase">📈 Estimado (meta)</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase">📈 Estimado</p>
                     <p class="text-lg font-bold text-blue-600" id="qtdEstimadoTotal">0 kg</p>
                 </div>
                 <div>
@@ -5093,7 +5093,7 @@
                         ${renderBar('QUAL', avgQual)}
                     </div>
                     <div class="mt-4 text-xs text-slate-400 border-t pt-2">
-                        ${diasComProducao} dias com produção / ${totalDiasMaq} dias no período (até hoje)${(totalDiasNoPeriodo - totalDiasMaq) > 0 ? ' (' + (totalDiasNoPeriodo - totalDiasMaq) + ((totalDiasNoPeriodo - totalDiasMaq) === 1 ? ' domingo sem produção fora do cálculo)' : ' domingos sem produção fora do cálculo)') : ''}
+                        ${diasComProducao} ${diasComProducao === 1 ? 'dia' : 'dias'} com produção / ${totalDiasMaq} ${totalDiasMaq === 1 ? 'dia' : 'dias'} no período (até hoje)${(totalDiasNoPeriodo - totalDiasMaq) > 0 ? ' (' + (totalDiasNoPeriodo - totalDiasMaq) + ((totalDiasNoPeriodo - totalDiasMaq) === 1 ? ' domingo sem produção fora do cálculo)' : ' domingos sem produção fora do cálculo)') : ''}
                         ${diasSemProducao > 0 ? '<span class="text-red-500 ml-2">Atenção: ' + diasSemProducao + (diasSemProducao === 1 ? ' dia sem produção' : ' dias sem produção') + '</span>' : ''}
                     </div>
                 </div>
@@ -5189,6 +5189,7 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
+                    tooltip: { callbacks: { label: (ctx) => (ctx.dataset.label ? ctx.dataset.label + ': ' : '') + Math.round(ctx.raw) + ' min' } },
                     datalabels: {
                         anchor: 'end',
                         align: 'top',
@@ -5941,7 +5942,15 @@
             backgroundColor: '#ffffff',
             logging: false,
             allowTaint: true,
-            useCORS: true
+            useCORS: true,
+            onclone: (docClone) => {
+                // As datas dos filtros aparecem como AAAA-MM-DD na imagem; aqui passam a DD/MM/AAAA
+                docClone.querySelectorAll('input[type="date"]').forEach(inp => {
+                    const valor = inp.value;
+                    inp.type = 'text';
+                    inp.value = valor ? valor.split('-').reverse().join('/') : '';
+                });
+            }
         }).then(canvas => {
             const link = document.createElement('a');
             link.download = `relatorio-oee-${new Date().toISOString().split('T')[0]}.png`;
@@ -6515,6 +6524,7 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
+                    tooltip: { callbacks: { label: (ctx) => (ctx.dataset.label ? ctx.dataset.label + ': ' : '') + Math.round(ctx.raw) + ' min' } },
                     datalabels: {
                         anchor: 'end',
                         align: 'top',
@@ -6554,6 +6564,7 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { 
+                    tooltip: { callbacks: { label: (ctx) => (ctx.dataset.label ? ctx.dataset.label + ': ' : '') + Math.round(ctx.raw) + ' min' } },
                     datalabels: { 
                         anchor: 'end', 
                         align: 'top', 
@@ -6707,6 +6718,7 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
+                    tooltip: { callbacks: { label: (ctx) => (ctx.dataset.label ? ctx.dataset.label + ': ' : '') + Math.round(ctx.raw) + ' min' } },
                     datalabels: {
                         anchor: 'end',
                         align: 'top',
@@ -6810,6 +6822,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
+                        tooltip: { callbacks: { label: (ctx) => 'OEE: ' + Math.round(ctx.raw) + '%' } },
                         legend: { display: false },
                         datalabels: { display: false },
                         annotation: {
@@ -6853,6 +6866,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
+                        tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + Math.round(ctx.raw) + '%' } },
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
@@ -6892,6 +6906,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
+                        tooltip: { callbacks: { label: (ctx) => ctx.label + ': ' + Math.round(ctx.raw) + '%' } },
                         legend: { position: 'bottom' },
                         datalabels: {
                             color: '#fff',
@@ -6917,7 +6932,7 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false,
-                    plugins: { datalabels: { anchor: 'end', align: 'top', formatter: val => val + ' min', font: { weight: 'bold', size: 10 } } },
+                    plugins: { tooltip: { callbacks: { label: (ctx) => (ctx.dataset.label ? ctx.dataset.label + ': ' : '') + Math.round(ctx.raw) + ' min' } }, datalabels: { anchor: 'end', align: 'top', formatter: val => val + ' min', font: { weight: 'bold', size: 10 } } },
                     scales: { y: { beginAtZero: true, title: { display: true, text: 'Minutos' } } }
                 } 
             }); 

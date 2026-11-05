@@ -2057,7 +2057,7 @@
                 
                 <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
                     <p class="text-[10px] text-amber-700 font-bold uppercase">⚠️ IMPORTANTE</p>
-                    <p class="text-[11px] text-amber-600">Este registro NÃO será contabilizado em nenhum gráfico, dashboard ou indicador de performance. Servirá apenas como registro histórico no calendário.</p>
+                    <p class="text-[11px] text-amber-600">Este registro NÃO conta como perda em nenhum gráfico ou indicador. Servirá como registro histórico no calendário e, nos dias sem produção, o dia ficará fora da contagem de dias do OEE do período.</p>
                 </div>
                 
                 <div class="flex gap-3 pt-2">
@@ -3739,6 +3739,18 @@
         return new Date(p[0], p[1] - 1, p[2]).getDay() === 0;
     }
 
+    // Existe "sem pedido" registrado para a data, valendo para a máquina (ou para todas, ALL)?
+    function diaSemPedidoRegistrado(dia, maquina) {
+        return (diasSemPedido || []).some(d => d.data === dia && (d.maquina === 'ALL' || d.maquina === maquina));
+    }
+
+    // Dia que não entra na contagem de dias do OEE do período: sem nenhum registro de produção
+    // e que seja domingo ou tenha "sem pedido" registrado (a máquina parada por falta de pedido
+    // não é perda de disponibilidade). Dia com produção sempre entra.
+    function diaForaDoCalculo(dia, maquina, temRegistro) {
+        return !temRegistro && (ehDomingo(dia) || diaSemPedidoRegistrado(dia, maquina));
+    }
+
     function carregarCalendario() {
         const maquinaCalendario = document.getElementById('machineCalendarSelect').value;
         const ano = dataCalendarioAtual.getFullYear();
@@ -5013,7 +5025,7 @@
         ['M1', 'M2', 'M3'].forEach(mId => {
             const machineData = data.filter(d => d.machine === mId);
             const diasComRegistroMaq = new Set(machineData.map(d => d.data));
-            const listaDiasMaq = listaDias.filter(dia => !(ehDomingo(dia) && !diasComRegistroMaq.has(dia)));
+            const listaDiasMaq = listaDias.filter(dia => !diaForaDoCalculo(dia, mId, diasComRegistroMaq.has(dia)));
             const totalDiasMaq = listaDiasMaq.length;
             
             let somaOEE = 0;
@@ -5093,7 +5105,7 @@
                         ${renderBar('QUAL', avgQual)}
                     </div>
                     <div class="mt-4 text-xs text-slate-400 border-t pt-2">
-                        ${diasComProducao} ${diasComProducao === 1 ? 'dia' : 'dias'} com produção / ${totalDiasMaq} ${totalDiasMaq === 1 ? 'dia' : 'dias'} no período (até hoje)${(totalDiasNoPeriodo - totalDiasMaq) > 0 ? ' (' + (totalDiasNoPeriodo - totalDiasMaq) + ((totalDiasNoPeriodo - totalDiasMaq) === 1 ? ' domingo sem produção fora do cálculo)' : ' domingos sem produção fora do cálculo)') : ''}
+                        ${diasComProducao} ${diasComProducao === 1 ? 'dia' : 'dias'} com produção / ${totalDiasMaq} ${totalDiasMaq === 1 ? 'dia' : 'dias'} no período (até hoje)${(totalDiasNoPeriodo - totalDiasMaq) > 0 ? ' (' + (totalDiasNoPeriodo - totalDiasMaq) + ((totalDiasNoPeriodo - totalDiasMaq) === 1 ? ' dia fora do cálculo: domingo ou sem pedido)' : ' dias fora do cálculo: domingos ou sem pedido)') : ''}
                         ${diasSemProducao > 0 ? '<span class="text-red-500 ml-2">Atenção: ' + diasSemProducao + (diasSemProducao === 1 ? ' dia sem produção' : ' dias sem produção') + '</span>' : ''}
                     </div>
                 </div>
@@ -5119,7 +5131,7 @@
                 
                 listaDias.forEach(dia => {
                     const temReg = oeePorDia[dia] && oeePorDia[dia].length > 0;
-                    if (!temReg && ehDomingo(dia)) return;
+                    if (diaForaDoCalculo(dia, m, temReg)) return;
                     if (temReg) {
                         const somaOeeDia = oeePorDia[dia].reduce((a, b) => a + b, 0);
                         const mediaOeeDia = somaOeeDia / oeePorDia[dia].length;
@@ -6790,7 +6802,10 @@
             totalDiasPeriodo = listaDias.length;
         }
         
-        const listaDiasValidos = listaDias.filter(dia => !(ehDomingo(dia) && !data.some(h => h.data === dia)));
+        const listaDiasValidos = listaDias.filter(dia => {
+            const temReg = data.some(h => h.data === dia);
+            return !(!temReg && (ehDomingo(dia) || ['M1','M2','M3'].every(mq => diaSemPedidoRegistrado(dia, mq))));
+        });
         const totalDiasValidos = listaDiasValidos.length;
         
         const trendCtx = document.getElementById('weeklyChart')?.getContext('2d');
